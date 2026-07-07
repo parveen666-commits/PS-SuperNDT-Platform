@@ -1,14 +1,13 @@
 ﻿using System.Windows.Controls;
 using PS.SuperNDT.UI.ViewModels;
 
-namespace PS.SuperNDT.UI.Views
+namespace PS.SuperNDT.UI.Views;
+
+public partial class DashboardView : UserControl
 {
-    public partial class DashboardView : UserControl
+    public DashboardView()
     {
-        public DashboardView()
-        {
-            InitializeComponent();
-            DataContext = new DashboardViewModel();
-        }
+        InitializeComponent();
+        DataContext = new DashboardViewModel();
     }
 }
