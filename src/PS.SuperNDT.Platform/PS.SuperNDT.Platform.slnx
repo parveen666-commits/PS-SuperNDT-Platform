@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/assets/" />
+  <Folder Name="/database/" />
+  <Folder Name="/docs/" />
+  <Folder Name="/installer/" />
+  <Folder Name="/plugins/" />
+  <Folder Name="/release/" />
+  <Folder Name="/src/">
+    <Project Path="PS.SuperNDT.UI/PS.SuperNDT.UI.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
