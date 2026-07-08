@@ -1,0 +1,111 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Controls.MainMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="30"
+             Background="#252B33">
+
+    <Menu Background="#252B33"
+          Foreground="White"
+          FontSize="14">
+
+        <!-- File -->
+
+        <MenuItem Header="_File">
+
+            <MenuItem Header="_New Job"
+                      Name="NewJobMenuItem"/>
+
+            <MenuItem Header="_Open Job"
+                      Name="OpenJobMenuItem"/>
+
+            <Separator/>
+
+            <MenuItem Header="_Save Job"
+                      Name="SaveJobMenuItem"/>
+
+            <MenuItem Header="Save _As"
+                      Name="SaveAsMenuItem"/>
+
+            <Separator/>
+
+            <MenuItem Header="_Close Job"
+                      Name="CloseJobMenuItem"/>
+
+            <Separator/>
+
+            <MenuItem Header="E_xit"
+                      Name="ExitMenuItem"/>
+
+        </MenuItem>
+
+        <!-- View -->
+
+        <MenuItem Header="_View">
+
+            <MenuItem Header="Dashboard"/>
+
+            <MenuItem Header="Acquisition"/>
+
+            <MenuItem Header="Review"/>
+
+            <MenuItem Header="Calculator"/>
+
+            <MenuItem Header="Reports"/>
+
+            <MenuItem Header="Settings"/>
+
+        </MenuItem>
+
+        <!-- Detector -->
+
+        <MenuItem Header="_Detector">
+
+            <MenuItem Header="Connect"/>
+
+            <MenuItem Header="Disconnect"/>
+
+            <Separator/>
+
+            <MenuItem Header="Detector Settings"/>
+
+        </MenuItem>
+
+        <!-- PLC -->
+
+        <MenuItem Header="_PLC">
+
+            <MenuItem Header="Connect"/>
+
+            <MenuItem Header="Disconnect"/>
+
+            <Separator/>
+
+            <MenuItem Header="PLC Settings"/>
+
+        </MenuItem>
+
+        <!-- Tools -->
+
+        <MenuItem Header="_Tools">
+
+            <MenuItem Header="Exposure Calculator"/>
+
+            <MenuItem Header="Image Processing"/>
+
+            <MenuItem Header="Calibration"/>
+
+        </MenuItem>
+
+        <!-- Help -->
+
+        <MenuItem Header="_Help">
+
+            <MenuItem Header="User Manual"/>
+
+            <MenuItem Header="About PS SuperNDT"/>
+
+        </MenuItem>
+
+    </Menu>
+
+</UserControl>

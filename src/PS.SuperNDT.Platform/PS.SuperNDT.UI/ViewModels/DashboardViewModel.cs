@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
+using PS.SuperNDT.UI.Services;
 
 namespace PS.SuperNDT.UI.ViewModels;
 
@@ -13,7 +14,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
     private string _detectorStatus = "Ready";
     private string _plcStatus = "Offline";
     private string _currentRecipe = "Default";
-    private string _currentJob = "No Job";
+    private string _currentJob = "No Active Job";
     private int _totalShots;
     private int _rejectCount;
     private double _storagePercent;
@@ -104,6 +105,13 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         RejectCount = 0;
         StoragePercent = 35;
 
+        UpdateCurrentJob();
+
+        CurrentJobService.Instance.CurrentJobChanged += (_, _) =>
+        {
+            UpdateCurrentJob();
+        };
+
         _timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
@@ -111,11 +119,23 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
 
         _timer.Tick += (s, e) =>
         {
-            CurrentTime = DateTime.Now.ToString(
-                "dd-MMM-yyyy HH:mm:ss");
+            CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
         };
 
         _timer.Start();
+    }
+
+    private void UpdateCurrentJob()
+    {
+        if (CurrentJobService.Instance.HasCurrentJob)
+        {
+            CurrentJob =
+                CurrentJobService.Instance.CurrentJob!.JobNumber;
+        }
+        else
+        {
+            CurrentJob = "No Active Job";
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

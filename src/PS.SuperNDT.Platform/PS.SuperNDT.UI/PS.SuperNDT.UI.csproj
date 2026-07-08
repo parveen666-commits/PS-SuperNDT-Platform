@@ -12,13 +12,11 @@
 		<Folder Include="Assets\" />
 		<Folder Include="Behaviors\" />
 		<Folder Include="Configuration\" />
-		<Folder Include="Controls\" />
 		<Folder Include="Converters\" />
 		<Folder Include="Extensions\" />
 		<Folder Include="Helpers\" />
 		<Folder Include="Logging\" />
 		<Folder Include="Resources\" />
-		<Folder Include="Services\" />
 		<Folder Include="Styles\" />
 	</ItemGroup>
 
