@@ -1,13 +1,239 @@
-﻿<UserControl
-    x:Class="PS.SuperNDT.UI.Views.AcquisitionView"
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.AcquisitionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:PS.SuperNDT.UI.Views"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
+             Background="#1F232A">
+
+    <Grid Margin="10">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition/>
+            <RowDefinition Height="70"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="280"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ================= HEADER ================= -->
+
+        <Border Grid.Row="0"
+                Grid.ColumnSpan="3"
+                Background="#252B33"
+                CornerRadius="6">
+
+            <Grid Margin="15,0">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="250"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Acquisition"
+                           VerticalAlignment="Center"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+
+                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           FontSize="16"
+                           Foreground="White"
+                           Text="Detector : Disconnected"/>
+
+            </Grid>
+
+        </Border>
+
+        <!-- ================= LEFT PANEL ================= -->
+
+        <StackPanel Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="0,10,10,10">
+
+            <GroupBox Header="Job Information"
+                      Margin="0,0,0,10">
+
+                <Grid Margin="10">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Job"/>
+                    <TextBox Grid.Column="1"/>
+
+                    <TextBlock Grid.Row="1"
+                               Text="Operator"/>
+                    <TextBox Grid.Row="1"
+                             Grid.Column="1"/>
+
+                    <TextBlock Grid.Row="2"
+                               Text="Customer"/>
+                    <TextBox Grid.Row="2"
+                             Grid.Column="1"/>
+
+                    <TextBlock Grid.Row="3"
+                               Text="Part No"/>
+                    <TextBox Grid.Row="3"
+                             Grid.Column="1"/>
+
+                </Grid>
+
+            </GroupBox>
+
+            <GroupBox Header="Exposure">
+
+                <Grid Margin="10">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="kV"/>
+                    <TextBox Grid.Column="1"/>
+
+                    <TextBlock Grid.Row="1"
+                               Text="mA"/>
+                    <TextBox Grid.Row="1"
+                             Grid.Column="1"/>
+
+                    <TextBlock Grid.Row="2"
+                               Text="Exposure"/>
+                    <TextBox Grid.Row="2"
+                             Grid.Column="1"/>
+
+                    <TextBlock Grid.Row="3"
+                               Text="Frames"/>
+                    <TextBox Grid.Row="3"
+                             Grid.Column="1"/>
+
+                </Grid>
+
+            </GroupBox>
+
+        </StackPanel>
+
+        <!-- ================= IMAGE AREA ================= -->
+
+        <Border Grid.Row="1"
+                Grid.Column="1"
+                Margin="0,10"
+                Background="Black"
+                BorderBrush="#404040"
+                BorderThickness="1">
+
+            <Grid>
+
+                <TextBlock Text="Live Detector Image"
+                           Foreground="Gray"
+                           FontSize="26"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+
+            </Grid>
+
+        </Border>
+
+        <!-- ================= RIGHT PANEL ================= -->
+
+        <StackPanel Grid.Row="1"
+                    Grid.Column="2"
+                    Margin="10,10,0,10">
+
+            <GroupBox Header="Detector Status"
+                      Margin="0,0,0,10">
+
+                <StackPanel Margin="10">
+
+                    <TextBlock Text="Status : Offline"/>
+                    <TextBlock Text="Temperature : --"/>
+                    <TextBlock Text="Battery : --"/>
+                    <TextBlock Text="IP : --"/>
+
+                </StackPanel>
+
+            </GroupBox>
+
+            <GroupBox Header="Image Information">
+
+                <StackPanel Margin="10">
+
+                    <TextBlock Text="Width : --"/>
+                    <TextBlock Text="Height : --"/>
+                    <TextBlock Text="Bit Depth : --"/>
+                    <TextBlock Text="Frame : --"/>
+
+                </StackPanel>
+
+            </GroupBox>
+
+        </StackPanel>
+
+        <!-- ================= BOTTOM ================= -->
+
+        <Border Grid.Row="2"
+                Grid.ColumnSpan="3"
+                Background="#252B33"
+                CornerRadius="6">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <Button Width="120"
+                        Height="40"
+                        Margin="5"
+                        Content="Connect"/>
+
+                <Button Width="120"
+                        Height="40"
+                        Margin="5"
+                        Content="Capture"/>
+
+                <Button Width="120"
+                        Height="40"
+                        Margin="5"
+                        Content="Save"/>
+
+                <Button Width="120"
+                        Height="40"
+                        Margin="5"
+                        Content="Retake"/>
+
+                <Button Width="120"
+                        Height="40"
+                        Margin="5"
+                        Content="Window / Level"/>
+
+                <Button Width="120"
+                        Height="40"
+                        Margin="5"
+                        Content="Zoom"/>
+
+            </StackPanel>
+
+        </Border>
+
     </Grid>
+
 </UserControl>

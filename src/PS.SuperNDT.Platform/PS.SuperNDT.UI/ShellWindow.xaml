@@ -9,7 +9,7 @@
 
     <DockPanel>
 
-        <!--================ HEADER ================-->
+        <!-- HEADER -->
 
         <Border DockPanel.Dock="Top"
                 Height="60"
@@ -18,11 +18,8 @@
             <Grid>
 
                 <Grid.ColumnDefinitions>
-
                     <ColumnDefinition/>
-
                     <ColumnDefinition Width="300"/>
-
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
@@ -45,70 +42,59 @@
 
         </Border>
 
-        <!--================ STATUS BAR ================-->
+
+        <!-- STATUS BAR -->
 
         <StatusBar DockPanel.Dock="Bottom"
                    Height="30">
 
             <StatusBarItem Content="🟢 Detector Ready"/>
-
             <StatusBarItem Content="🟡 PLC Offline"/>
-
             <StatusBarItem Content="🟢 Database"/>
-
             <StatusBarItem Content="🟢 License"/>
-
             <StatusBarItem Content="🟢 Calculator Ready"/>
 
         </StatusBar>
 
-        <!--================ BODY ================-->
+
+        <!-- BODY -->
 
         <Grid>
 
             <Grid.ColumnDefinitions>
-
                 <ColumnDefinition Width="220"/>
-
                 <ColumnDefinition/>
-
             </Grid.ColumnDefinitions>
 
-            <!--================ LEFT MENU ================-->
+
+            <!-- MENU -->
 
             <Border Background="#252830">
 
-                <StackPanel Margin="10">
+                <ItemsControl ItemsSource="{Binding MenuItems}">
 
-                    <Button Margin="5"
-                            Height="45"
-                            Content="Dashboard"/>
+                    <ItemsControl.ItemTemplate>
 
-                    <Button Margin="5"
-                            Height="45"
-                            Content="Acquisition"/>
+                        <DataTemplate>
 
-                    <Button Margin="5"
-                            Height="45"
-                            Content="Review Images"/>
+                            <Button
+                                Height="45"
+                                Margin="5"
+                                Content="{Binding Title}"
+                                Command="{Binding DataContext.NavigateCommand,
+                                RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}"/>
 
-                    <Button Margin="5"
-                            Height="45"
-                            Content="Exposure Calculator"/>
+                        </DataTemplate>
 
-                    <Button Margin="5"
-                            Height="45"
-                            Content="Reports"/>
+                    </ItemsControl.ItemTemplate>
 
-                    <Button Margin="5"
-                            Height="45"
-                            Content="Settings"/>
-
-                </StackPanel>
+                </ItemsControl>
 
             </Border>
 
-            <!--================ CONTENT ================-->
+
+            <!-- CONTENT -->
 
             <ContentControl Grid.Column="1"
                             Content="{Binding CurrentPage}"/>
