@@ -1,60 +1,91 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Converters\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Dialogs\" />
-    <Folder Include="Behaviors\" />
-    <Folder Include="Extensions\" />
-    <Folder Include="Logging\" />
-    <Folder Include="Configuration\" />
-    <Folder Include="Resources\" />
-    <Folder Include="Services\" />
-    <Folder Include="Styles\" />
-    <Folder Include="Controls\" />
-    <Folder Include="Assets\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Assets\" />
+		<Folder Include="Behaviors\" />
+		<Folder Include="Configuration\" />
+		<Folder Include="Controls\" />
+		<Folder Include="Converters\" />
+		<Folder Include="Extensions\" />
+		<Folder Include="Helpers\" />
+		<Folder Include="Logging\" />
+		<Folder Include="Resources\" />
+		<Folder Include="Services\" />
+		<Folder Include="Styles\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Dapper" Version="2.1.79" />
-    <PackageReference Include="MaterialDesignColors" Version="5.3.2" />
-    <PackageReference Include="MaterialDesignThemes" Version="5.3.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-  </ItemGroup>
+	<ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Views\AcquisitionView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\ReviewView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\CalculatorView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\PLCView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\ReportsView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\SettingsView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+		<!-- MVVM -->
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+
+		<!-- Database -->
+		<PackageReference Include="Dapper" Version="2.1.79" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.17" />
+
+		<!-- Entity Framework (Future if required) -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.17" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.17">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+
+		<!-- Dependency Injection -->
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+
+		<!-- Material Design -->
+		<PackageReference Include="MaterialDesignThemes" Version="5.3.2" />
+		<PackageReference Include="MaterialDesignColors" Version="5.3.2" />
+
+		<!-- JSON -->
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+
+		<!-- Logging -->
+		<PackageReference Include="Serilog" Version="4.3.1" />
+		<PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Views\AcquisitionView.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+
+		<Compile Update="Views\CalculatorView.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+
+		<Compile Update="Views\PLCView.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+
+		<Compile Update="Views\ReportsView.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+
+		<Compile Update="Views\ReviewView.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+
+		<Compile Update="Views\SettingsView.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+	</ItemGroup>
 
 </Project>
