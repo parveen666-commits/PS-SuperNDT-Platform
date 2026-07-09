@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
@@ -10,10 +11,14 @@ public sealed class CurrentJobService
 
     public static CurrentJobService Instance => _instance.Value;
 
-    private readonly JobService _jobService = new();
+    private readonly string _stateFile =
+        Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "CurrentJob.txt");
 
     private CurrentJobService()
     {
+        RestoreCurrentJob();
     }
 
     public JobModel? CurrentJob { get; private set; }
@@ -24,20 +29,11 @@ public sealed class CurrentJobService
 
     public void SetCurrentJob(JobModel job)
     {
-        ArgumentNullException.ThrowIfNull(job);
-
         CurrentJob = job;
 
-        CurrentJobChanged?.Invoke(
-            this,
-            EventArgs.Empty);
-    }
-
-    public void OpenJob(JobModel job)
-    {
-        ArgumentNullException.ThrowIfNull(job);
-
-        CurrentJob = job;
+        File.WriteAllText(
+            _stateFile,
+            job.Id.ToString());
 
         CurrentJobChanged?.Invoke(
             this,
@@ -46,29 +42,38 @@ public sealed class CurrentJobService
 
     public void CloseCurrentJob()
     {
-        if (CurrentJob == null)
-            return;
-
-        _jobService.CloseJob(CurrentJob.Id);
-
-        CurrentJob.IsClosed = true;
-
-        CurrentJobChanged?.Invoke(
-            this,
-            EventArgs.Empty);
-    }
-
-    public void ClearCurrentJob()
-    {
         CurrentJob = null;
 
+        if (File.Exists(_stateFile))
+        {
+            File.Delete(_stateFile);
+        }
+
         CurrentJobChanged?.Invoke(
             this,
             EventArgs.Empty);
     }
 
-    public string GetCurrentJobNumber()
+    private void RestoreCurrentJob()
     {
-        return CurrentJob?.JobNumber ?? "No Active Job";
+        try
+        {
+            if (!File.Exists(_stateFile))
+                return;
+
+            var text =
+                File.ReadAllText(_stateFile);
+
+            if (!Guid.TryParse(text, out var jobId))
+                return;
+
+            var service = new JobService();
+
+            CurrentJob = service.Get(jobId);
+        }
+        catch
+        {
+            CurrentJob = null;
+        }
     }
 }

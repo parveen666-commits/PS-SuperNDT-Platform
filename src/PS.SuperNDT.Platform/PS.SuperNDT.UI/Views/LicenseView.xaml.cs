@@ -3,12 +3,12 @@ using PS.SuperNDT.UI.ViewModels;
 
 namespace PS.SuperNDT.UI.Views;
 
-public partial class CalculatorView : UserControl
+public partial class LicenseView : UserControl
 {
-    public CalculatorView()
+    public LicenseView()
     {
         InitializeComponent();
 
-        DataContext = new CalculatorViewModel();
+        DataContext = new LicenseViewModel();
     }
 }

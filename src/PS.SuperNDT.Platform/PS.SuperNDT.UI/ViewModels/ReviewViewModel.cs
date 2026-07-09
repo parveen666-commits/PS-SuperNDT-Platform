@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
@@ -11,22 +10,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 {
     private readonly ImageService _imageService = new();
 
-    private string _currentJob = "No Active Job";
-    private ImageRecordModel? _selectedImage;
-
     public ObservableCollection<ImageRecordModel> Images { get; } = new();
 
-    public RelayCommand OpenImageCommand { get; }
-
-    public string CurrentJob
-    {
-        get => _currentJob;
-        set
-        {
-            _currentJob = value;
-            OnPropertyChanged();
-        }
-    }
+    private ImageRecordModel? _selectedImage;
 
     public ImageRecordModel? SelectedImage
     {
@@ -35,55 +21,37 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         {
             _selectedImage = value;
             OnPropertyChanged();
-
-            if (_selectedImage != null)
-            {
-                ImageViewerService.Instance.OpenImage(
-                    _selectedImage);
-            }
         }
     }
 
     public ReviewViewModel()
     {
-        OpenImageCommand = new RelayCommand(
-            _ => OpenSelectedImage());
-
         LoadImages();
 
-        CurrentJobService.Instance.CurrentJobChanged += (_, _) =>
-        {
-            LoadImages();
-        };
+        ImageViewerService.Instance.CurrentImageChanged +=
+            ImageViewerService_CurrentImageChanged;
+    }
+
+    private void ImageViewerService_CurrentImageChanged(
+        object? sender,
+        System.EventArgs e)
+    {
+        LoadImages();
+
+        SelectedImage =
+            ImageViewerService.Instance.CurrentImage;
     }
 
     private void LoadImages()
     {
         Images.Clear();
 
-        var job = CurrentJobService.Instance.CurrentJob;
+        var records = _imageService.GetAll();
 
-        if (job == null)
+        foreach (var record in records)
         {
-            CurrentJob = "No Active Job";
-            return;
+            Images.Add(record);
         }
-
-        CurrentJob = job.JobNumber;
-
-        foreach (var image in _imageService.GetByJob(job.Id))
-        {
-            Images.Add(image);
-        }
-    }
-
-    private void OpenSelectedImage()
-    {
-        if (SelectedImage == null)
-            return;
-
-        ImageViewerService.Instance.OpenImage(
-            SelectedImage);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

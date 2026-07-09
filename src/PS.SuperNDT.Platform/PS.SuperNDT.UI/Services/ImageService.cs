@@ -11,8 +11,6 @@ public sealed class ImageService
 {
     public void Save(ImageRecordModel image)
     {
-        ArgumentNullException.ThrowIfNull(image);
-
         using var db = new SuperNDTDbContext();
 
         var existing =
@@ -30,15 +28,6 @@ public sealed class ImageService
         }
 
         db.SaveChanges();
-    }
-
-    public ImageRecordModel? Get(Guid id)
-    {
-        using var db = new SuperNDTDbContext();
-
-        return db.Images
-                 .AsNoTracking()
-                 .FirstOrDefault(x => x.Id == id);
     }
 
     public List<ImageRecordModel> GetAll()
@@ -67,6 +56,22 @@ public sealed class ImageService
         using var db = new SuperNDTDbContext();
 
         return db.Images.Count(x => x.JobId == jobId);
+    }
+
+    public int GetTotalImageCount()
+    {
+        using var db = new SuperNDTDbContext();
+
+        return db.Images.Count();
+    }
+
+    public ImageRecordModel? Get(Guid id)
+    {
+        using var db = new SuperNDTDbContext();
+
+        return db.Images
+                 .AsNoTracking()
+                 .FirstOrDefault(x => x.Id == id);
     }
 
     public void Delete(Guid id)

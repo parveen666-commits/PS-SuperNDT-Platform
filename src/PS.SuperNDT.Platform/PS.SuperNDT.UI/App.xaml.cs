@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using PS.SuperNDT.UI.Database;
 using PS.SuperNDT.UI.Services;
 using PS.SuperNDT.UI.Views;
@@ -10,6 +11,21 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        var licenseService = new LicenseService();
+
+        if (!licenseService.IsLicenseValid())
+        {
+            MessageBox.Show(
+                "License expired. Please activate your software.",
+                "PS SuperNDT",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+
+            Shutdown();
+
+            return;
+        }
 
         InitializeDatabase();
         RestoreLastOpenJob();
@@ -29,12 +45,14 @@ public partial class App : Application
     {
         var jobService = new JobService();
 
-        var lastOpenJob = jobService.GetOpenJobs()
-                                    .FirstOrDefault();
+        var lastOpenJob =
+            jobService.GetOpenJobs()
+                      .FirstOrDefault();
 
         if (lastOpenJob != null)
         {
-            CurrentJobService.Instance.OpenJob(lastOpenJob);
+            CurrentJobService.Instance.SetCurrentJob(
+                lastOpenJob);
         }
     }
 }

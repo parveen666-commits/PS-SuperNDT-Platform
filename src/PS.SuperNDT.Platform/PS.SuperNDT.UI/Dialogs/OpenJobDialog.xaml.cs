@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
@@ -9,9 +7,7 @@ namespace PS.SuperNDT.UI.Dialogs;
 
 public partial class OpenJobDialog : Window
 {
-    private readonly JobService _jobService;
-
-    private List<JobModel> _jobs = new();
+    private readonly JobService _jobService = new();
 
     public JobModel? SelectedJob { get; private set; }
 
@@ -19,45 +15,25 @@ public partial class OpenJobDialog : Window
     {
         InitializeComponent();
 
-        _jobService = new JobService();
-
-        LoadJobs();
+        Loaded += OpenJobDialog_Loaded;
 
         OpenButton.Click += OpenButton_Click;
         CancelButton.Click += CancelButton_Click;
-        SearchTextBox.TextChanged += SearchTextBox_TextChanged;
     }
 
-    private void LoadJobs()
-    {
-        _jobs = _jobService.GetOpenJobs();
-
-        JobsGrid.ItemsSource = _jobs;
-    }
-
-    private void SearchTextBox_TextChanged(
+    private void OpenJobDialog_Loaded(
         object sender,
-        TextChangedEventArgs e)
+        RoutedEventArgs e)
     {
-        string text = SearchTextBox.Text.Trim();
-
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            JobsGrid.ItemsSource = _jobs;
-            return;
-        }
-
         JobsGrid.ItemsSource =
-            _jobs.Where(x =>
-                    (x.JobNumber?.Contains(text, System.StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (x.Customer?.Contains(text, System.StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (x.Project?.Contains(text, System.StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (x.Component?.Contains(text, System.StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    (x.Operator?.Contains(text, System.StringComparison.OrdinalIgnoreCase) ?? false))
-                 .ToList();
+            _jobService
+            .GetAll()
+            .ToList();
     }
 
-    private void OpenButton_Click(object sender, RoutedEventArgs e)
+    private void OpenButton_Click(
+        object sender,
+        RoutedEventArgs e)
     {
         if (JobsGrid.SelectedItem is not JobModel job)
         {
@@ -65,20 +41,22 @@ public partial class OpenJobDialog : Window
                 "Please select a job.",
                 "PS SuperNDT",
                 MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                MessageBoxImage.Information);
 
             return;
         }
 
-        CurrentJobService.Instance.OpenJob(job);
-
         SelectedJob = job;
+
+        CurrentJobService.Instance.SetCurrentJob(job);
 
         DialogResult = true;
         Close();
     }
 
-    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    private void CancelButton_Click(
+        object sender,
+        RoutedEventArgs e)
     {
         DialogResult = false;
         Close();

@@ -9,6 +9,7 @@ public sealed class SuperNDTDbContext : DbContext
 
     public DbSet<ImageRecordModel> Images => Set<ImageRecordModel>();
 
+
     protected override void OnConfiguring(
         DbContextOptionsBuilder optionsBuilder)
     {
@@ -18,6 +19,7 @@ public sealed class SuperNDTDbContext : DbContext
                 "Data Source=PS_SuperNDT.db");
         }
     }
+
 
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
@@ -54,6 +56,7 @@ public sealed class SuperNDTDbContext : DbContext
                   .HasMaxLength(1000);
         });
 
+
         modelBuilder.Entity<ImageRecordModel>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -61,24 +64,26 @@ public sealed class SuperNDTDbContext : DbContext
             entity.Property(e => e.JobNumber)
                   .HasMaxLength(100);
 
+            entity.Property(e => e.Operator)
+                  .HasMaxLength(100);
+
             entity.Property(e => e.FileName)
-                  .HasMaxLength(260);
+                  .HasMaxLength(300);
 
             entity.Property(e => e.FilePath)
-                  .HasMaxLength(1000);
+                  .HasMaxLength(500);
 
             entity.Property(e => e.DetectorName)
-                  .HasMaxLength(200);
-
-            entity.Property(e => e.Operator)
                   .HasMaxLength(100);
 
             entity.Property(e => e.Remarks)
                   .HasMaxLength(1000);
         });
 
+
         base.OnModelCreating(modelBuilder);
     }
+
 
     public void Initialize()
     {

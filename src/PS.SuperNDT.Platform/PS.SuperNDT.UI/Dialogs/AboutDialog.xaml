@@ -1,0 +1,93 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Dialogs.AboutDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#1F232A">
+
+    <Grid Margin="20">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="120"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="70"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+
+        <Border Grid.Row="0"
+                Background="#252B33"
+                CornerRadius="8">
+
+            <StackPanel VerticalAlignment="Center">
+
+                <TextBlock Text="PS SuperNDT Platform"
+                           HorizontalAlignment="Center"
+                           Foreground="White"
+                           FontSize="30"
+                           FontWeight="Bold"/>
+
+                <TextBlock Text="Digital Radiography Inspection Software"
+                           HorizontalAlignment="Center"
+                           Foreground="#C8C8C8"
+                           FontSize="16"/>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- Information -->
+
+        <Border Grid.Row="1"
+                Margin="0,15"
+                Background="#252B33"
+                CornerRadius="8">
+
+            <StackPanel Margin="20">
+
+                <TextBlock Text="Version : 1.0.0"
+                           Foreground="White"
+                           FontSize="18"
+                           Margin="0,0,0,10"/>
+
+                <TextBlock Text="Platform : .NET 8 WPF"
+                           Foreground="White"
+                           FontSize="18"
+                           Margin="0,0,0,10"/>
+
+                <TextBlock Text="Database : SQLite"
+                           Foreground="White"
+                           FontSize="18"
+                           Margin="0,0,0,10"/>
+
+                <TextBlock Text="Application : Digital Radiography, Review, Reporting and Exposure Calculations"
+                           TextWrapping="Wrap"
+                           Foreground="White"
+                           FontSize="16"
+                           Margin="0,20,0,0"/>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- Footer -->
+
+        <Border Grid.Row="2"
+                Background="#252B33"
+                CornerRadius="8">
+
+            <Grid>
+
+                <Button x:Name="CloseButton"
+                        Width="120"
+                        Height="40"
+                        Content="Close"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="10"/>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</UserControl>

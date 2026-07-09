@@ -3,248 +3,155 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Background="#1F232A">
 
-    <Grid>
+    <Grid Margin="15">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="70"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-
-        <!-- HEADER -->
-
         <Border Grid.Row="0"
-                Background="#252B33">
+                Background="#252B33"
+                CornerRadius="8">
 
-            <Grid Margin="25,0">
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="300"/>
-                </Grid.ColumnDefinitions>
-
-
-                <TextBlock Text="Dashboard"
-                           FontSize="32"
-                           FontWeight="Bold"
-                           Foreground="White"
-                           VerticalAlignment="Center"/>
-
-
-                <TextBlock Grid.Column="1"
-                           Text="{Binding CurrentTime}"
-                           FontSize="20"
-                           Foreground="White"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Center"/>
-
-            </Grid>
+            <TextBlock Text="Dashboard"
+                       Margin="20,0"
+                       VerticalAlignment="Center"
+                       Foreground="White"
+                       FontSize="28"
+                       FontWeight="Bold"/>
 
         </Border>
 
-
-        <!-- KPI AREA -->
-
         <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
+                      Margin="0,15,0,0"
+                      VerticalScrollBarVisibility="Auto">
 
-            <UniformGrid Columns="4"
-                         Margin="20">
+            <UniformGrid Columns="4">
 
-
-                <!-- Detector -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
-                        <TextBlock Text="Detector"
-                                   Foreground="White"
-                                   FontSize="20"/>
-
-                        <TextBlock Text="{Binding DetectorStatus}"
-                                   Margin="0,20,0,0"
-                                   FontSize="30"
-                                   FontWeight="Bold"
-                                   Foreground="Lime"/>
-
-                    </StackPanel>
-
-                </Border>
-
-
-
-                <!-- PLC -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
-                        <TextBlock Text="PLC"
-                                   Foreground="White"
-                                   FontSize="20"/>
-
-                        <TextBlock Text="{Binding PLCStatus}"
-                                   Margin="0,20,0,0"
-                                   FontSize="30"
-                                   FontWeight="Bold"
-                                   Foreground="Orange"/>
-
-                    </StackPanel>
-
-                </Border>
-
-
-
-                <!-- Recipe -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
-                        <TextBlock Text="Recipe"
-                                   Foreground="White"
-                                   FontSize="20"/>
-
-                        <TextBlock Text="{Binding CurrentRecipe}"
-                                   Margin="0,20,0,0"
-                                   FontSize="28"
-                                   Foreground="White"/>
-
-                    </StackPanel>
-
-                </Border>
-
-
-
-                <!-- Job -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
                         <TextBlock Text="Current Job"
                                    Foreground="White"
-                                   FontSize="20"/>
-
+                                   FontSize="18"/>
                         <TextBlock Text="{Binding CurrentJob}"
-                                   Margin="0,20,0,0"
-                                   FontSize="24"
-                                   Foreground="White"/>
-
-                    </StackPanel>
-
-                </Border>
-
-
-
-                <!-- Shots -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
-                        <TextBlock Text="Today's Shots"
-                                   Foreground="White"
-                                   FontSize="20"/>
-
-                        <TextBlock Text="{Binding TotalShots}"
-                                   Margin="0,20,0,0"
-                                   FontSize="45"
+                                   Foreground="#00E5FF"
+                                   FontSize="28"
                                    FontWeight="Bold"
-                                   Foreground="#00E5FF"/>
-
+                                   Margin="0,15,0,0"/>
                     </StackPanel>
-
                 </Border>
 
-
-
-                <!-- Reject -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
-                        <TextBlock Text="Reject"
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Total Images"
                                    Foreground="White"
-                                   FontSize="20"/>
-
-                        <TextBlock Text="{Binding RejectCount}"
-                                   Margin="0,20,0,0"
-                                   FontSize="45"
+                                   FontSize="18"/>
+                        <TextBlock Text="{Binding TotalImages}"
+                                   Foreground="Lime"
+                                   FontSize="28"
                                    FontWeight="Bold"
-                                   Foreground="Red"/>
-
+                                   Margin="0,15,0,0"/>
                     </StackPanel>
-
                 </Border>
 
-
-
-                <!-- Storage -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
-                        <TextBlock Text="Storage"
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Total Jobs"
                                    Foreground="White"
-                                   FontSize="20"/>
-
-                        <ProgressBar Height="30"
-                                     Margin="0,25,0,0"
-                                     Value="{Binding StoragePercent}"
-                                     Maximum="100"/>
-
-                    </StackPanel>
-
-                </Border>
-
-
-
-                <!-- Health -->
-
-                <Border Margin="10"
-                        Background="#2C313C"
-                        CornerRadius="12">
-
-                    <StackPanel Margin="25">
-
-                        <TextBlock Text="System Health"
-                                   Foreground="White"
-                                   FontSize="20"/>
-
-                        <TextBlock Text="Healthy"
-                                   Margin="0,20,0,0"
-                                   FontSize="32"
+                                   FontSize="18"/>
+                        <TextBlock Text="{Binding TotalJobs}"
+                                   Foreground="Orange"
+                                   FontSize="28"
                                    FontWeight="Bold"
-                                   Foreground="Lime"/>
-
+                                   Margin="0,15,0,0"/>
                     </StackPanel>
-
                 </Border>
 
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Open Jobs"
+                                   Foreground="White"
+                                   FontSize="18"/>
+                        <TextBlock Text="{Binding OpenJobs}"
+                                   Foreground="Yellow"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Closed Jobs"
+                                   Foreground="White"
+                                   FontSize="18"/>
+                        <TextBlock Text="{Binding ClosedJobs}"
+                                   Foreground="#00E5FF"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Detector Status"
+                                   Foreground="White"
+                                   FontSize="18"/>
+                        <TextBlock Text="READY"
+                                   Foreground="Lime"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="PLC Status"
+                                   Foreground="White"
+                                   FontSize="18"/>
+                        <TextBlock Text="OFFLINE"
+                                   Foreground="Orange"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Software Version"
+                                   Foreground="White"
+                                   FontSize="18"/>
+                        <TextBlock Text="v1.0.0"
+                                   Foreground="#00E5FF"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Border>
 
             </UniformGrid>
 
         </ScrollViewer>
-
 
     </Grid>
 

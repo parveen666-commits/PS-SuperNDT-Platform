@@ -8,6 +8,12 @@ public sealed class ImageRecordModel
 
     public Guid JobId { get; set; }
 
+    public string JobNumber { get; set; } = "";
+
+    public string Operator { get; set; } = "";
+
+    public string Remarks { get; set; } = "";
+
     public int FrameNumber { get; set; }
 
     public string FileName { get; set; } = "";

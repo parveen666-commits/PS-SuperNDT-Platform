@@ -17,7 +17,9 @@ public partial class MainMenu : UserControl
         ExitMenuItem.Click += ExitMenuItem_Click;
     }
 
-    private void NewJobMenuItem_Click(object sender, RoutedEventArgs e)
+    private void NewJobMenuItem_Click(
+        object sender,
+        RoutedEventArgs e)
     {
         var dialog = new JobDialog
         {
@@ -27,7 +29,9 @@ public partial class MainMenu : UserControl
         dialog.ShowDialog();
     }
 
-    private void OpenJobMenuItem_Click(object sender, RoutedEventArgs e)
+    private void OpenJobMenuItem_Click(
+        object sender,
+        RoutedEventArgs e)
     {
         var dialog = new OpenJobDialog
         {
@@ -37,7 +41,9 @@ public partial class MainMenu : UserControl
         dialog.ShowDialog();
     }
 
-    private void CloseJobMenuItem_Click(object sender, RoutedEventArgs e)
+    private void CloseJobMenuItem_Click(
+        object sender,
+        RoutedEventArgs e)
     {
         if (!CurrentJobService.Instance.HasCurrentJob)
         {
@@ -50,8 +56,16 @@ public partial class MainMenu : UserControl
             return;
         }
 
+        var result = MessageBox.Show(
+            "Close current job?",
+            "PS SuperNDT",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
         CurrentJobService.Instance.CloseCurrentJob();
-        CurrentJobService.Instance.ClearCurrentJob();
 
         MessageBox.Show(
             "Job closed successfully.",
@@ -60,7 +74,9 @@ public partial class MainMenu : UserControl
             MessageBoxImage.Information);
     }
 
-    private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
+    private void ExitMenuItem_Click(
+        object sender,
+        RoutedEventArgs e)
     {
         Application.Current.Shutdown();
     }

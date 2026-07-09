@@ -20,8 +20,6 @@ public sealed class ImageViewerService
 
     public void OpenImage(ImageRecordModel image)
     {
-        ArgumentNullException.ThrowIfNull(image);
-
         CurrentImage = image;
 
         CurrentImageChanged?.Invoke(
@@ -29,7 +27,7 @@ public sealed class ImageViewerService
             EventArgs.Empty);
     }
 
-    public void CloseImage()
+    public void Clear()
     {
         CurrentImage = null;
 
@@ -37,7 +35,4 @@ public sealed class ImageViewerService
             this,
             EventArgs.Empty);
     }
-
-    public bool HasImage =>
-        CurrentImage != null;
 }

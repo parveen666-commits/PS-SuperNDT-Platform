@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 using PS.SuperNDT.UI.Services;
@@ -9,61 +9,12 @@ namespace PS.SuperNDT.UI.ViewModels;
 public sealed class DashboardViewModel : INotifyPropertyChanged
 {
     private readonly DispatcherTimer _timer;
-    private readonly ImageService _imageService = new();
 
-    private string _currentTime = "";
-    private string _detectorStatus = "Ready";
-    private string _plcStatus = "Offline";
-    private string _currentRecipe = "Default";
     private string _currentJob = "No Active Job";
-    private int _totalShots;
-    private int _rejectCount;
-    private double _storagePercent;
-
-
-    public string CurrentTime
-    {
-        get => _currentTime;
-        set
-        {
-            _currentTime = value;
-            OnPropertyChanged();
-        }
-    }
-
-
-    public string DetectorStatus
-    {
-        get => _detectorStatus;
-        set
-        {
-            _detectorStatus = value;
-            OnPropertyChanged();
-        }
-    }
-
-
-    public string PLCStatus
-    {
-        get => _plcStatus;
-        set
-        {
-            _plcStatus = value;
-            OnPropertyChanged();
-        }
-    }
-
-
-    public string CurrentRecipe
-    {
-        get => _currentRecipe;
-        set
-        {
-            _currentRecipe = value;
-            OnPropertyChanged();
-        }
-    }
-
+    private int _totalImages;
+    private int _totalJobs;
+    private int _openJobs;
+    private int _closedJobs;
 
     public string CurrentJob
     {
@@ -75,108 +26,89 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         }
     }
 
-
-    public int TotalShots
+    public int TotalImages
     {
-        get => _totalShots;
+        get => _totalImages;
         set
         {
-            _totalShots = value;
+            _totalImages = value;
             OnPropertyChanged();
         }
     }
 
-
-    public int RejectCount
+    public int TotalJobs
     {
-        get => _rejectCount;
+        get => _totalJobs;
         set
         {
-            _rejectCount = value;
+            _totalJobs = value;
             OnPropertyChanged();
         }
     }
 
-
-    public double StoragePercent
+    public int OpenJobs
     {
-        get => _storagePercent;
+        get => _openJobs;
         set
         {
-            _storagePercent = value;
+            _openJobs = value;
             OnPropertyChanged();
         }
     }
 
+    public int ClosedJobs
+    {
+        get => _closedJobs;
+        set
+        {
+            _closedJobs = value;
+            OnPropertyChanged();
+        }
+    }
 
     public DashboardViewModel()
     {
-        StoragePercent = 35;
-
-        UpdateCurrentJob();
-        UpdateShotCount();
-
-        CurrentJobService.Instance.CurrentJobChanged += (_, _) =>
-        {
-            UpdateCurrentJob();
-            UpdateShotCount();
-        };
-
+        Refresh();
 
         _timer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromSeconds(1)
+            Interval = System.TimeSpan.FromSeconds(2)
         };
 
-
-        _timer.Tick += (_, _) =>
-        {
-            CurrentTime =
-                DateTime.Now.ToString(
-                    "dd-MMM-yyyy HH:mm:ss");
-
-            UpdateShotCount();
-        };
-
-
+        _timer.Tick += (_, _) => Refresh();
         _timer.Start();
     }
 
-
-    private void UpdateCurrentJob()
+    private void Refresh()
     {
-        if (CurrentJobService.Instance.HasCurrentJob)
-        {
-            CurrentJob =
-                CurrentJobService.Instance
-                .CurrentJob!
-                .JobNumber;
-        }
-        else
-        {
-            CurrentJob = "No Active Job";
-        }
-    }
-
-
-    private void UpdateShotCount()
-    {
-        var job =
+        var currentJob =
             CurrentJobService.Instance.CurrentJob;
 
-        if (job == null)
-        {
-            TotalShots = 0;
-            return;
-        }
+        CurrentJob =
+            currentJob?.JobNumber ??
+            "No Active Job";
 
-        TotalShots =
-            _imageService.GetImageCount(job.Id);
+        var imageService = new ImageService();
+
+        TotalImages =
+            imageService.GetTotalImageCount();
+
+        var jobService = new JobService();
+
+        var jobs =
+            jobService.GetAll();
+
+        TotalJobs =
+            jobs.Count;
+
+        OpenJobs =
+            jobs.Count(x => !x.IsClosed);
+
+        ClosedJobs =
+            jobs.Count(x => x.IsClosed);
     }
 
-
     public event PropertyChangedEventHandler? PropertyChanged;
-
 
     private void OnPropertyChanged(
         [CallerMemberName] string propertyName = "")

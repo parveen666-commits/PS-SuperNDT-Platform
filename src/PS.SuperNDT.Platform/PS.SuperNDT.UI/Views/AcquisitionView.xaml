@@ -11,7 +11,6 @@
             <RowDefinition Height="80"/>
         </Grid.RowDefinitions>
 
-
         <!-- HEADER -->
 
         <Border Grid.Row="0"
@@ -25,16 +24,14 @@
                     <ColumnDefinition Width="300"/>
                 </Grid.ColumnDefinitions>
 
-
                 <TextBlock Text="Acquisition"
                            Foreground="White"
                            FontSize="30"
                            FontWeight="Bold"
                            VerticalAlignment="Center"/>
 
-
                 <TextBlock Grid.Column="1"
-                           Text="Detector : Offline"
+                           Text="{Binding DetectorStatus}"
                            Foreground="Orange"
                            FontSize="18"
                            HorizontalAlignment="Right"
@@ -44,9 +41,7 @@
 
         </Border>
 
-
-
-        <!-- MAIN AREA -->
+        <!-- MAIN -->
 
         <Grid Grid.Row="1"
               Margin="0,10">
@@ -57,9 +52,7 @@
                 <ColumnDefinition Width="300"/>
             </Grid.ColumnDefinitions>
 
-
-
-            <!-- LEFT PANEL -->
+            <!-- LEFT -->
 
             <Border Grid.Column="0"
                     Background="#252B33"
@@ -68,64 +61,52 @@
 
                 <StackPanel Margin="15">
 
-
                     <TextBlock Text="Job Information"
                                Foreground="White"
                                FontSize="20"
                                FontWeight="Bold"/>
 
-
-                    <TextBlock Text="Job Number"
+                    <TextBlock Text="Current Job"
                                Foreground="White"
                                Margin="0,20,0,5"/>
 
-                    <TextBox Height="35"/>
-
-
-                    <TextBlock Text="Customer"
-                               Foreground="White"
-                               Margin="0,15,0,5"/>
-
-                    <TextBox Height="35"/>
-
-
-                    <TextBlock Text="Component"
-                               Foreground="White"
-                               Margin="0,15,0,5"/>
-
-                    <TextBox Height="35"/>
-
+                    <TextBox Height="35"
+                             IsReadOnly="True"
+                             Text="{Binding CurrentJob}"/>
 
                     <Separator Margin="0,20"/>
-
 
                     <TextBlock Text="Exposure"
                                Foreground="White"
                                FontSize="20"
                                FontWeight="Bold"/>
 
-
                     <TextBlock Text="kV"
                                Foreground="White"
                                Margin="0,15,0,5"/>
 
-                    <TextBox Height="35"/>
-
+                    <TextBox Height="35"
+                             Text="{Binding KV}"/>
 
                     <TextBlock Text="mA"
                                Foreground="White"
                                Margin="0,15,0,5"/>
 
-                    <TextBox Height="35"/>
+                    <TextBox Height="35"
+                             Text="{Binding MA}"/>
 
+                    <TextBlock Text="Exposure Time"
+                               Foreground="White"
+                               Margin="0,15,0,5"/>
+
+                    <TextBox Height="35"
+                             Text="{Binding ExposureTime}"/>
 
                 </StackPanel>
 
             </Border>
 
-
-
-            <!-- IMAGE AREA -->
+            <!-- IMAGE -->
 
             <Border Grid.Column="1"
                     Background="Black"
@@ -146,9 +127,7 @@
 
             </Border>
 
-
-
-            <!-- RIGHT PANEL -->
+            <!-- RIGHT -->
 
             <Border Grid.Column="2"
                     Background="#252B33"
@@ -157,114 +136,73 @@
 
                 <StackPanel Margin="15">
 
-
                     <TextBlock Text="Detector Status"
                                Foreground="White"
                                FontSize="20"
                                FontWeight="Bold"/>
 
-
-                    <TextBlock Text="Connection : Offline"
-                               Foreground="Orange"
+                    <TextBlock Text="{Binding ConnectionStatus}"
+                               Foreground="Lime"
                                Margin="0,20,0,0"/>
-
-
-                    <TextBlock Text="Temperature : --"
-                               Foreground="White"
-                               Margin="0,10"/>
-
-
-                    <TextBlock Text="Battery : --"
-                               Foreground="White"
-                               Margin="0,10"/>
-
-
-                    <TextBlock Text="Resolution : --"
-                               Foreground="White"
-                               Margin="0,10"/>
-
 
                     <Separator Margin="0,20"/>
 
+                    <TextBlock Text="Frame Number"
+                               Foreground="White"/>
 
-                    <TextBlock Text="Image Information"
-                               Foreground="White"
-                               FontSize="20"
-                               FontWeight="Bold"/>
-
-
-                    <TextBlock Text="Width : --"
-                               Foreground="White"
-                               Margin="0,15"/>
-
-
-                    <TextBlock Text="Height : --"
-                               Foreground="White"
+                    <TextBlock Text="{Binding FrameNumber}"
+                               Foreground="#00E5FF"
+                               FontSize="30"
+                               FontWeight="Bold"
                                Margin="0,10"/>
-
-
-                    <TextBlock Text="Frames : --"
-                               Foreground="White"
-                               Margin="0,10"/>
-
 
                 </StackPanel>
 
             </Border>
 
-
         </Grid>
-
-
 
         <!-- FOOTER -->
 
         <Border Grid.Row="2"
-        Background="#252B33"
-        CornerRadius="8">
+                Background="#252B33"
+                CornerRadius="8">
 
             <StackPanel Orientation="Horizontal"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
 
                 <Button Content="Connect"
-                Width="130"
-                Height="45"
-                Margin="5"
-                Command="{Binding ConnectCommand}"/>
-
+                        Width="130"
+                        Height="45"
+                        Margin="5"
+                        Command="{Binding ConnectCommand}"/>
 
                 <Button Content="Capture"
-                Width="130"
-                Height="45"
-                Margin="5"
-                Command="{Binding CaptureCommand}"/>
-
+                        Width="130"
+                        Height="45"
+                        Margin="5"
+                        Command="{Binding CaptureCommand}"/>
 
                 <Button Content="Save"
-                Width="130"
-                Height="45"
-                Margin="5"/>
-
+                        Width="130"
+                        Height="45"
+                        Margin="5"/>
 
                 <Button Content="Retake"
-                Width="130"
-                Height="45"
-                Margin="5"/>
-
+                        Width="130"
+                        Height="45"
+                        Margin="5"/>
 
                 <Button Content="Window / Level"
-                Width="150"
-                Height="45"
-                Margin="5"/>
-
+                        Width="150"
+                        Height="45"
+                        Margin="5"/>
 
                 <Button Content="Zoom"
-                Width="130"
-                Height="45"
-                Margin="5"/>
-
+                        Width="130"
+                        Height="45"
+                        Margin="5"/>
 
             </StackPanel>
 

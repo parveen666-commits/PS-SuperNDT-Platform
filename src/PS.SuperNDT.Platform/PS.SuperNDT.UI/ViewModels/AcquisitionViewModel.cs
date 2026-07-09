@@ -2,12 +2,15 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using PS.SuperNDT.UI.Commands;
+using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
 namespace PS.SuperNDT.UI.ViewModels;
 
 public sealed class AcquisitionViewModel : INotifyPropertyChanged
 {
+    private readonly ImageService _imageService = new();
+
     private string _detectorStatus = "Offline";
     private string _connectionStatus = "Disconnected";
     private string _currentJob = "No Active Job";
@@ -17,11 +20,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
     private double _ma = 5;
     private double _exposureTime = 2;
 
-
     public RelayCommand ConnectCommand { get; }
 
     public RelayCommand CaptureCommand { get; }
-
 
     public string DetectorStatus
     {
@@ -33,7 +34,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
-
     public string ConnectionStatus
     {
         get => _connectionStatus;
@@ -43,7 +43,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
 
     public string CurrentJob
     {
@@ -55,7 +54,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
-
     public int FrameNumber
     {
         get => _frameNumber;
@@ -65,7 +63,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
 
     public double KV
     {
@@ -77,7 +74,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
-
     public double MA
     {
         get => _ma;
@@ -87,7 +83,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
 
     public double ExposureTime
     {
@@ -99,8 +94,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
-
-
     public AcquisitionViewModel()
     {
         UpdateCurrentJob();
@@ -110,25 +103,19 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             UpdateCurrentJob();
         };
 
+        ConnectCommand =
+            new RelayCommand(_ => ConnectDetector());
 
-        ConnectCommand = new RelayCommand(
-            _ => ConnectDetector());
-
-
-        CaptureCommand = new RelayCommand(
-            _ => CaptureImage());
+        CaptureCommand =
+            new RelayCommand(_ => CaptureImage());
     }
-
-
 
     private void UpdateCurrentJob()
     {
         if (CurrentJobService.Instance.CurrentJob != null)
         {
             CurrentJob =
-                CurrentJobService.Instance
-                .CurrentJob!
-                .JobNumber;
+                CurrentJobService.Instance.CurrentJob!.JobNumber;
         }
         else
         {
@@ -136,30 +123,51 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
-
-
     private void ConnectDetector()
     {
         DetectorStatus = "Ready";
         ConnectionStatus = "Connected";
     }
 
-
-
     private void CaptureImage()
     {
+        var job = CurrentJobService.Instance.CurrentJob;
+
+        if (job == null)
+            return;
+
         FrameNumber++;
 
-        // Capture workflow will connect here:
-        // Detector SDK
-        // Image acquisition
-        // Database save
+        var image = new ImageRecordModel
+        {
+            JobId = job.Id,
+            JobNumber = job.JobNumber,
+            Operator = job.Operator,
+
+            FrameNumber = FrameNumber,
+
+            FileName = $"IMG_{FrameNumber:0000}.ndt",
+            FilePath = string.Empty,
+
+            DetectorName = "Virtual Detector",
+
+            KV = KV,
+            MA = MA,
+            ExposureTime = ExposureTime,
+
+            ImageWidth = 2048,
+            ImageHeight = 2048,
+            BitDepth = 16,
+
+            CapturedOn = DateTime.Now
+        };
+
+        _imageService.Save(image);
+
+        ImageViewerService.Instance.OpenImage(image);
     }
 
-
-
     public event PropertyChangedEventHandler? PropertyChanged;
-
 
     private void OnPropertyChanged(
         [CallerMemberName] string propertyName = "")
