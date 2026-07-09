@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using PS.SuperNDT.UI.Database;
@@ -10,6 +11,8 @@ public sealed class JobService
 {
     public void Save(JobModel job)
     {
+        ArgumentNullException.ThrowIfNull(job);
+
         using var db = new SuperNDTDbContext();
 
         var existing = db.Jobs.FirstOrDefault(x => x.Id == job.Id);
@@ -35,13 +38,39 @@ public sealed class JobService
                  .FirstOrDefault(x => x.Id == id);
     }
 
-    public IQueryable<JobModel> GetAll()
+    public List<JobModel> GetAll()
     {
-        var db = new SuperNDTDbContext();
+        using var db = new SuperNDTDbContext();
 
         return db.Jobs
                  .AsNoTracking()
-                 .OrderByDescending(x => x.CreatedOn);
+                 .OrderByDescending(x => x.CreatedOn)
+                 .ToList();
+    }
+
+    public List<JobModel> GetOpenJobs()
+    {
+        using var db = new SuperNDTDbContext();
+
+        return db.Jobs
+                 .AsNoTracking()
+                 .Where(x => !x.IsClosed)
+                 .OrderByDescending(x => x.CreatedOn)
+                 .ToList();
+    }
+
+    public void CloseJob(Guid id)
+    {
+        using var db = new SuperNDTDbContext();
+
+        var job = db.Jobs.FirstOrDefault(x => x.Id == id);
+
+        if (job == null)
+            return;
+
+        job.IsClosed = true;
+
+        db.SaveChanges();
     }
 
     public void Delete(Guid id)

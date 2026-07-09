@@ -10,6 +10,8 @@ public sealed class CurrentJobService
 
     public static CurrentJobService Instance => _instance.Value;
 
+    private readonly JobService _jobService = new();
+
     private CurrentJobService()
     {
     }
@@ -22,13 +24,51 @@ public sealed class CurrentJobService
 
     public void SetCurrentJob(JobModel job)
     {
+        ArgumentNullException.ThrowIfNull(job);
+
         CurrentJob = job;
-        CurrentJobChanged?.Invoke(this, EventArgs.Empty);
+
+        CurrentJobChanged?.Invoke(
+            this,
+            EventArgs.Empty);
+    }
+
+    public void OpenJob(JobModel job)
+    {
+        ArgumentNullException.ThrowIfNull(job);
+
+        CurrentJob = job;
+
+        CurrentJobChanged?.Invoke(
+            this,
+            EventArgs.Empty);
     }
 
     public void CloseCurrentJob()
     {
+        if (CurrentJob == null)
+            return;
+
+        _jobService.CloseJob(CurrentJob.Id);
+
+        CurrentJob.IsClosed = true;
+
+        CurrentJobChanged?.Invoke(
+            this,
+            EventArgs.Empty);
+    }
+
+    public void ClearCurrentJob()
+    {
         CurrentJob = null;
-        CurrentJobChanged?.Invoke(this, EventArgs.Empty);
+
+        CurrentJobChanged?.Invoke(
+            this,
+            EventArgs.Empty);
+    }
+
+    public string GetCurrentJobNumber()
+    {
+        return CurrentJob?.JobNumber ?? "No Active Job";
     }
 }

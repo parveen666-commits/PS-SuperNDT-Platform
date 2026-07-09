@@ -9,6 +9,7 @@ namespace PS.SuperNDT.UI.ViewModels;
 public sealed class DashboardViewModel : INotifyPropertyChanged
 {
     private readonly DispatcherTimer _timer;
+    private readonly ImageService _imageService = new();
 
     private string _currentTime = "";
     private string _detectorStatus = "Ready";
@@ -18,6 +19,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
     private int _totalShots;
     private int _rejectCount;
     private double _storagePercent;
+
 
     public string CurrentTime
     {
@@ -29,6 +31,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         }
     }
 
+
     public string DetectorStatus
     {
         get => _detectorStatus;
@@ -38,6 +41,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
 
     public string PLCStatus
     {
@@ -49,6 +53,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         }
     }
 
+
     public string CurrentRecipe
     {
         get => _currentRecipe;
@@ -58,6 +63,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
 
     public string CurrentJob
     {
@@ -69,6 +75,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         }
     }
 
+
     public int TotalShots
     {
         get => _totalShots;
@@ -78,6 +85,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
 
     public int RejectCount
     {
@@ -89,6 +97,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         }
     }
 
+
     public double StoragePercent
     {
         get => _storagePercent;
@@ -99,38 +108,49 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         }
     }
 
+
     public DashboardViewModel()
     {
-        TotalShots = 0;
-        RejectCount = 0;
         StoragePercent = 35;
 
         UpdateCurrentJob();
+        UpdateShotCount();
 
         CurrentJobService.Instance.CurrentJobChanged += (_, _) =>
         {
             UpdateCurrentJob();
+            UpdateShotCount();
         };
+
 
         _timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1)
         };
 
-        _timer.Tick += (s, e) =>
+
+        _timer.Tick += (_, _) =>
         {
-            CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
+            CurrentTime =
+                DateTime.Now.ToString(
+                    "dd-MMM-yyyy HH:mm:ss");
+
+            UpdateShotCount();
         };
+
 
         _timer.Start();
     }
+
 
     private void UpdateCurrentJob()
     {
         if (CurrentJobService.Instance.HasCurrentJob)
         {
             CurrentJob =
-                CurrentJobService.Instance.CurrentJob!.JobNumber;
+                CurrentJobService.Instance
+                .CurrentJob!
+                .JobNumber;
         }
         else
         {
@@ -138,7 +158,25 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         }
     }
 
+
+    private void UpdateShotCount()
+    {
+        var job =
+            CurrentJobService.Instance.CurrentJob;
+
+        if (job == null)
+        {
+            TotalShots = 0;
+            return;
+        }
+
+        TotalShots =
+            _imageService.GetImageCount(job.Id);
+    }
+
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
 
     private void OnPropertyChanged(
         [CallerMemberName] string propertyName = "")

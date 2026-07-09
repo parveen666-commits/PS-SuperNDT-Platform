@@ -12,6 +12,8 @@ namespace PS.SuperNDT.UI.ViewModels;
 
 public class ShellViewModel : INotifyPropertyChanged
 {
+    private readonly DispatcherTimer _timer;
+
     public ObservableCollection<NavigationItem> MenuItems { get; }
 
     public RelayCommand NavigateCommand { get; }
@@ -23,18 +25,24 @@ public class ShellViewModel : INotifyPropertyChanged
         get => _currentPage;
         set
         {
+            if (_currentPage == value)
+                return;
+
             _currentPage = value;
             OnPropertyChanged();
         }
     }
 
-    private string _currentTime = "";
+    private string _currentTime = string.Empty;
 
     public string CurrentTime
     {
         get => _currentTime;
         set
         {
+            if (_currentTime == value)
+                return;
+
             _currentTime = value;
             OnPropertyChanged();
         }
@@ -42,61 +50,62 @@ public class ShellViewModel : INotifyPropertyChanged
 
     public ShellViewModel()
     {
-        MenuItems = new ObservableCollection<NavigationItem>()
+        MenuItems = new ObservableCollection<NavigationItem>
         {
-            new NavigationItem()
+            new()
             {
                 Title = "Dashboard",
                 ViewType = typeof(DashboardView)
             },
 
-            new NavigationItem()
+            new()
             {
                 Title = "Acquisition",
                 ViewType = typeof(AcquisitionView)
             },
 
-            new NavigationItem()
+            new()
             {
                 Title = "Review",
                 ViewType = typeof(ReviewView)
             },
 
-            new NavigationItem()
+            new()
             {
                 Title = "Calculator",
                 ViewType = typeof(CalculatorView)
             },
 
-            new NavigationItem()
+            new()
             {
                 Title = "Reports",
                 ViewType = typeof(ReportsView)
             },
 
-            new NavigationItem()
+            new()
             {
                 Title = "Settings",
                 ViewType = typeof(SettingsView)
             }
         };
 
-        NavigateCommand = new RelayCommand(
-            Navigate);
+        NavigateCommand = new RelayCommand(Navigate);
 
-        DispatcherTimer timer = new DispatcherTimer();
+        CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
 
-        timer.Interval = TimeSpan.FromSeconds(1);
-
-        timer.Tick += (s, e) =>
+        _timer = new DispatcherTimer
         {
-            CurrentTime = DateTime.Now.ToString(
-                "dd-MMM-yyyy HH:mm:ss");
+            Interval = TimeSpan.FromSeconds(1)
         };
 
-        timer.Start();
+        _timer.Tick += OnTimerTick;
+        _timer.Start();
     }
 
+    private void OnTimerTick(object? sender, EventArgs e)
+    {
+        CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
+    }
 
     private void Navigate(object? parameter)
     {
@@ -112,9 +121,7 @@ public class ShellViewModel : INotifyPropertyChanged
         }
     }
 
-
     public event PropertyChangedEventHandler? PropertyChanged;
-
 
     private void OnPropertyChanged(
         [CallerMemberName] string name = "")

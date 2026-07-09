@@ -1,246 +1,250 @@
 ﻿<UserControl x:Class="PS.SuperNDT.UI.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#1F232A">
 
-    <Grid Background="#1F232A"
-      HorizontalAlignment="Stretch"
-      VerticalAlignment="Stretch">
+    <Grid>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"/>
-            <RowDefinition/>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
 
-        <Border Background="#252B33">
+        <!-- HEADER -->
 
-            <Grid Margin="20,0">
+        <Border Grid.Row="0"
+                Background="#252B33">
+
+            <Grid Margin="25,0">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
-                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="300"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock
-                    Text="Dashboard"
-                    FontSize="28"
-                    FontWeight="Bold"
-                    Foreground="White"
-                    VerticalAlignment="Center"/>
 
-                <TextBlock
-                    Grid.Column="1"
-                    Text="{Binding CurrentTime}"
-                    FontSize="18"
-                    Foreground="White"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Right"/>
+                <TextBlock Text="Dashboard"
+                           FontSize="32"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding CurrentTime}"
+                           FontSize="20"
+                           Foreground="White"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"/>
 
             </Grid>
 
         </Border>
 
-        <!-- Cards -->
 
-        <UniformGrid
-            Grid.Row="1"
-            Margin="20"
-            Rows="2"
-            Columns="4">
+        <!-- KPI AREA -->
 
-            <!-- Detector -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
+            <UniformGrid Columns="4"
+                         Margin="20">
 
-                <StackPanel Margin="20">
 
-                    <TextBlock
-                        Text="Detector"
-                        FontSize="18"
-                        Foreground="White"/>
+                <!-- Detector -->
 
-                    <TextBlock
-                        Margin="0,20,0,0"
-                        Text="{Binding DetectorStatus}"
-                        FontSize="26"
-                        FontWeight="Bold"
-                        Foreground="Lime"/>
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
 
-                </StackPanel>
+                    <StackPanel Margin="25">
 
-            </Border>
+                        <TextBlock Text="Detector"
+                                   Foreground="White"
+                                   FontSize="20"/>
 
-            <!-- PLC -->
+                        <TextBlock Text="{Binding DetectorStatus}"
+                                   Margin="0,20,0,0"
+                                   FontSize="30"
+                                   FontWeight="Bold"
+                                   Foreground="Lime"/>
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
+                    </StackPanel>
 
-                <StackPanel Margin="20">
+                </Border>
 
-                    <TextBlock
-                        Text="PLC"
-                        FontSize="18"
-                        Foreground="White"/>
 
-                    <TextBlock
-                        Margin="0,20,0,0"
-                        Text="{Binding PLCStatus}"
-                        FontSize="26"
-                        FontWeight="Bold"
-                        Foreground="Orange"/>
 
-                </StackPanel>
+                <!-- PLC -->
 
-            </Border>
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
 
-            <!-- Recipe -->
+                    <StackPanel Margin="25">
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
+                        <TextBlock Text="PLC"
+                                   Foreground="White"
+                                   FontSize="20"/>
 
-                <StackPanel Margin="20">
+                        <TextBlock Text="{Binding PLCStatus}"
+                                   Margin="0,20,0,0"
+                                   FontSize="30"
+                                   FontWeight="Bold"
+                                   Foreground="Orange"/>
 
-                    <TextBlock
-                        Text="Recipe"
-                        FontSize="18"
-                        Foreground="White"/>
+                    </StackPanel>
 
-                    <TextBlock
-                        Margin="0,20,0,0"
-                        Text="{Binding CurrentRecipe}"
-                        FontSize="22"
-                        FontWeight="Bold"
-                        Foreground="White"/>
+                </Border>
 
-                </StackPanel>
 
-            </Border>
 
-            <!-- Job -->
+                <!-- Recipe -->
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
 
-                <StackPanel Margin="20">
+                    <StackPanel Margin="25">
 
-                    <TextBlock
-                        Text="Current Job"
-                        FontSize="18"
-                        Foreground="White"/>
+                        <TextBlock Text="Recipe"
+                                   Foreground="White"
+                                   FontSize="20"/>
 
-                    <TextBlock
-                        Margin="0,20,0,0"
-                        Text="{Binding CurrentJob}"
-                        FontSize="22"
-                        FontWeight="Bold"
-                        Foreground="White"/>
+                        <TextBlock Text="{Binding CurrentRecipe}"
+                                   Margin="0,20,0,0"
+                                   FontSize="28"
+                                   Foreground="White"/>
 
-                </StackPanel>
+                    </StackPanel>
 
-            </Border>
+                </Border>
 
-            <!-- Shots -->
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
 
-                <StackPanel Margin="20">
+                <!-- Job -->
 
-                    <TextBlock
-                        Text="Today's Shots"
-                        FontSize="18"
-                        Foreground="White"/>
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
 
-                    <TextBlock
-                        Margin="0,20,0,0"
-                        Text="{Binding TotalShots}"
-                        FontSize="40"
-                        FontWeight="Bold"
-                        Foreground="#00E5FF"/>
+                    <StackPanel Margin="25">
 
-                </StackPanel>
+                        <TextBlock Text="Current Job"
+                                   Foreground="White"
+                                   FontSize="20"/>
 
-            </Border>
+                        <TextBlock Text="{Binding CurrentJob}"
+                                   Margin="0,20,0,0"
+                                   FontSize="24"
+                                   Foreground="White"/>
 
-            <!-- Reject -->
+                    </StackPanel>
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
+                </Border>
 
-                <StackPanel Margin="20">
 
-                    <TextBlock
-                        Text="Reject"
-                        FontSize="18"
-                        Foreground="White"/>
 
-                    <TextBlock
-                        Margin="0,20,0,0"
-                        Text="{Binding RejectCount}"
-                        FontSize="40"
-                        FontWeight="Bold"
-                        Foreground="Red"/>
+                <!-- Shots -->
 
-                </StackPanel>
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
 
-            </Border>
+                    <StackPanel Margin="25">
 
-            <!-- Storage -->
+                        <TextBlock Text="Today's Shots"
+                                   Foreground="White"
+                                   FontSize="20"/>
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
+                        <TextBlock Text="{Binding TotalShots}"
+                                   Margin="0,20,0,0"
+                                   FontSize="45"
+                                   FontWeight="Bold"
+                                   Foreground="#00E5FF"/>
 
-                <StackPanel Margin="20">
+                    </StackPanel>
 
-                    <TextBlock
-                        Text="Storage"
-                        FontSize="18"
-                        Foreground="White"/>
+                </Border>
 
-                    <ProgressBar
-                        Height="25"
-                        Margin="0,20,0,0"
-                        Value="{Binding StoragePercent}"
-                        Maximum="100"/>
 
-                </StackPanel>
 
-            </Border>
+                <!-- Reject -->
 
-            <!-- Health -->
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
 
-            <Border Margin="10"
-                    Background="#2C313C"
-                    CornerRadius="10">
+                    <StackPanel Margin="25">
 
-                <StackPanel Margin="20">
+                        <TextBlock Text="Reject"
+                                   Foreground="White"
+                                   FontSize="20"/>
 
-                    <TextBlock
-                        Text="System Health"
-                        FontSize="18"
-                        Foreground="White"/>
+                        <TextBlock Text="{Binding RejectCount}"
+                                   Margin="0,20,0,0"
+                                   FontSize="45"
+                                   FontWeight="Bold"
+                                   Foreground="Red"/>
 
-                    <TextBlock
-                        Margin="0,20,0,0"
-                        Text="Healthy"
-                        FontSize="28"
-                        FontWeight="Bold"
-                        Foreground="Lime"/>
+                    </StackPanel>
 
-                </StackPanel>
+                </Border>
 
-            </Border>
 
-        </UniformGrid>
+
+                <!-- Storage -->
+
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
+
+                    <StackPanel Margin="25">
+
+                        <TextBlock Text="Storage"
+                                   Foreground="White"
+                                   FontSize="20"/>
+
+                        <ProgressBar Height="30"
+                                     Margin="0,25,0,0"
+                                     Value="{Binding StoragePercent}"
+                                     Maximum="100"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+
+                <!-- Health -->
+
+                <Border Margin="10"
+                        Background="#2C313C"
+                        CornerRadius="12">
+
+                    <StackPanel Margin="25">
+
+                        <TextBlock Text="System Health"
+                                   Foreground="White"
+                                   FontSize="20"/>
+
+                        <TextBlock Text="Healthy"
+                                   Margin="0,20,0,0"
+                                   FontSize="32"
+                                   FontWeight="Bold"
+                                   Foreground="Lime"/>
+
+                    </StackPanel>
+
+                </Border>
+
+
+            </UniformGrid>
+
+        </ScrollViewer>
+
 
     </Grid>
 

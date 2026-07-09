@@ -1,58 +1,27 @@
-﻿using PS.SuperNDT.UI.Commands;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
+using PS.SuperNDT.UI.Commands;
+using PS.SuperNDT.UI.Services;
 
 namespace PS.SuperNDT.UI.ViewModels;
 
 public sealed class AcquisitionViewModel : INotifyPropertyChanged
 {
-    private string _jobNumber = "";
-    private string _operator = "";
-    private string _customer = "";
-    private string _partNumber = "";
+    private string _detectorStatus = "Offline";
+    private string _connectionStatus = "Disconnected";
+    private string _currentJob = "No Active Job";
 
-    private string _detectorStatus = "Disconnected";
+    private int _frameNumber;
+    private double _kv = 120;
+    private double _ma = 5;
+    private double _exposureTime = 2;
 
-    public string JobNumber
-    {
-        get => _jobNumber;
-        set
-        {
-            _jobNumber = value;
-            OnPropertyChanged();
-        }
-    }
 
-    public string Operator
-    {
-        get => _operator;
-        set
-        {
-            _operator = value;
-            OnPropertyChanged();
-        }
-    }
+    public RelayCommand ConnectCommand { get; }
 
-    public string Customer
-    {
-        get => _customer;
-        set
-        {
-            _customer = value;
-            OnPropertyChanged();
-        }
-    }
+    public RelayCommand CaptureCommand { get; }
 
-    public string PartNumber
-    {
-        get => _partNumber;
-        set
-        {
-            _partNumber = value;
-            OnPropertyChanged();
-        }
-    }
 
     public string DetectorStatus
     {
@@ -64,48 +33,133 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
-    public RelayCommand ConnectCommand { get; }
 
-    public RelayCommand CaptureCommand { get; }
+    public string ConnectionStatus
+    {
+        get => _connectionStatus;
+        set
+        {
+            _connectionStatus = value;
+            OnPropertyChanged();
+        }
+    }
 
-    public RelayCommand SaveCommand { get; }
 
-    public RelayCommand RetakeCommand { get; }
+    public string CurrentJob
+    {
+        get => _currentJob;
+        set
+        {
+            _currentJob = value;
+            OnPropertyChanged();
+        }
+    }
+
+
+    public int FrameNumber
+    {
+        get => _frameNumber;
+        set
+        {
+            _frameNumber = value;
+            OnPropertyChanged();
+        }
+    }
+
+
+    public double KV
+    {
+        get => _kv;
+        set
+        {
+            _kv = value;
+            OnPropertyChanged();
+        }
+    }
+
+
+    public double MA
+    {
+        get => _ma;
+        set
+        {
+            _ma = value;
+            OnPropertyChanged();
+        }
+    }
+
+
+    public double ExposureTime
+    {
+        get => _exposureTime;
+        set
+        {
+            _exposureTime = value;
+            OnPropertyChanged();
+        }
+    }
+
+
 
     public AcquisitionViewModel()
     {
-        ConnectCommand = new RelayCommand(_ => Connect());
+        UpdateCurrentJob();
 
-        CaptureCommand = new RelayCommand(_ => Capture());
+        CurrentJobService.Instance.CurrentJobChanged += (_, _) =>
+        {
+            UpdateCurrentJob();
+        };
 
-        SaveCommand = new RelayCommand(_ => Save());
 
-        RetakeCommand = new RelayCommand(_ => Retake());
+        ConnectCommand = new RelayCommand(
+            _ => ConnectDetector());
+
+
+        CaptureCommand = new RelayCommand(
+            _ => CaptureImage());
     }
 
-    private void Connect()
+
+
+    private void UpdateCurrentJob()
     {
-        DetectorStatus = "Connected";
-
-        MessageBox.Show("Detector Connected");
+        if (CurrentJobService.Instance.CurrentJob != null)
+        {
+            CurrentJob =
+                CurrentJobService.Instance
+                .CurrentJob!
+                .JobNumber;
+        }
+        else
+        {
+            CurrentJob = "No Active Job";
+        }
     }
 
-    private void Capture()
+
+
+    private void ConnectDetector()
     {
-        MessageBox.Show("Capture Started");
+        DetectorStatus = "Ready";
+        ConnectionStatus = "Connected";
     }
 
-    private void Save()
+
+
+    private void CaptureImage()
     {
-        MessageBox.Show("Image Saved");
+        FrameNumber++;
+
+        // Capture workflow will connect here:
+        // Detector SDK
+        // Image acquisition
+        // Database save
     }
 
-    private void Retake()
-    {
-        MessageBox.Show("Ready For Next Shot");
-    }
+
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
 
     private void OnPropertyChanged(
         [CallerMemberName] string propertyName = "")

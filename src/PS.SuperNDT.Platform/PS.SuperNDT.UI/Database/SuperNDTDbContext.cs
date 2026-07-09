@@ -7,15 +7,20 @@ public sealed class SuperNDTDbContext : DbContext
 {
     public DbSet<JobModel> Jobs => Set<JobModel>();
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public DbSet<ImageRecordModel> Images => Set<ImageRecordModel>();
+
+    protected override void OnConfiguring(
+        DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlite("Data Source=PS_SuperNDT.db");
+            optionsBuilder.UseSqlite(
+                "Data Source=PS_SuperNDT.db");
         }
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(
+        ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<JobModel>(entity =>
         {
@@ -46,6 +51,29 @@ public sealed class SuperNDTDbContext : DbContext
                   .HasMaxLength(100);
 
             entity.Property(e => e.Remark)
+                  .HasMaxLength(1000);
+        });
+
+        modelBuilder.Entity<ImageRecordModel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.JobNumber)
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.FileName)
+                  .HasMaxLength(260);
+
+            entity.Property(e => e.FilePath)
+                  .HasMaxLength(1000);
+
+            entity.Property(e => e.DetectorName)
+                  .HasMaxLength(200);
+
+            entity.Property(e => e.Operator)
+                  .HasMaxLength(100);
+
+            entity.Property(e => e.Remarks)
                   .HasMaxLength(1000);
         });
 
