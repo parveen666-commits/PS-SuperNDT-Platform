@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
@@ -11,69 +10,45 @@ public sealed class CurrentJobService
 
     public static CurrentJobService Instance => _instance.Value;
 
-    private readonly string _stateFile =
-        Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "CurrentJob.txt");
+    private JobModel? _currentJob;
+
+    public event EventHandler<JobModel?>? CurrentJobChanged;
 
     private CurrentJobService()
     {
-        RestoreCurrentJob();
     }
 
-    public JobModel? CurrentJob { get; private set; }
+    public JobModel? CurrentJob => _currentJob;
 
-    public bool HasCurrentJob => CurrentJob != null;
+    public bool HasCurrentJob => _currentJob != null;
 
-    public event EventHandler? CurrentJobChanged;
+    public bool HasActiveJob => _currentJob != null;
 
     public void SetCurrentJob(JobModel job)
     {
-        CurrentJob = job;
-
-        File.WriteAllText(
-            _stateFile,
-            job.Id.ToString());
-
-        CurrentJobChanged?.Invoke(
-            this,
-            EventArgs.Empty);
+        _currentJob = job;
+        CurrentJobChanged?.Invoke(this, _currentJob);
     }
 
     public void CloseCurrentJob()
     {
-        CurrentJob = null;
-
-        if (File.Exists(_stateFile))
+        if (_currentJob != null)
         {
-            File.Delete(_stateFile);
+            _currentJob.IsClosed = true;
         }
 
-        CurrentJobChanged?.Invoke(
-            this,
-            EventArgs.Empty);
+        _currentJob = null;
+        CurrentJobChanged?.Invoke(this, null);
     }
 
-    private void RestoreCurrentJob()
+    public void Clear()
     {
-        try
-        {
-            if (!File.Exists(_stateFile))
-                return;
+        _currentJob = null;
+        CurrentJobChanged?.Invoke(this, null);
+    }
 
-            var text =
-                File.ReadAllText(_stateFile);
-
-            if (!Guid.TryParse(text, out var jobId))
-                return;
-
-            var service = new JobService();
-
-            CurrentJob = service.Get(jobId);
-        }
-        catch
-        {
-            CurrentJob = null;
-        }
+    public string GetCurrentJobNumber()
+    {
+        return _currentJob?.JobNumber ?? string.Empty;
     }
 }

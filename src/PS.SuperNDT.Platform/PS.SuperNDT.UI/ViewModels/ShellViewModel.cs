@@ -82,11 +82,23 @@ public class ShellViewModel : INotifyPropertyChanged
                 ViewType = typeof(ReportsView)
             },
 
-            new()
-            {
-                Title = "Settings",
-                ViewType = typeof(SettingsView)
-            }
+           new()
+{
+    Title = "User Management",
+    ViewType = typeof(UserManagementView)
+},
+
+new()
+{
+    Title = "Audit Log",
+    ViewType = typeof(AuditLogView)
+},
+
+new()
+{
+    Title = "Settings",
+    ViewType = typeof(SettingsView)
+}
         };
 
         NavigateCommand = new RelayCommand(Navigate);

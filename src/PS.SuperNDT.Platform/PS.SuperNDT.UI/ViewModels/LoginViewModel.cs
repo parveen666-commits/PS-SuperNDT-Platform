@@ -1,26 +1,23 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Services;
 
 namespace PS.SuperNDT.UI.ViewModels;
 
-public sealed class LoginViewModel : INotifyPropertyChanged
+public class LoginViewModel : INotifyPropertyChanged
 {
-    private readonly UserService _userService = new();
-
     private string _username = string.Empty;
     private string _password = string.Empty;
-    private string _statusMessage = string.Empty;
-
-    public RelayCommand LoginCommand { get; }
+    private string _message = string.Empty;
 
     public string Username
     {
         get => _username;
         set
         {
+            if (_username == value)
+                return;
+
             _username = value;
             OnPropertyChanged();
         }
@@ -31,57 +28,43 @@ public sealed class LoginViewModel : INotifyPropertyChanged
         get => _password;
         set
         {
+            if (_password == value)
+                return;
+
             _password = value;
             OnPropertyChanged();
         }
     }
 
-    public string StatusMessage
+    public string Message
     {
-        get => _statusMessage;
+        get => _message;
         set
         {
-            _statusMessage = value;
+            if (_message == value)
+                return;
+
+            _message = value;
             OnPropertyChanged();
         }
     }
 
-    public LoginViewModel()
+    public bool Login()
     {
-        LoginCommand =
-            new RelayCommand(_ => Login());
-    }
-
-    private void Login()
-    {
-        var user =
-            _userService.Login(
-                Username,
-                Password);
-
-        if (user == null)
+        if (string.IsNullOrWhiteSpace(Username))
         {
-            StatusMessage = "Invalid username or password.";
-
-            MessageBox.Show(
-                "Invalid username or password.",
-                "PS SuperNDT",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-
-            return;
+            Message = "Enter Username";
+            return false;
         }
 
-        CurrentUserService.Instance.Login(user);
+        UserSessionService.Instance.Login(
+            Username,
+            Username,
+            "Administrator");
 
-        StatusMessage =
-            $"Welcome {user.FullName}";
+        Message = "Login Successful";
 
-        MessageBox.Show(
-            $"Welcome {user.FullName}",
-            "PS SuperNDT",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        return true;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

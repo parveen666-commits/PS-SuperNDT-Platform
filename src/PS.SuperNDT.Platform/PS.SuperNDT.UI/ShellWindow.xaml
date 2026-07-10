@@ -8,6 +8,46 @@
         WindowStartupLocation="CenterScreen"
         Background="#1B1D22">
 
+    <Window.Resources>
+
+        <Style TargetType="StatusBar">
+            <Setter Property="Background" Value="#252A33"/>
+            <Setter Property="Foreground" Value="#EAEAEA"/>
+            <Setter Property="BorderBrush" Value="#3A404C"/>
+            <Setter Property="BorderThickness" Value="1,1,0,0"/>
+        </Style>
+
+        <Style TargetType="StatusBarItem">
+            <Setter Property="Foreground" Value="#EAEAEA"/>
+            <Setter Property="Padding" Value="8,0"/>
+        </Style>
+
+        <Style x:Key="NavigationButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#2D3440"/>
+            <Setter Property="BorderBrush" Value="#3D4552"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#0E639C"/>
+                </Trigger>
+
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#094771"/>
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </Window.Resources>
+
     <DockPanel LastChildFill="True">
 
         <!-- HEADER -->
@@ -41,7 +81,7 @@
 
         </Border>
 
-        <!-- MAIN MENU -->
+        <!-- TOP MENU -->
 
         <controls:MainMenu DockPanel.Dock="Top"/>
 
@@ -67,10 +107,12 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- LEFT MENU -->
+            <!-- LEFT NAVIGATION -->
 
             <Border Grid.Column="0"
-                    Background="#252830">
+                    Background="#252830"
+                    BorderBrush="#353B45"
+                    BorderThickness="0,0,1,0">
 
                 <ItemsControl ItemsSource="{Binding MenuItems}">
 
@@ -78,8 +120,7 @@
 
                         <DataTemplate>
 
-                            <Button Height="45"
-                                    Margin="5"
+                            <Button Style="{StaticResource NavigationButtonStyle}"
                                     Content="{Binding Title}"
                                     Command="{Binding DataContext.NavigateCommand,
                                                       RelativeSource={RelativeSource AncestorType=Window}}"

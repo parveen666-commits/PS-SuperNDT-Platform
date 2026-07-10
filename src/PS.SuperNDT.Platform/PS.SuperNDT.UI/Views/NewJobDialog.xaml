@@ -1,0 +1,165 @@
+﻿<Window x:Class="PS.SuperNDT.UI.Views.NewJobDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="New Job"
+        Height="650"
+        Width="900"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#1F232A">
+
+    <Grid Margin="15">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Create New Job"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   Margin="0,0,0,15"/>
+
+        <Grid Grid.Row="1">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="45"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Job Number"/>
+
+            <TextBox Grid.Row="0"
+                     Grid.Column="1"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="0"
+                       Grid.Column="2"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Customer"/>
+
+            <TextBox Grid.Row="0"
+                     Grid.Column="3"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="1"
+                       Grid.Column="0"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Project"/>
+
+            <TextBox Grid.Row="1"
+                     Grid.Column="1"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="1"
+                       Grid.Column="2"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Component"/>
+
+            <TextBox Grid.Row="1"
+                     Grid.Column="3"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="2"
+                       Grid.Column="0"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Weld Number"/>
+
+            <TextBox Grid.Row="2"
+                     Grid.Column="1"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="2"
+                       Grid.Column="2"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Procedure"/>
+
+            <TextBox Grid.Row="2"
+                     Grid.Column="3"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="3"
+                       Grid.Column="0"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Material"/>
+
+            <TextBox Grid.Row="3"
+                     Grid.Column="1"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="3"
+                       Grid.Column="2"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Operator"/>
+
+            <TextBox Grid.Row="3"
+                     Grid.Column="3"
+                     Margin="5"/>
+
+            <TextBlock Grid.Row="4"
+                       Grid.Column="0"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Date"/>
+
+            <DatePicker Grid.Row="4"
+                        Grid.Column="1"
+                        Margin="5"/>
+
+            <TextBlock Grid.Row="5"
+                       Grid.Column="0"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Text="Remark"/>
+
+            <TextBox Grid.Row="5"
+                     Grid.Column="1"
+                     Grid.ColumnSpan="3"
+                     Margin="5"/>
+
+        </Grid>
+
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,15,0,0">
+
+            <Button Content="Create Job"
+                    Width="140"
+                    Height="40"
+                    Margin="0,0,10,0"/>
+
+            <Button Content="Cancel"
+                    Width="140"
+                    Height="40"/>
+
+        </StackPanel>
+
+    </Grid>
+
+</Window>

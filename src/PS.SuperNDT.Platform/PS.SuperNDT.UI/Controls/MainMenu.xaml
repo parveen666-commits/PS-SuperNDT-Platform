@@ -4,108 +4,153 @@
              Height="30"
              Background="#252B33">
 
-    <Menu Background="#252B33"
-          Foreground="White"
-          FontSize="14">
+    <UserControl.Resources>
 
-        <!-- File -->
+        <SolidColorBrush x:Key="MenuBackgroundBrush" Color="#252B33"/>
+        <SolidColorBrush x:Key="MenuForegroundBrush" Color="#EAEAEA"/>
+        <SolidColorBrush x:Key="MenuHoverBrush" Color="#0E639C"/>
+        <SolidColorBrush x:Key="MenuBorderBrush" Color="#3A404C"/>
+        <SolidColorBrush x:Key="SubMenuBackgroundBrush" Color="#2B313C"/>
 
-        <MenuItem Header="_File">
+        <Style TargetType="{x:Type Menu}">
+            <Setter Property="Background" Value="{StaticResource MenuBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource MenuForegroundBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
 
-            <MenuItem Header="_New Job"
-                      Name="NewJobMenuItem"/>
+        <Style TargetType="{x:Type Separator}">
+            <Setter Property="Background" Value="#3F4653"/>
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
 
-            <MenuItem Header="_Open Job"
-                      Name="OpenJobMenuItem"/>
+        <Style TargetType="{x:Type MenuItem}">
+            <Setter Property="Foreground" Value="{StaticResource MenuForegroundBrush}"/>
+            <Setter Property="Background" Value="{StaticResource MenuBackgroundBrush}"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="13"/>
 
-            <Separator/>
+            <Style.Triggers>
 
-            <MenuItem Header="_Save Job"
-                      Name="SaveJobMenuItem"/>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="{StaticResource MenuHoverBrush}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
 
-            <MenuItem Header="Save _As"
-                      Name="SaveAsMenuItem"/>
+            </Style.Triggers>
+        </Style>
 
-            <Separator/>
+        <Style x:Key="SubMenuItemStyle"
+               TargetType="{x:Type MenuItem}"
+               BasedOn="{StaticResource {x:Type MenuItem}}">
+            <Setter Property="Background" Value="{StaticResource SubMenuBackgroundBrush}"/>
+        </Style>
 
-            <MenuItem Header="_Close Job"
-                      Name="CloseJobMenuItem"/>
+    </UserControl.Resources>
 
-            <Separator/>
+    <Border Background="#252B33"
+            BorderBrush="#3A404C"
+            BorderThickness="0,0,0,1">
 
-            <MenuItem Header="E_xit"
-                      Name="ExitMenuItem"/>
+        <Menu Background="#252B33"
+              Foreground="White"
+              FontSize="14">
 
-        </MenuItem>
+            <MenuItem Header="_File">
 
-        <!-- View -->
+                <MenuItem Header="_New Job"
+                          Name="NewJobMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-        <MenuItem Header="_View">
+                <MenuItem Header="_Open Job"
+                          Name="OpenJobMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Dashboard"/>
+                <Separator/>
 
-            <MenuItem Header="Acquisition"/>
+                <MenuItem Header="_Save Job"
+                          Name="SaveJobMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Review"/>
+                <MenuItem Header="Save _As"
+                          Name="SaveAsMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Calculator"/>
+                <Separator/>
 
-            <MenuItem Header="Reports"/>
+                <MenuItem Header="_Close Job"
+                          Name="CloseJobMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Settings"/>
+                <Separator/>
 
-        </MenuItem>
+                <MenuItem Header="E_xit"
+                          Name="ExitMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-        <!-- Detector -->
+            </MenuItem>
 
-        <MenuItem Header="_Detector">
+            <MenuItem Header="_View">
 
-            <MenuItem Header="Connect"/>
+                <MenuItem Header="Dashboard" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Acquisition" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Review" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Calculator" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Reports" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Settings" Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Disconnect"/>
+            </MenuItem>
 
-            <Separator/>
+            <MenuItem Header="_Detector">
 
-            <MenuItem Header="Detector Settings"/>
+                <MenuItem Header="Connect" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Disconnect" Style="{StaticResource SubMenuItemStyle}"/>
 
-        </MenuItem>
+                <Separator/>
 
-        <!-- PLC -->
+                <MenuItem Header="Detector Settings"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-        <MenuItem Header="_PLC">
+            </MenuItem>
 
-            <MenuItem Header="Connect"/>
+            <MenuItem Header="_PLC">
 
-            <MenuItem Header="Disconnect"/>
+                <MenuItem Header="Connect" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Disconnect" Style="{StaticResource SubMenuItemStyle}"/>
 
-            <Separator/>
+                <Separator/>
 
-            <MenuItem Header="PLC Settings"/>
+                <MenuItem Header="PLC Settings"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-        </MenuItem>
+            </MenuItem>
 
-        <!-- Tools -->
+            <MenuItem Header="_Tools">
 
-        <MenuItem Header="_Tools">
+                <MenuItem Header="Exposure Calculator"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Exposure Calculator"/>
+                <MenuItem Header="Image Processing"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Image Processing"/>
+                <MenuItem Header="Calibration"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="Calibration"/>
+            </MenuItem>
 
-        </MenuItem>
+            <MenuItem Header="_Help">
 
-        <!-- Help -->
+                <MenuItem Header="User Manual"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-        <MenuItem Header="_Help">
+                <MenuItem Header="About PS SuperNDT"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
-            <MenuItem Header="User Manual"/>
+            </MenuItem>
 
-            <MenuItem Header="About PS SuperNDT"/>
+        </Menu>
 
-        </MenuItem>
-
-    </Menu>
+    </Border>
 
 </UserControl>
