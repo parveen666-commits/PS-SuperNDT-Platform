@@ -15,7 +15,8 @@ public sealed class JobService
 
         using var db = new SuperNDTDbContext();
 
-        var existing = db.Jobs.FirstOrDefault(x => x.Id == job.Id);
+        var existing = db.Jobs
+                         .FirstOrDefault(x => x.Id == job.Id);
 
         if (existing == null)
         {
@@ -23,11 +24,39 @@ public sealed class JobService
         }
         else
         {
-            db.Entry(existing).CurrentValues.SetValues(job);
+            db.Entry(existing)
+              .CurrentValues
+              .SetValues(job);
         }
 
         db.SaveChanges();
     }
+
+
+    public void Update(JobModel job)
+    {
+        ArgumentNullException.ThrowIfNull(job);
+
+        using var db = new SuperNDTDbContext();
+
+        var existing = db.Jobs
+                         .FirstOrDefault(x => x.Id == job.Id);
+
+        if (existing == null)
+            return;
+
+        existing.Customer = job.Customer;
+        existing.Project = job.Project;
+        existing.Component = job.Component;
+        existing.WeldNumber = job.WeldNumber;
+        existing.Operator = job.Operator;
+        existing.Procedure = job.Procedure;
+        existing.Material = job.Material;
+        existing.Remark = job.Remark;
+
+        db.SaveChanges();
+    }
+
 
     public JobModel? Get(Guid id)
     {
@@ -38,6 +67,7 @@ public sealed class JobService
                  .FirstOrDefault(x => x.Id == id);
     }
 
+
     public JobModel? GetByJobNumber(string jobNumber)
     {
         using var db = new SuperNDTDbContext();
@@ -46,6 +76,7 @@ public sealed class JobService
                  .AsNoTracking()
                  .FirstOrDefault(x => x.JobNumber == jobNumber);
     }
+
 
     public List<JobModel> GetAll()
     {
@@ -57,6 +88,7 @@ public sealed class JobService
                  .ToList();
     }
 
+
     public List<JobModel> GetOpenJobs()
     {
         using var db = new SuperNDTDbContext();
@@ -67,6 +99,7 @@ public sealed class JobService
                  .OrderByDescending(x => x.CreatedOn)
                  .ToList();
     }
+
 
     public List<JobModel> Search(string text)
     {
@@ -86,11 +119,13 @@ public sealed class JobService
                  .ToList();
     }
 
+
     public void CloseJob(Guid id)
     {
         using var db = new SuperNDTDbContext();
 
-        var job = db.Jobs.FirstOrDefault(x => x.Id == id);
+        var job = db.Jobs
+                    .FirstOrDefault(x => x.Id == id);
 
         if (job == null)
             return;
@@ -100,11 +135,13 @@ public sealed class JobService
         db.SaveChanges();
     }
 
+
     public void Delete(Guid id)
     {
         using var db = new SuperNDTDbContext();
 
-        var job = db.Jobs.FirstOrDefault(x => x.Id == id);
+        var job = db.Jobs
+                    .FirstOrDefault(x => x.Id == id);
 
         if (job == null)
             return;
