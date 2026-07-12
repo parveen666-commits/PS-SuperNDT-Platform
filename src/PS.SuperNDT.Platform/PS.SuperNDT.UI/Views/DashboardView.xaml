@@ -48,6 +48,21 @@
                         Background="#252B33"
                         CornerRadius="8">
                     <StackPanel Margin="20">
+                        <TextBlock Text="Customer"
+                                   Foreground="White"
+                                   FontSize="18"/>
+                        <TextBlock Text="{Binding Customer}"
+                                   Foreground="#00E5FF"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Margin="0,15,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="8"
+                        Background="#252B33"
+                        CornerRadius="8">
+                    <StackPanel Margin="20">
                         <TextBlock Text="Total Images"
                                    Foreground="White"
                                    FontSize="18"/>

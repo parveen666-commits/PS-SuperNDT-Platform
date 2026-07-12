@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PS.SuperNDT.UI.Models;
 
@@ -18,17 +19,45 @@ public sealed class OpenJobService
         return _jobService.GetAll();
     }
 
-    public JobModel? GetByJobNumber(string jobNumber)
+    public IReadOnlyList<JobModel> Search(string text)
     {
-        return _jobService
-            .GetAll()
-            .FirstOrDefault(x => x.JobNumber == jobNumber);
+        if (string.IsNullOrWhiteSpace(text))
+            return _jobService.GetAll();
+
+        return _jobService.Search(text);
     }
 
-    public JobModel? GetById(System.Guid id)
+    public JobModel? GetByJobNumber(string jobNumber)
     {
-        return _jobService
-            .GetAll()
-            .FirstOrDefault(x => x.Id == id);
+        return _jobService.GetByJobNumber(jobNumber);
+    }
+
+    public JobModel? GetById(Guid id)
+    {
+        return _jobService.Get(id);
+    }
+
+    public bool Open(Guid id)
+    {
+        var job = _jobService.Get(id);
+
+        if (job == null)
+            return false;
+
+        CurrentJobService.Instance.SetCurrentJob(job);
+
+        return true;
+    }
+
+    public bool Open(string jobNumber)
+    {
+        var job = _jobService.GetByJobNumber(jobNumber);
+
+        if (job == null)
+            return false;
+
+        CurrentJobService.Instance.SetCurrentJob(job);
+
+        return true;
     }
 }

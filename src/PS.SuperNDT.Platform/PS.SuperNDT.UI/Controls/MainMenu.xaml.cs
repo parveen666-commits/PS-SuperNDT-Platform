@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using PS.SuperNDT.UI.Dialogs;
 using PS.SuperNDT.UI.Services;
+using PS.SuperNDT.UI.Views;
 
 namespace PS.SuperNDT.UI.Controls;
 
@@ -21,7 +22,7 @@ public partial class MainMenu : UserControl
         object sender,
         RoutedEventArgs e)
     {
-        var dialog = new JobDialog
+        var dialog = new NewJobDialog
         {
             Owner = Window.GetWindow(this)
         };

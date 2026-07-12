@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:PS.SuperNDT.UI.Controls"
         Title="PS SuperNDT Platform"
-        Height="900"
-        Width="1600"
+        Height="800"
+        Width="1240"
         WindowStartupLocation="CenterScreen"
         Background="#1B1D22">
 

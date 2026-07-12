@@ -19,11 +19,29 @@ public partial class OpenJobDialog : Window
 
         OpenButton.Click += OpenButton_Click;
         CancelButton.Click += CancelButton_Click;
+        SearchTextBox.TextChanged += SearchTextBox_TextChanged;
     }
 
     private void OpenJobDialog_Loaded(
         object sender,
         RoutedEventArgs e)
+    {
+        LoadJobs();
+    }
+
+    private void SearchTextBox_TextChanged(
+        object sender,
+        System.Windows.Controls.TextChangedEventArgs e)
+    {
+        var text = SearchTextBox.Text?.Trim() ?? string.Empty;
+
+        JobsGrid.ItemsSource =
+            string.IsNullOrWhiteSpace(text)
+                ? _jobService.GetAll()
+                : _jobService.Search(text);
+    }
+
+    private void LoadJobs()
     {
         JobsGrid.ItemsSource =
             _jobService

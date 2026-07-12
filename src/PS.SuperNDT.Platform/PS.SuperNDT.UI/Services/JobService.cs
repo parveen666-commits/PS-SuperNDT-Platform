@@ -38,6 +38,15 @@ public sealed class JobService
                  .FirstOrDefault(x => x.Id == id);
     }
 
+    public JobModel? GetByJobNumber(string jobNumber)
+    {
+        using var db = new SuperNDTDbContext();
+
+        return db.Jobs
+                 .AsNoTracking()
+                 .FirstOrDefault(x => x.JobNumber == jobNumber);
+    }
+
     public List<JobModel> GetAll()
     {
         using var db = new SuperNDTDbContext();
@@ -55,6 +64,24 @@ public sealed class JobService
         return db.Jobs
                  .AsNoTracking()
                  .Where(x => !x.IsClosed)
+                 .OrderByDescending(x => x.CreatedOn)
+                 .ToList();
+    }
+
+    public List<JobModel> Search(string text)
+    {
+        using var db = new SuperNDTDbContext();
+
+        text ??= string.Empty;
+
+        return db.Jobs
+                 .AsNoTracking()
+                 .Where(x =>
+                     x.JobNumber.Contains(text) ||
+                     x.Customer.Contains(text) ||
+                     x.Project.Contains(text) ||
+                     x.Component.Contains(text) ||
+                     x.WeldNumber.Contains(text))
                  .OrderByDescending(x => x.CreatedOn)
                  .ToList();
     }

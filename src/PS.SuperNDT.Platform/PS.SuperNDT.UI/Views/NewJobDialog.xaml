@@ -49,7 +49,8 @@
 
             <TextBox Grid.Row="0"
                      Grid.Column="1"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding JobNumber, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="0"
                        Grid.Column="2"
@@ -59,7 +60,8 @@
 
             <TextBox Grid.Row="0"
                      Grid.Column="3"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding Customer, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="1"
                        Grid.Column="0"
@@ -69,7 +71,8 @@
 
             <TextBox Grid.Row="1"
                      Grid.Column="1"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding Project, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="1"
                        Grid.Column="2"
@@ -79,7 +82,8 @@
 
             <TextBox Grid.Row="1"
                      Grid.Column="3"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding Component, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="2"
                        Grid.Column="0"
@@ -89,7 +93,8 @@
 
             <TextBox Grid.Row="2"
                      Grid.Column="1"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding WeldNumber, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="2"
                        Grid.Column="2"
@@ -99,7 +104,8 @@
 
             <TextBox Grid.Row="2"
                      Grid.Column="3"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding Procedure, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="3"
                        Grid.Column="0"
@@ -109,7 +115,8 @@
 
             <TextBox Grid.Row="3"
                      Grid.Column="1"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding Material, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="3"
                        Grid.Column="2"
@@ -119,7 +126,8 @@
 
             <TextBox Grid.Row="3"
                      Grid.Column="3"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding Operator, UpdateSourceTrigger=PropertyChanged}"/>
 
             <TextBlock Grid.Row="4"
                        Grid.Column="0"
@@ -129,18 +137,20 @@
 
             <DatePicker Grid.Row="4"
                         Grid.Column="1"
-                        Margin="5"/>
+                        Margin="5"
+                        SelectedDate="{Binding JobDate}"/>
 
             <TextBlock Grid.Row="5"
                        Grid.Column="0"
                        Foreground="White"
                        VerticalAlignment="Center"
-                       Text="Remark"/>
+                       Text="Remarks"/>
 
             <TextBox Grid.Row="5"
                      Grid.Column="1"
                      Grid.ColumnSpan="3"
-                     Margin="5"/>
+                     Margin="5"
+                     Text="{Binding Remarks, UpdateSourceTrigger=PropertyChanged}"/>
 
         </Grid>
 
@@ -152,11 +162,13 @@
             <Button Content="Create Job"
                     Width="140"
                     Height="40"
-                    Margin="0,0,10,0"/>
+                    Margin="0,0,10,0"
+                    Click="CreateJob_Click"/>
 
             <Button Content="Cancel"
                     Width="140"
-                    Height="40"/>
+                    Height="40"
+                    Click="Cancel_Click"/>
 
         </StackPanel>
 

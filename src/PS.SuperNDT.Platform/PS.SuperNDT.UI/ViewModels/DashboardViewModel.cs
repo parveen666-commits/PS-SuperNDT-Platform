@@ -11,6 +11,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
     private readonly DispatcherTimer _timer;
 
     private string _currentJob = "No Active Job";
+    private string _customer = "-";
     private int _totalImages;
     private int _totalJobs;
     private int _openJobs;
@@ -22,6 +23,16 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         set
         {
             _currentJob = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string Customer
+    {
+        get => _customer;
+        set
+        {
+            _customer = value;
             OnPropertyChanged();
         }
     }
@@ -87,6 +98,10 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         CurrentJob =
             currentJob?.JobNumber ??
             "No Active Job";
+
+        Customer =
+            currentJob?.Customer ??
+            "-";
 
         var imageService = new ImageService();
 
