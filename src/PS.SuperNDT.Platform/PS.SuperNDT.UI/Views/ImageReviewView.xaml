@@ -1,0 +1,89 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.ImageReviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <Grid Background="#1F232A">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="10"
+                Background="#2B313A">
+            <TextBlock Text="Image Review Management"
+                       Margin="15,0"
+                       VerticalAlignment="Center"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       Foreground="White"/>
+        </Border>
+
+        <DataGrid Grid.Row="1"
+                  Margin="10"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Reviews}"
+                  SelectedItem="{Binding SelectedReview}">
+
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Image Name"
+                                    Binding="{Binding ImageName}"
+                                    Width="180"/>
+
+                <DataGridTextColumn Header="Reviewer"
+                                    Binding="{Binding Reviewer}"
+                                    Width="150"/>
+
+                <DataGridTextColumn Header="Result"
+                                    Binding="{Binding Result}"
+                                    Width="120"/>
+
+                <DataGridTextColumn Header="Defect Type"
+                                    Binding="{Binding DefectType}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="Defect Location"
+                                    Binding="{Binding DefectLocation}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="Length"
+                                    Binding="{Binding DefectLength}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Width"
+                                    Binding="{Binding DefectWidth}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Acceptance Code"
+                                    Binding="{Binding AcceptanceCode}"
+                                    Width="160"/>
+
+                <DataGridCheckBoxColumn Header="Accepted"
+                                        Binding="{Binding IsAccepted}"
+                                        Width="100"/>
+
+                <DataGridCheckBoxColumn Header="Reviewed"
+                                        Binding="{Binding IsReviewed}"
+                                        Width="100"/>
+
+                <DataGridTextColumn Header="Zoom %"
+                                    Binding="{Binding ZoomLevel}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Review Date"
+                                    Binding="{Binding ReviewDate}"
+                                    Width="180"/>
+
+            </DataGrid.Columns>
+
+        </DataGrid>
+
+    </Grid>
+
+</UserControl>

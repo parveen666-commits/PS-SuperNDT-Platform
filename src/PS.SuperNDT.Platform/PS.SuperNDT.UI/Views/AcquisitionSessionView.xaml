@@ -1,0 +1,93 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.AcquisitionSessionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <Grid Background="#1F232A">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="10"
+                Background="#2B313A">
+            <TextBlock Text="Acquisition Session Management"
+                       Margin="15,0"
+                       VerticalAlignment="Center"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       Foreground="White"/>
+        </Border>
+
+        <DataGrid Grid.Row="1"
+                  Margin="10"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Sessions}"
+                  SelectedItem="{Binding SelectedSession}">
+
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Session No"
+                                    Binding="{Binding SessionNumber}"
+                                    Width="180"/>
+
+                <DataGridTextColumn Header="Operator"
+                                    Binding="{Binding OperatorName}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="Detector"
+                                    Binding="{Binding DetectorName}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="PLC"
+                                    Binding="{Binding PlcName}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="Planned"
+                                    Binding="{Binding PlannedShots}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Completed"
+                                    Binding="{Binding CompletedShots}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Accepted"
+                                    Binding="{Binding AcceptedShots}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Rejected"
+                                    Binding="{Binding RejectedShots}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Progress %"
+                                    Binding="{Binding ProgressPercentage, StringFormat={}{0:F1}}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Status"
+                                    Binding="{Binding SessionStatus}"
+                                    Width="120"/>
+
+                <DataGridCheckBoxColumn Header="Completed"
+                                        Binding="{Binding IsCompleted}"
+                                        Width="100"/>
+
+                <DataGridTextColumn Header="Start Time"
+                                    Binding="{Binding StartTime}"
+                                    Width="180"/>
+
+                <DataGridTextColumn Header="End Time"
+                                    Binding="{Binding EndTime}"
+                                    Width="180"/>
+
+            </DataGrid.Columns>
+
+        </DataGrid>
+
+    </Grid>
+
+</UserControl>
