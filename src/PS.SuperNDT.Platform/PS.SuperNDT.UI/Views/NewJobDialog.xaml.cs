@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 using PS.SuperNDT.UI.ViewModels;
@@ -9,6 +10,8 @@ public partial class NewJobDialog : Window
 {
     private readonly JobDialogViewModel _viewModel;
 
+    public JobModel? Job { get; private set; }
+
     public NewJobDialog()
     {
         InitializeComponent();
@@ -17,24 +20,49 @@ public partial class NewJobDialog : Window
         DataContext = _viewModel;
     }
 
+    public NewJobDialog(JobModel existingJob)
+    {
+        InitializeComponent();
+
+        _viewModel = new JobDialogViewModel
+        {
+            JobNumber = existingJob.JobNumber,
+            Customer = existingJob.Customer,
+            Project = existingJob.Project,
+            Component = existingJob.Component,
+            WeldNumber = existingJob.WeldNumber,
+            Operator = existingJob.Operator,
+            Procedure = existingJob.Procedure,
+            Material = existingJob.Material,
+            Remarks = existingJob.Remark
+        };
+
+        Job = existingJob;
+        DataContext = _viewModel;
+    }
+
     private void CreateJob_Click(object sender, RoutedEventArgs e)
     {
-        var job = new JobModel
+        var job = Job ?? new JobModel
         {
-            JobNumber = _viewModel.JobNumber,
-            Customer = _viewModel.Customer,
-            Project = _viewModel.Project,
-            Component = _viewModel.Component,
-            WeldNumber = _viewModel.WeldNumber,
-            Operator = _viewModel.Operator,
-            Procedure = _viewModel.Procedure,
-            Material = _viewModel.Material,
-            Remark = _viewModel.Remarks,
-            CreatedOn = System.DateTime.Now,
+            Id = Guid.NewGuid(),
+            CreatedOn = DateTime.Now,
             IsClosed = false
         };
 
+        job.JobNumber = _viewModel.JobNumber;
+        job.Customer = _viewModel.Customer;
+        job.Project = _viewModel.Project;
+        job.Component = _viewModel.Component;
+        job.WeldNumber = _viewModel.WeldNumber;
+        job.Operator = _viewModel.Operator;
+        job.Procedure = _viewModel.Procedure;
+        job.Material = _viewModel.Material;
+        job.Remark = _viewModel.Remarks;
+
         CurrentJobService.Instance.SetCurrentJob(job);
+
+        Job = job;
 
         DialogResult = true;
         Close();
