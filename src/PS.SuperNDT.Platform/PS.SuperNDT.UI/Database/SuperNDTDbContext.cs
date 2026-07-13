@@ -9,6 +9,8 @@ public sealed class SuperNDTDbContext : DbContext
 
     public DbSet<ImageRecordModel> Images => Set<ImageRecordModel>();
 
+    public DbSet<CustomerModel> Customers => Set<CustomerModel>();
+
 
     protected override void OnConfiguring(
         DbContextOptionsBuilder optionsBuilder)
