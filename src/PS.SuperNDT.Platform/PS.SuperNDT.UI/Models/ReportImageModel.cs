@@ -12,9 +12,13 @@ public sealed class ReportImageModel
 
     public string FilePath { get; set; } = string.Empty;
 
+    public string ImageType { get; set; } = string.Empty;
+
     public string Description { get; set; } = string.Empty;
 
-    public DateTime CapturedOn { get; set; } = DateTime.Now;
-
     public int SequenceNumber { get; set; }
+
+    public DateTime AddedOn { get; set; } = DateTime.Now;
+
+    public string AddedBy { get; set; } = string.Empty;
 }

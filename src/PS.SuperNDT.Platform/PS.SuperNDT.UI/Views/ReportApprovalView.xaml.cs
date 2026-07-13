@@ -3,12 +3,12 @@ using PS.SuperNDT.UI.ViewModels;
 
 namespace PS.SuperNDT.UI.Views;
 
-public partial class ReportView : UserControl
+public partial class ReportApprovalView : UserControl
 {
-    public ReportView()
+    public ReportApprovalView()
     {
         InitializeComponent();
 
-        DataContext = new ReportViewModel();
+        DataContext = new ReportApprovalViewModel();
     }
 }

@@ -3,12 +3,12 @@ using PS.SuperNDT.UI.ViewModels;
 
 namespace PS.SuperNDT.UI.Views;
 
-public partial class ReportView : UserControl
+public partial class ReportEditorView : UserControl
 {
-    public ReportView()
+    public ReportEditorView()
     {
         InitializeComponent();
 
-        DataContext = new ReportViewModel();
+        DataContext = new ReportEditorViewModel();
     }
 }

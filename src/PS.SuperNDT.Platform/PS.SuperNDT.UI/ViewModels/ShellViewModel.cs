@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
@@ -12,11 +13,9 @@ namespace PS.SuperNDT.UI.ViewModels;
 
 public class ShellViewModel : INotifyPropertyChanged
 {
-    private readonly DispatcherTimer _timer;
-
     public ObservableCollection<NavigationItem> MenuItems { get; }
 
-    public RelayCommand NavigateCommand { get; }
+    public ICommand NavigateCommand { get; }
 
     private UserControl _currentPage = new DashboardView();
 
@@ -25,24 +24,18 @@ public class ShellViewModel : INotifyPropertyChanged
         get => _currentPage;
         set
         {
-            if (_currentPage == value)
-                return;
-
             _currentPage = value;
             OnPropertyChanged();
         }
     }
 
-    private string _currentTime = string.Empty;
+    private string _currentTime = "";
 
     public string CurrentTime
     {
         get => _currentTime;
         set
         {
-            if (_currentTime == value)
-                return;
-
             _currentTime = value;
             OnPropertyChanged();
         }
@@ -50,86 +43,61 @@ public class ShellViewModel : INotifyPropertyChanged
 
     public ShellViewModel()
     {
-        MenuItems = new ObservableCollection<NavigationItem>
+        MenuItems = new ObservableCollection<NavigationItem>()
         {
-            new()
-            {
-                Title = "Dashboard",
-                ViewType = typeof(DashboardView)
-            },
-
-            new()
-            {
-                Title = "Acquisition",
-                ViewType = typeof(AcquisitionView)
-            },
-
-            new()
-            {
-                Title = "Review",
-                ViewType = typeof(ReviewView)
-            },
-
-            new()
-            {
-                Title = "Calculator",
-                ViewType = typeof(CalculatorView)
-            },
-
-            new()
-            {
-                Title = "Reports",
-                ViewType = typeof(ReportsView)
-            },
-
-           new()
-{
-    Title = "User Management",
-    ViewType = typeof(UserManagementView)
-},
-
-new()
-{
-    Title = "Audit Log",
-    ViewType = typeof(AuditLogView)
-},
-
-new()
-{
-    Title = "Settings",
-    ViewType = typeof(SettingsView)
-}
+            new NavigationItem(){Title="Dashboard"},
+            new NavigationItem(){Title="Acquisition"},
+            new NavigationItem(){Title="Review"},
+            new NavigationItem(){Title="Calculator"},
+            new NavigationItem(){Title="Reports"},
+            new NavigationItem(){Title="Settings"}
         };
 
-        NavigateCommand = new RelayCommand(Navigate);
+        NavigateCommand = new RelayCommand(
+            item => Navigate(item as NavigationItem));
 
-        CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
+        DispatcherTimer timer = new DispatcherTimer();
 
-        _timer = new DispatcherTimer
+        timer.Interval = TimeSpan.FromSeconds(1);
+
+        timer.Tick += (s, e) =>
         {
-            Interval = TimeSpan.FromSeconds(1)
+            CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
         };
 
-        _timer.Tick += OnTimerTick;
-        _timer.Start();
+        timer.Start();
     }
 
-    private void OnTimerTick(object? sender, EventArgs e)
+    private void Navigate(NavigationItem? item)
     {
-        CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
-    }
-
-    private void Navigate(object? parameter)
-    {
-        if (parameter is not NavigationItem item)
+        if (item == null)
             return;
 
-        if (item.ViewType == null)
-            return;
-
-        if (Activator.CreateInstance(item.ViewType) is UserControl view)
+        switch (item.Title)
         {
-            CurrentPage = view;
+            case "Dashboard":
+                CurrentPage = new DashboardView();
+                break;
+
+            case "Acquisition":
+                CurrentPage = new AcquisitionView();
+                break;
+
+            case "Calculator":
+                CurrentPage = new CalculatorView();
+                break;
+
+            case "Reports":
+                CurrentPage = new ReportView();
+                break;
+
+            case "Review":
+                CurrentPage = new ReviewView();
+                break;
+
+            case "Settings":
+                CurrentPage = new SettingsView();
+                break;
         }
     }
 

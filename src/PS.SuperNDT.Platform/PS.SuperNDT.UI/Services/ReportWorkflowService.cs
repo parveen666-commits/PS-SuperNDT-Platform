@@ -5,48 +5,55 @@ namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportWorkflowService
 {
-    private readonly ReportRepository _reportRepository;
-    private readonly AuditLogService _auditLogService;
-    private readonly ReportService _reportService;
+    private ReportWorkflowStatusModel _workflow;
 
-    public ReportWorkflowService(
-        ReportRepository reportRepository,
-        AuditLogService auditLogService,
-        ReportService reportService)
+    public ReportWorkflowService()
     {
-        _reportRepository = reportRepository;
-        _auditLogService = auditLogService;
-        _reportService = reportService;
+        _workflow = new ReportWorkflowStatusModel();
     }
 
-    public ReportModel CreateReport(
-        JobModel job,
-        string inspector)
+    public ReportWorkflowStatusModel GetStatus()
     {
-        var report = new ReportModel
-        {
-            ReportNumber = $"RPT-{DateTime.Now:yyyyMMdd-HHmmss}",
-            JobNumber = job.JobNumber,
-            Customer = job.Customer,
-            Project = job.Project,
-            Component = job.Component,
-            WeldNumber = job.WeldNumber,
-            Inspector = inspector,
-            ReportDate = DateTime.Now,
-            Remarks = job.Remark
-        };
+        return _workflow;
+    }
 
-        report.ReportFilePath =
-            _reportService.GenerateJobReport(job);
+    public void StartReport(
+        Guid reportId,
+        string user)
+    {
+        _workflow.ReportId = reportId;
+        _workflow.Status = "Draft";
+        _workflow.CurrentStage = "Report Creation";
+        _workflow.UpdatedBy = user;
+        _workflow.UpdatedOn = DateTime.Now;
+        _workflow.IsCompleted = false;
+    }
 
-        _reportRepository.AddOrUpdate(report);
+    public void SubmitForReview(
+        string user)
+    {
+        _workflow.Status = "Under Review";
+        _workflow.CurrentStage = "Level-II Review";
+        _workflow.UpdatedBy = user;
+        _workflow.UpdatedOn = DateTime.Now;
+    }
 
-        _auditLogService.Add(
-            inspector,
-            "REPORT",
-            "REPORTING",
-            $"Report Generated : {report.ReportNumber}");
+    public void Approve(
+        string user)
+    {
+        _workflow.Status = "Approved";
+        _workflow.CurrentStage = "Level-III Approval";
+        _workflow.UpdatedBy = user;
+        _workflow.UpdatedOn = DateTime.Now;
+    }
 
-        return report;
+    public void Complete(
+        string user)
+    {
+        _workflow.Status = "Completed";
+        _workflow.CurrentStage = "Archived";
+        _workflow.UpdatedBy = user;
+        _workflow.UpdatedOn = DateTime.Now;
+        _workflow.IsCompleted = true;
     }
 }
