@@ -2,6 +2,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
@@ -31,6 +33,9 @@ public sealed class ReportViewModel : INotifyPropertyChanged
 
         Findings = new ObservableCollection<ReportFindingModel>();
         Images = new ObservableCollection<ReportImageModel>();
+
+        GenerateReportCommand = new RelayCommand(_ => GenerateReport());
+        ExportPdfCommand = new RelayCommand(_ => ExportPdf());
     }
 
     public ReportDataModel CurrentReport
@@ -46,6 +51,10 @@ public sealed class ReportViewModel : INotifyPropertyChanged
     public ObservableCollection<ReportFindingModel> Findings { get; }
 
     public ObservableCollection<ReportImageModel> Images { get; }
+
+    public ICommand GenerateReportCommand { get; }
+
+    public ICommand ExportPdfCommand { get; }
 
     public string GeneratedReport
     {
