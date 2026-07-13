@@ -1,0 +1,85 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.WeldView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <Grid Background="#1F232A">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="#2B313A"
+                Margin="10">
+            <TextBlock Text="Weld Management"
+                       Foreground="White"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="15,0"/>
+        </Border>
+
+        <DataGrid Grid.Row="1"
+                  Margin="10"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Welds}"
+                  SelectedItem="{Binding SelectedWeld}">
+
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Weld No"
+                                    Binding="{Binding WeldNumber}"
+                                    Width="140"/>
+
+                <DataGridTextColumn Header="Spool No"
+                                    Binding="{Binding SpoolNumber}"
+                                    Width="140"/>
+
+                <DataGridTextColumn Header="Line No"
+                                    Binding="{Binding LineNumber}"
+                                    Width="140"/>
+
+                <DataGridTextColumn Header="Joint Type"
+                                    Binding="{Binding JointType}"
+                                    Width="120"/>
+
+                <DataGridTextColumn Header="Material"
+                                    Binding="{Binding Material}"
+                                    Width="120"/>
+
+                <DataGridTextColumn Header="Diameter"
+                                    Binding="{Binding Diameter}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Thickness"
+                                    Binding="{Binding Thickness}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Status"
+                                    Binding="{Binding InspectionStatus}"
+                                    Width="120"/>
+
+                <DataGridTextColumn Header="Shots"
+                                    Binding="{Binding TotalShots}"
+                                    Width="80"/>
+
+                <DataGridTextColumn Header="Accepted"
+                                    Binding="{Binding AcceptedShots}"
+                                    Width="90"/>
+
+                <DataGridTextColumn Header="Rejected"
+                                    Binding="{Binding RejectedShots}"
+                                    Width="90"/>
+
+            </DataGrid.Columns>
+
+        </DataGrid>
+
+    </Grid>
+
+</UserControl>

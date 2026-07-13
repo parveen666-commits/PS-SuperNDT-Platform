@@ -1,0 +1,89 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.ExposureView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <Grid Background="#1F232A">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="10"
+                Background="#2B313A">
+            <TextBlock Text="Exposure Management"
+                       Margin="15,0"
+                       VerticalAlignment="Center"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       Foreground="White"/>
+        </Border>
+
+        <DataGrid Grid.Row="1"
+                  Margin="10"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Exposures}"
+                  SelectedItem="{Binding SelectedExposure}">
+
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Exposure No"
+                                    Binding="{Binding ExposureNumber}"
+                                    Width="180"/>
+
+                <DataGridTextColumn Header="Source"
+                                    Binding="{Binding SourceType}"
+                                    Width="120"/>
+
+                <DataGridTextColumn Header="kV"
+                                    Binding="{Binding Kvp}"
+                                    Width="80"/>
+
+                <DataGridTextColumn Header="mA"
+                                    Binding="{Binding Ma}"
+                                    Width="80"/>
+
+                <DataGridTextColumn Header="Time (Sec)"
+                                    Binding="{Binding ExposureTime}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Technique"
+                                    Binding="{Binding Technique}"
+                                    Width="140"/>
+
+                <DataGridTextColumn Header="IQI"
+                                    Binding="{Binding IQI}"
+                                    Width="120"/>
+
+                <DataGridTextColumn Header="Detector"
+                                    Binding="{Binding Detector}"
+                                    Width="160"/>
+
+                <DataGridTextColumn Header="Operator"
+                                    Binding="{Binding Operator}"
+                                    Width="150"/>
+
+                <DataGridTextColumn Header="Result"
+                                    Binding="{Binding Result}"
+                                    Width="120"/>
+
+                <DataGridCheckBoxColumn Header="Completed"
+                                        Binding="{Binding IsCompleted}"
+                                        Width="100"/>
+
+                <DataGridTextColumn Header="Date / Time"
+                                    Binding="{Binding ExposureDateTime}"
+                                    Width="180"/>
+
+            </DataGrid.Columns>
+
+        </DataGrid>
+
+    </Grid>
+
+</UserControl>
