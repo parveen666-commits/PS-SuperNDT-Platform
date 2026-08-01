@@ -13,6 +13,7 @@ public sealed class ReportViewModel : INotifyPropertyChanged
 {
     private readonly ReportGeneratorService _reportGeneratorService;
     private readonly PdfExportService _pdfExportService;
+    private readonly ReportHistoryService _reportHistoryService;
 
     private ReportDataModel _currentReport;
     private string _generatedReport = string.Empty;
@@ -22,20 +23,35 @@ public sealed class ReportViewModel : INotifyPropertyChanged
 
     public ReportViewModel()
     {
-        _reportGeneratorService = new ReportGeneratorService();
-        _pdfExportService = new PdfExportService();
+        _reportGeneratorService =
+            new ReportGeneratorService();
+
+        _pdfExportService =
+            new PdfExportService();
+
+        _reportHistoryService =
+            new ReportHistoryService();
 
         _currentReport = new ReportDataModel
         {
-            ReportNumber = $"RPT-{DateTime.Now:yyyyMMdd-HHmmss}",
-            InspectionDate = DateTime.Now
+            ReportNumber =
+                $"RPT-{DateTime.Now:yyyyMMdd-HHmmss}",
+
+            InspectionDate =
+                DateTime.Now
         };
 
-        Findings = new ObservableCollection<ReportFindingModel>();
-        Images = new ObservableCollection<ReportImageModel>();
+        Findings =
+            new ObservableCollection<ReportFindingModel>();
 
-        GenerateReportCommand = new RelayCommand(_ => GenerateReport());
-        ExportPdfCommand = new RelayCommand(_ => ExportPdf());
+        Images =
+            new ObservableCollection<ReportImageModel>();
+
+        GenerateReportCommand =
+            new RelayCommand(_ => GenerateReport());
+
+        ExportPdfCommand =
+            new RelayCommand(_ => ExportPdf());
     }
 
     public ReportDataModel CurrentReport
@@ -48,13 +64,25 @@ public sealed class ReportViewModel : INotifyPropertyChanged
         }
     }
 
-    public ObservableCollection<ReportFindingModel> Findings { get; }
+    public ObservableCollection<ReportFindingModel> Findings
+    {
+        get;
+    }
 
-    public ObservableCollection<ReportImageModel> Images { get; }
+    public ObservableCollection<ReportImageModel> Images
+    {
+        get;
+    }
 
-    public ICommand GenerateReportCommand { get; }
+    public ICommand GenerateReportCommand
+    {
+        get;
+    }
 
-    public ICommand ExportPdfCommand { get; }
+    public ICommand ExportPdfCommand
+    {
+        get;
+    }
 
     public string GeneratedReport
     {
@@ -93,7 +121,21 @@ public sealed class ReportViewModel : INotifyPropertyChanged
         }
 
         GeneratedReport =
-            _reportGeneratorService.GenerateReportSummary(CurrentReport);
+            _reportGeneratorService
+                .GenerateReportSummary(CurrentReport);
+
+        _reportHistoryService.Add(
+            new ReportHistoryModel
+            {
+                Id = Guid.NewGuid(),
+                ReportId = CurrentReport.Id,
+                ReportNumber = CurrentReport.ReportNumber,
+                Version = "1.0",
+                Action = "Generate",
+                Description = "Report generated",
+                PerformedBy = "Current User",
+                PerformedOn = DateTime.Now
+            });
     }
 
     public void ExportPdf()
@@ -107,6 +149,19 @@ public sealed class ReportViewModel : INotifyPropertyChanged
             _pdfExportService.Export(
                 GeneratedReport,
                 CurrentReport.ReportNumber);
+
+        _reportHistoryService.Add(
+            new ReportHistoryModel
+            {
+                Id = Guid.NewGuid(),
+                ReportId = CurrentReport.Id,
+                ReportNumber = CurrentReport.ReportNumber,
+                Version = "1.0",
+                Action = "Export PDF",
+                Description = ExportedFilePath,
+                PerformedBy = "Current User",
+                PerformedOn = DateTime.Now
+            });
     }
 
     private void OnPropertyChanged(

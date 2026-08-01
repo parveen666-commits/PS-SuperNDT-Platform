@@ -1,59 +1,92 @@
 ﻿using System;
+using System.Collections.Generic;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportWorkflowService
 {
-    private ReportWorkflowStatusModel _workflow;
+    private readonly List<ReportDataModel> _reports = new();
 
-    public ReportWorkflowService()
+
+    public void CreateReport(
+        ReportDataModel report,
+        string createdBy)
     {
-        _workflow = new ReportWorkflowStatusModel();
+        ArgumentNullException.ThrowIfNull(report);
+
+
+        report.Id =
+            report.Id == Guid.Empty
+                ? Guid.NewGuid()
+                : report.Id;
+
+
+        report.GeneratedDate =
+            DateTime.Now;
+
+
+        _reports.Add(report);
+
+
+        new ReportAuditService()
+            .Record(
+                report.Id,
+                report.ReportNumber,
+                "Create",
+                "Report created",
+                createdBy);
     }
 
-    public ReportWorkflowStatusModel GetStatus()
+
+    public void SubmitForApproval(
+        ReportDataModel report,
+        string submittedBy,
+        string approvalLevel,
+        string designation)
     {
-        return _workflow;
+        ArgumentNullException.ThrowIfNull(report);
+
+
+        var approval =
+            new ReportApprovalModel
+            {
+                ReportId = report.Id,
+
+                ReportNumber =
+                    report.ReportNumber,
+
+                ApprovalLevel =
+                    approvalLevel,
+
+                Designation =
+                    designation,
+
+                SubmittedBy =
+                    submittedBy,
+
+                SubmittedOn =
+                    DateTime.Now
+            };
+
+
+        new ReportApprovalService()
+            .SubmitForApproval(
+                approval);
+
+
+        new ReportAuditService()
+            .Record(
+                report.Id,
+                report.ReportNumber,
+                "Submit Approval",
+                "Report submitted for approval",
+                submittedBy);
     }
 
-    public void StartReport(
-        Guid reportId,
-        string user)
-    {
-        _workflow.ReportId = reportId;
-        _workflow.Status = "Draft";
-        _workflow.CurrentStage = "Report Creation";
-        _workflow.UpdatedBy = user;
-        _workflow.UpdatedOn = DateTime.Now;
-        _workflow.IsCompleted = false;
-    }
 
-    public void SubmitForReview(
-        string user)
+    public IReadOnlyList<ReportDataModel> GetReports()
     {
-        _workflow.Status = "Under Review";
-        _workflow.CurrentStage = "Level-II Review";
-        _workflow.UpdatedBy = user;
-        _workflow.UpdatedOn = DateTime.Now;
-    }
-
-    public void Approve(
-        string user)
-    {
-        _workflow.Status = "Approved";
-        _workflow.CurrentStage = "Level-III Approval";
-        _workflow.UpdatedBy = user;
-        _workflow.UpdatedOn = DateTime.Now;
-    }
-
-    public void Complete(
-        string user)
-    {
-        _workflow.Status = "Completed";
-        _workflow.CurrentStage = "Archived";
-        _workflow.UpdatedBy = user;
-        _workflow.UpdatedOn = DateTime.Now;
-        _workflow.IsCompleted = true;
+        return _reports;
     }
 }

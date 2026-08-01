@@ -27,8 +27,6 @@
             </Grid.ColumnDefinitions>
 
 
-            <!-- Job Details -->
-
             <Border Background="#252B33"
                     CornerRadius="8"
                     Padding="15"
@@ -86,9 +84,6 @@
             </Border>
 
 
-
-            <!-- Findings -->
-
             <Border Grid.Column="1"
                     Background="#252B33"
                     CornerRadius="8"
@@ -135,7 +130,8 @@
                     <Button Content="Generate Preview"
                             Width="160"
                             Height="35"
-                            Margin="0,20,0,0"/>
+                            Margin="0,20,0,0"
+                            Command="{Binding GeneratePreviewCommand}"/>
 
                 </StackPanel>
 

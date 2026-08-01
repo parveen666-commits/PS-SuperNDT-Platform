@@ -1,45 +1,84 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportSignatureService
 {
-    public ReportSignatureModel CreateSignature(
-        Guid reportId,
-        string signedBy,
-        string designation,
-        string signatureType)
+    private readonly List<ReportSignatureModel> _signatures = new();
+
+
+    public IReadOnlyList<ReportSignatureModel> GetAll()
     {
-        return new ReportSignatureModel
-        {
-            ReportId = reportId,
-            SignedBy = signedBy,
-            Designation = designation,
-            SignatureType = signatureType,
-            SignatureData = GenerateSignatureToken(),
-            SignedOn = DateTime.Now,
-            IsValid = true
-        };
+        return _signatures;
     }
 
-    public bool ValidateSignature(
+
+    public IEnumerable<ReportSignatureModel> GetByReport(
+        Guid reportId)
+    {
+        return _signatures
+            .Where(x => x.ReportId == reportId)
+            .OrderByDescending(x => x.SignedOn);
+    }
+
+
+    public void Add(
         ReportSignatureModel signature)
     {
-        if (signature == null)
+        ArgumentNullException.ThrowIfNull(signature);
+
+
+        if (signature.Id == Guid.Empty)
         {
-            return false;
+            signature.Id =
+                Guid.NewGuid();
         }
 
-        return signature.IsValid &&
-               !string.IsNullOrWhiteSpace(signature.SignatureData);
+
+        signature.SignedOn =
+            DateTime.Now;
+
+
+        _signatures.Add(signature);
     }
 
-    private string GenerateSignatureToken()
+
+    public void Verify(
+        Guid signatureId)
     {
-        return Guid.NewGuid()
-            .ToString()
-            .Replace("-", "")
-            .ToUpperInvariant();
+        var signature =
+            _signatures.FirstOrDefault(
+                x => x.Id == signatureId);
+
+
+        if (signature == null)
+            return;
+
+
+        signature.IsValid = true;
+    }
+
+
+    public void Remove(
+        Guid signatureId)
+    {
+        var signature =
+            _signatures.FirstOrDefault(
+                x => x.Id == signatureId);
+
+
+        if (signature != null)
+        {
+            _signatures.Remove(signature);
+        }
+    }
+
+
+    public void Clear()
+    {
+        _signatures.Clear();
     }
 }

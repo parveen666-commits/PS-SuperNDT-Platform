@@ -1,53 +1,78 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportStorageService
 {
-    private readonly string _storagePath;
+    private readonly List<ReportDataModel> _reports = new();
 
-    public ReportStorageService()
+
+    public IReadOnlyList<ReportDataModel> GetAll()
     {
-        _storagePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "PS SuperNDT",
-            "Reports");
-
-        Directory.CreateDirectory(_storagePath);
+        return _reports;
     }
 
-    public string Save(
-        ReportDataModel report,
-        string content)
+
+    public ReportDataModel? GetById(
+        Guid id)
     {
-        if (report == null)
-        {
-            throw new ArgumentNullException(nameof(report));
-        }
-
-        string fileName =
-            $"{report.ReportNumber}.txt";
-
-        string filePath =
-            Path.Combine(_storagePath, fileName);
-
-        File.WriteAllText(
-            filePath,
-            content);
-
-        return filePath;
+        return _reports.FirstOrDefault(
+            x => x.Id == id);
     }
 
-    public bool Exists(
+
+    public ReportDataModel? GetByNumber(
         string reportNumber)
     {
-        string filePath =
-            Path.Combine(
-                _storagePath,
-                $"{reportNumber}.txt");
+        return _reports.FirstOrDefault(
+            x =>
+                string.Equals(
+                    x.ReportNumber,
+                    reportNumber,
+                    StringComparison.OrdinalIgnoreCase));
+    }
 
-        return File.Exists(filePath);
+
+    public void Save(
+        ReportDataModel report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+
+
+        var existing =
+            _reports.FirstOrDefault(
+                x => x.Id == report.Id);
+
+
+        if (existing != null)
+        {
+            _reports.Remove(existing);
+        }
+
+
+        _reports.Add(report);
+    }
+
+
+    public void Delete(
+        Guid id)
+    {
+        var report =
+            GetById(id);
+
+
+        if (report != null)
+        {
+            _reports.Remove(report);
+        }
+    }
+
+
+    public void Clear()
+    {
+        _reports.Clear();
     }
 }

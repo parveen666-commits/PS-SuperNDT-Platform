@@ -8,11 +8,13 @@ namespace PS.SuperNDT.UI;
 
 public partial class App : Application
 {
-    protected override void OnStartup(StartupEventArgs e)
+    protected override void OnStartup(
+        StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        var licenseService = new LicenseService();
+        var licenseService =
+            new LicenseService();
 
         if (!licenseService.IsLicenseValid())
         {
@@ -28,22 +30,48 @@ public partial class App : Application
         }
 
         InitializeDatabase();
+
         RestoreLastOpenJob();
 
-        var shell = new ShellWindow();
+        var loginWindow = new Window
+        {
+            Title = "PS SuperNDT Login",
+            Width = 500,
+            Height = 450,
+            WindowStartupLocation =
+                WindowStartupLocation.CenterScreen,
+            ResizeMode = ResizeMode.NoResize,
+            Content = new LoginView()
+        };
+
+        bool? loginResult =
+            loginWindow.ShowDialog();
+
+        if (loginResult != true)
+        {
+            Shutdown();
+
+            return;
+        }
+
+        var shell =
+            new ShellWindow();
+
         shell.Show();
     }
 
     private static void InitializeDatabase()
     {
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
         db.Database.EnsureCreated();
     }
 
     private static void RestoreLastOpenJob()
     {
-        var jobService = new JobService();
+        var jobService =
+            new JobService();
 
         var lastOpenJob =
             jobService.GetOpenJobs()

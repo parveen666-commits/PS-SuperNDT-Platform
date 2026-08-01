@@ -1,0 +1,102 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.ReportSearchView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#1F232A">
+
+    <Grid Margin="15">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+
+        <Border Grid.Row="0"
+                Background="#252B33"
+                CornerRadius="8">
+
+            <TextBlock Text="Report Search"
+                       Margin="20,0"
+                       VerticalAlignment="Center"
+                       Foreground="White"
+                       FontSize="28"
+                       FontWeight="Bold"/>
+
+        </Border>
+
+
+        <Border Grid.Row="1"
+                Background="#252B33"
+                CornerRadius="8"
+                Margin="0,15,0,15"
+                Padding="10">
+
+            <TextBox Height="35"
+                     FontSize="15"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="Search Report Number / Customer / Component"/>
+
+        </Border>
+
+
+        <Border Grid.Row="2"
+                Background="#252B33"
+                CornerRadius="8">
+
+            <DataGrid ItemsSource="{Binding Reports}"
+                      SelectedItem="{Binding SelectedReport}"
+                      Margin="10"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True">
+
+
+                <DataGrid.Columns>
+
+
+                    <DataGridTextColumn Header="Report Number"
+                                        Binding="{Binding ReportNumber}"
+                                        Width="180"/>
+
+
+                    <DataGridTextColumn Header="Customer"
+                                        Binding="{Binding Customer}"
+                                        Width="180"/>
+
+
+                    <DataGridTextColumn Header="Project"
+                                        Binding="{Binding Project}"
+                                        Width="180"/>
+
+
+                    <DataGridTextColumn Header="Component"
+                                        Binding="{Binding Component}"
+                                        Width="180"/>
+
+
+                    <DataGridTextColumn Header="Operator"
+                                        Binding="{Binding Operator}"
+                                        Width="150"/>
+
+
+                    <DataGridTextColumn Header="Inspection Date"
+                                        Binding="{Binding InspectionDate}"
+                                        Width="180"/>
+
+
+                    <DataGridCheckBoxColumn Header="Approved"
+                                            Binding="{Binding IsApproved}"
+                                            Width="100"/>
+
+
+                </DataGrid.Columns>
+
+
+            </DataGrid>
+
+        </Border>
+
+
+    </Grid>
+
+</UserControl>

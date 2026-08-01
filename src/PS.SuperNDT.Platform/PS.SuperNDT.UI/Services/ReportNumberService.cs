@@ -6,12 +6,13 @@ public sealed class ReportNumberService
 {
     public string Generate()
     {
-        return $"PSNDT-RPT-{DateTime.Now:yyyyMMdd-HHmmss}";
+        return
+            $"PSNDT-RPT-{DateTime.Now:yyyyMMdd-HHmmss}";
     }
 
-    public string GenerateVersion(
-        int versionNumber)
+    public string GenerateVersion()
     {
-        return $"Rev-{versionNumber:00}";
+        return
+            $"V{DateTime.Now:yyyyMMddHHmm}";
     }
 }

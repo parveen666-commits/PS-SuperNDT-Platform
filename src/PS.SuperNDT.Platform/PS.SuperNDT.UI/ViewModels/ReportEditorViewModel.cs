@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
@@ -33,6 +34,14 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         Findings = new ObservableCollection<ReportFindingModel>();
 
         Images = new ObservableCollection<ReportImageModel>();
+
+        GeneratePreviewCommand = new RelayCommand(
+            ExecuteGeneratePreview);
+    }
+
+    public RelayCommand GeneratePreviewCommand
+    {
+        get;
     }
 
     public ReportDataModel Report
@@ -55,7 +64,6 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         get;
     }
 
-
     public string StatusMessage
     {
         get => _statusMessage;
@@ -65,7 +73,6 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
 
     public void AddFinding(
         ReportFindingModel finding)
@@ -78,7 +85,6 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             "Finding added successfully.";
     }
 
-
     public void AddImage(
         ReportImageModel image)
     {
@@ -89,7 +95,6 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         StatusMessage =
             "Image added successfully.";
     }
-
 
     public string GeneratePreview()
     {
@@ -108,6 +113,11 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             .GenerateReportSummary(Report);
     }
 
+    private void ExecuteGeneratePreview(
+        object? parameter)
+    {
+        GeneratePreview();
+    }
 
     private void OnPropertyChanged(
         [CallerMemberName] string? propertyName = null)

@@ -6,38 +6,43 @@ namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportExportService
 {
-    public bool Export(ReportModel report, string destinationFile)
+    private readonly ReportGeneratorService _reportGeneratorService;
+    private readonly PdfExportService _pdfExportService;
+
+    public ReportExportService()
+    {
+        _reportGeneratorService =
+            new ReportGeneratorService();
+
+        _pdfExportService =
+            new PdfExportService();
+    }
+
+
+    public string ExportReport(
+        ReportDataModel report)
     {
         ArgumentNullException.ThrowIfNull(report);
 
-        if (string.IsNullOrWhiteSpace(destinationFile))
-            throw new ArgumentException("Destination file is required.", nameof(destinationFile));
 
-        try
-        {
-            using StreamWriter writer = new(destinationFile, false);
+        string content =
+            _reportGeneratorService
+                .GenerateReportSummary(report);
 
-            writer.WriteLine("PS SuperNDT Inspection Report");
-            writer.WriteLine("----------------------------------------");
-            writer.WriteLine($"Report Number : {report.ReportNumber}");
-            writer.WriteLine($"Job Number    : {report.JobNumber}");
-            writer.WriteLine($"Customer      : {report.Customer}");
-            writer.WriteLine($"Project       : {report.Project}");
-            writer.WriteLine($"Component     : {report.Component}");
-            writer.WriteLine($"Weld Number   : {report.WeldNumber}");
-            writer.WriteLine($"Inspector     : {report.Inspector}");
-            writer.WriteLine($"Report Date   : {report.ReportDate:yyyy-MM-dd HH:mm:ss}");
-            writer.WriteLine($"Result        : {report.Result}");
-            writer.WriteLine();
-            writer.WriteLine("Remarks");
-            writer.WriteLine("----------------------------------------");
-            writer.WriteLine(report.Remarks);
 
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        string filePath =
+            _pdfExportService.Export(
+                content,
+                report.ReportNumber);
+
+
+        return filePath;
+    }
+
+
+    public bool Exists(
+        string filePath)
+    {
+        return File.Exists(filePath);
     }
 }

@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.ReportAuditView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#1F232A">
+
+    <Grid Margin="15">
+
+        <Border Background="#252B33"
+                CornerRadius="8"
+                Padding="15">
+
+            <StackPanel>
+
+                <TextBlock Text="Report Audit History"
+                           Foreground="White"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Margin="0,0,0,20"/>
+
+
+                <DataGrid ItemsSource="{Binding AuditLogs}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Height="450">
+
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Action"
+                                            Binding="{Binding Action}"
+                                            Width="120"/>
+
+
+                        <DataGridTextColumn Header="Description"
+                                            Binding="{Binding Description}"
+                                            Width="250"/>
+
+
+                        <DataGridTextColumn Header="Performed By"
+                                            Binding="{Binding PerformedBy}"
+                                            Width="150"/>
+
+
+                        <DataGridTextColumn Header="Date Time"
+                                            Binding="{Binding PerformedOn}"
+                                            Width="170"/>
+
+
+                    </DataGrid.Columns>
+
+
+                </DataGrid>
+
+
+            </StackPanel>
+
+        </Border>
+
+
+    </Grid>
+
+</UserControl>

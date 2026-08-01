@@ -1,0 +1,78 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.ReportTemplateView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#1F232A">
+
+    <Grid Margin="15">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+
+        <Border Background="#252B33"
+                CornerRadius="8">
+
+            <TextBlock Text="Report Templates"
+                       Foreground="White"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Margin="20,0"
+                       VerticalAlignment="Center"/>
+
+        </Border>
+
+
+        <Border Grid.Row="1"
+                Margin="0,15,0,0"
+                Background="#252B33"
+                CornerRadius="8"
+                Padding="20">
+
+
+            <StackPanel>
+
+
+                <TextBlock Text="Select Inspection Template"
+                           Foreground="White"
+                           FontSize="18"
+                           FontWeight="Bold"/>
+
+
+                <ComboBox Height="35"
+                          Margin="0,15,0,0"
+                          ItemsSource="{Binding Templates}"
+                          SelectedItem="{Binding SelectedTemplate}"
+                          SelectionChanged="Template_SelectionChanged"/>
+
+
+                <TextBlock Text="Template Description"
+                           Foreground="White"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Margin="0,30,0,10"/>
+
+
+                <Border Background="#1F232A"
+                        Padding="15"
+                        CornerRadius="5">
+
+
+                    <TextBlock Text="{Binding Description}"
+                               Foreground="White"
+                               FontSize="16"/>
+
+
+                </Border>
+
+
+            </StackPanel>
+
+
+        </Border>
+
+
+    </Grid>
+
+</UserControl>

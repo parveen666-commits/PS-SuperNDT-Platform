@@ -1,14 +1,32 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Services;
 
 namespace PS.SuperNDT.UI.ViewModels;
 
 public class LoginViewModel : INotifyPropertyChanged
 {
+    private readonly UserManagementService _userManagementService;
+
     private string _username = string.Empty;
     private string _password = string.Empty;
     private string _message = string.Empty;
+
+    public LoginViewModel()
+    {
+        _userManagementService =
+            new UserManagementService();
+
+        LoginCommand =
+            new RelayCommand(
+                _ => Login());
+    }
+
+    public RelayCommand LoginCommand
+    {
+        get;
+    }
 
     public string Username
     {
@@ -57,10 +75,26 @@ public class LoginViewModel : INotifyPropertyChanged
             return false;
         }
 
+        var user =
+            _userManagementService.GetByUserName(
+                Username);
+
+        if (user == null)
+        {
+            Message = "User not found";
+            return false;
+        }
+
+        if (!user.IsActive)
+        {
+            Message = "User is inactive";
+            return false;
+        }
+
         UserSessionService.Instance.Login(
-            Username,
-            Username,
-            "Administrator");
+            user.Username,
+            user.FullName,
+            user.Role);
 
         Message = "Login Successful";
 

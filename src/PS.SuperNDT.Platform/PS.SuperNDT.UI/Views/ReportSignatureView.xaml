@@ -1,0 +1,81 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.ReportSignatureView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#1F232A">
+
+    <Grid Margin="15">
+
+        <Border Background="#252B33"
+                CornerRadius="8"
+                Padding="15">
+
+            <StackPanel>
+
+                <TextBlock Text="Report Digital Signature"
+                           Foreground="White"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Margin="0,0,0,20"/>
+
+
+                <DataGrid ItemsSource="{Binding Signatures}"
+                          SelectedItem="{Binding SelectedSignature}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Height="350">
+
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Signed By"
+                                            Binding="{Binding SignedBy}"
+                                            Width="150"/>
+
+
+                        <DataGridTextColumn Header="Designation"
+                                            Binding="{Binding Designation}"
+                                            Width="150"/>
+
+
+                        <DataGridTextColumn Header="Signature Type"
+                                            Binding="{Binding SignatureType}"
+                                            Width="150"/>
+
+
+                        <DataGridTextColumn Header="Signed On"
+                                            Binding="{Binding SignedOn}"
+                                            Width="170"/>
+
+
+                        <DataGridCheckBoxColumn Header="Valid"
+                                                Binding="{Binding IsValid}"
+                                                Width="100"/>
+
+
+                    </DataGrid.Columns>
+
+
+                </DataGrid>
+
+
+                <Button Content="Verify Signature"
+                        Width="160"
+                        Height="35"
+                        Margin="5,20,0,0"
+                        HorizontalAlignment="Left"
+                        Click="VerifySignature_Click"/>
+
+
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="White"
+                           Margin="5,15,0,0"/>
+
+
+            </StackPanel>
+
+        </Border>
+
+
+    </Grid>
+
+</UserControl>

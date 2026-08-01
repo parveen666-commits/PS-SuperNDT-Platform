@@ -7,12 +7,15 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
+using PS.SuperNDT.UI.Services;
 using PS.SuperNDT.UI.Views;
 
 namespace PS.SuperNDT.UI.ViewModels;
 
 public class ShellViewModel : INotifyPropertyChanged
 {
+    private readonly AuthorizationService _authorizationService;
+
     public ObservableCollection<NavigationItem> MenuItems { get; }
 
     public ICommand NavigateCommand { get; }
@@ -43,6 +46,11 @@ public class ShellViewModel : INotifyPropertyChanged
 
     public ShellViewModel()
     {
+        _authorizationService =
+            new AuthorizationService(
+                new AccessControlService(
+                    new UserRoleService()));
+
         MenuItems = new ObservableCollection<NavigationItem>()
         {
             new NavigationItem(){Title="Dashboard"},
@@ -53,6 +61,15 @@ public class ShellViewModel : INotifyPropertyChanged
             new NavigationItem(){Title="Settings"}
         };
 
+        if (_authorizationService.CanManageUsers())
+        {
+            MenuItems.Add(
+                new NavigationItem()
+                {
+                    Title = "User Management"
+                });
+        }
+
         NavigateCommand = new RelayCommand(
             item => Navigate(item as NavigationItem));
 
@@ -62,13 +79,16 @@ public class ShellViewModel : INotifyPropertyChanged
 
         timer.Tick += (s, e) =>
         {
-            CurrentTime = DateTime.Now.ToString("dd-MMM-yyyy HH:mm:ss");
+            CurrentTime =
+                DateTime.Now.ToString(
+                    "dd-MMM-yyyy HH:mm:ss");
         };
 
         timer.Start();
     }
 
-    private void Navigate(NavigationItem? item)
+    private void Navigate(
+        NavigationItem? item)
     {
         if (item == null)
             return;
@@ -80,7 +100,8 @@ public class ShellViewModel : INotifyPropertyChanged
                 break;
 
             case "Acquisition":
-                CurrentPage = new AcquisitionView();
+                if (_authorizationService.CanCreateJob())
+                    CurrentPage = new AcquisitionView();
                 break;
 
             case "Calculator":
@@ -88,15 +109,18 @@ public class ShellViewModel : INotifyPropertyChanged
                 break;
 
             case "Reports":
-                CurrentPage = new ReportView();
+                if (_authorizationService.CanGenerateReports())
+                    CurrentPage = new ReportView();
                 break;
 
             case "Review":
-                CurrentPage = new ReviewView();
+                if (_authorizationService.CanReview())
+                    CurrentPage = new ReviewView();
                 break;
 
             case "Settings":
-                CurrentPage = new SettingsView();
+                if (_authorizationService.CanOpenSettings())
+                    CurrentPage = new SettingsView();
                 break;
         }
     }
