@@ -1,38 +1,34 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportHistoryService
 {
-    private readonly ObservableCollection<ReportHistoryModel> _history;
+    private readonly List<ReportHistoryModel> _history = new();
 
-    public ReportHistoryService()
+    public IReadOnlyList<ReportHistoryModel> GetAll()
     {
-        _history = new ObservableCollection<ReportHistoryModel>();
+        return _history;
     }
 
-    public ReadOnlyObservableCollection<ReportHistoryModel> History =>
-        new(_history);
-
-    public void AddEntry(
-        Guid reportId,
-        string reportNumber,
-        string action,
-        string performedBy,
-        string remarks)
+    public IEnumerable<ReportHistoryModel> GetByReport(string reportNumber)
     {
-        _history.Add(
-            new ReportHistoryModel
-            {
-                ReportId = reportId,
-                ReportNumber = reportNumber,
-                Action = action,
-                PerformedBy = performedBy,
-                Remarks = remarks,
-                PerformedOn = DateTime.Now,
-                Version = "1.0"
-            });
+        return _history.Where(x =>
+            string.Equals(x.ReportNumber, reportNumber, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(x => x.PerformedOn);
+    }
+
+    public void Add(ReportHistoryModel item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        _history.Add(item);
+    }
+
+    public void Clear()
+    {
+        _history.Clear();
     }
 }

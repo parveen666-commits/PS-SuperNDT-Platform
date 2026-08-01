@@ -1,60 +1,40 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
+using System.Linq;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportArchiveService
 {
-    public ReportArchiveModel Archive(
-        Guid reportId,
-        string reportNumber,
-        string filePath,
-        string archivedBy)
+    private readonly List<TransferArchiveRecordModel> _archiveRecords = new();
+
+    public IReadOnlyList<TransferArchiveRecordModel> GetAll()
     {
-        if (string.IsNullOrWhiteSpace(filePath))
-        {
-            throw new ArgumentException(
-                "Report file path cannot be empty.",
-                nameof(filePath));
-        }
-
-        if (!File.Exists(filePath))
-        {
-            throw new FileNotFoundException(
-                "Report file not found.",
-                filePath);
-        }
-
-        return new ReportArchiveModel
-        {
-            ReportId = reportId,
-            ReportNumber = reportNumber,
-            FilePath = filePath,
-            FileHash = CalculateHash(filePath),
-            ArchivedBy = archivedBy,
-            ArchivedOn = DateTime.Now,
-            Version = "1.0",
-            IsLocked = true
-        };
+        return _archiveRecords;
     }
 
-    private static string CalculateHash(string filePath)
+    public void Add(TransferArchiveRecordModel record)
     {
-        using var sha256 = SHA256.Create();
+        ArgumentNullException.ThrowIfNull(record);
 
-        byte[] bytes = File.ReadAllBytes(filePath);
-        byte[] hash = sha256.ComputeHash(bytes);
+        _archiveRecords.Add(record);
+    }
 
-        var builder = new StringBuilder();
+    public IEnumerable<TransferArchiveRecordModel> GetByJob(string jobNumber)
+    {
+        return _archiveRecords.Where(x =>
+            string.Equals(x.JobNumber, jobNumber, StringComparison.OrdinalIgnoreCase));
+    }
 
-        foreach (byte item in hash)
-        {
-            builder.Append(item.ToString("x2"));
-        }
+    public bool Verify(string archivePath)
+    {
+        return File.Exists(archivePath);
+    }
 
-        return builder.ToString();
+    public void Clear()
+    {
+        _archiveRecords.Clear();
     }
 }

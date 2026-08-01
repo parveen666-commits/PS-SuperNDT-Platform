@@ -1,67 +1,87 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
+using System.Linq;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportService
 {
-    public string GenerateJobReport(
-        JobModel job,
-        IEnumerable<string>? images = null)
+    private readonly List<ReportModel> _reports = new();
+
+    public IReadOnlyList<ReportModel> GetAll()
     {
-        string reportsFolder =
-            Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                "Reports");
+        return _reports;
+    }
 
-        Directory.CreateDirectory(reportsFolder);
+    public ReportModel? GetByReportNumber(string reportNumber)
+    {
+        return _reports.FirstOrDefault(x =>
+            string.Equals(x.ReportNumber, reportNumber, StringComparison.OrdinalIgnoreCase));
+    }
 
-        string reportFile =
-            Path.Combine(
-                reportsFolder,
-                $"{job.JobNumber}_Report.txt");
+    public void Add(ReportModel report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
 
-        var builder = new StringBuilder();
+        if (string.IsNullOrWhiteSpace(report.ReportNumber))
+            throw new ArgumentException("Report Number is required.", nameof(report));
 
-        builder.AppendLine("PS SuperNDT Platform");
-        builder.AppendLine("NDT Inspection Report");
-        builder.AppendLine(new string('=', 60));
+        if (GetByReportNumber(report.ReportNumber) != null)
+            return;
 
-        builder.AppendLine($"Job Number : {job.JobNumber}");
-        builder.AppendLine($"Customer   : {job.Customer}");
-        builder.AppendLine($"Project    : {job.Project}");
-        builder.AppendLine($"Component  : {job.Component}");
-        builder.AppendLine($"Weld No    : {job.WeldNumber}");
-        builder.AppendLine($"Operator   : {job.Operator}");
-        builder.AppendLine($"Procedure  : {job.Procedure}");
-        builder.AppendLine($"Material   : {job.Material}");
-        builder.AppendLine($"Created On : {job.CreatedOn}");
-        builder.AppendLine($"Closed     : {job.IsClosed}");
+        _reports.Add(report);
+    }
 
-        builder.AppendLine();
-        builder.AppendLine("Remarks");
-        builder.AppendLine("--------------------------------------------");
-        builder.AppendLine(job.Remark ?? string.Empty);
+    public void Update(ReportModel report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
 
-        if (images != null)
-        {
-            builder.AppendLine();
-            builder.AppendLine("Images");
-            builder.AppendLine("--------------------------------------------");
+        var existing = GetByReportNumber(report.ReportNumber);
 
-            foreach (var image in images)
-            {
-                builder.AppendLine(image);
-            }
-        }
+        if (existing == null)
+            return;
 
-        File.WriteAllText(
-            reportFile,
-            builder.ToString());
+        existing.JobNumber = report.JobNumber;
+        existing.Customer = report.Customer;
+        existing.Project = report.Project;
+        existing.Component = report.Component;
+        existing.WeldNumber = report.WeldNumber;
+        existing.Inspector = report.Inspector;
+        existing.ReportDate = report.ReportDate;
+        existing.Result = report.Result;
+        existing.Remarks = report.Remarks;
+        existing.ReportFilePath = report.ReportFilePath;
+    }
 
-        return reportFile;
+    public bool Delete(string reportNumber)
+    {
+        var report = GetByReportNumber(reportNumber);
+
+        if (report == null)
+            return false;
+
+        return _reports.Remove(report);
+    }
+
+    public IEnumerable<ReportModel> Search(string keyword)
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+            return _reports;
+
+        keyword = keyword.Trim();
+
+        return _reports.Where(x =>
+            x.ReportNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            x.JobNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            x.Customer.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            x.Project.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            x.Component.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+            x.WeldNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public void Clear()
+    {
+        _reports.Clear();
     }
 }
