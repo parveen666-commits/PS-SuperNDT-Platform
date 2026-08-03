@@ -1,27 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using PS.SuperNDT.UI.Database;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportApprovalService
 {
-    private readonly List<ReportApprovalModel> _approvals = new();
-
-
     public IReadOnlyList<ReportApprovalModel> GetAll()
     {
-        return _approvals;
+        using var db =
+            new SuperNDTDbContext();
+
+        return db.Set<ReportApprovalModel>()
+                 .OrderByDescending(x => x.SubmittedOn)
+                 .ToList();
     }
 
 
     public IEnumerable<ReportApprovalModel> GetByReport(
         Guid reportId)
     {
-        return _approvals
-            .Where(x => x.ReportId == reportId)
-            .OrderByDescending(x => x.SubmittedOn);
+        using var db =
+            new SuperNDTDbContext();
+
+        return db.Set<ReportApprovalModel>()
+                 .Where(x => x.ReportId == reportId)
+                 .OrderByDescending(x => x.SubmittedOn)
+                 .ToList();
     }
 
 
@@ -29,6 +37,10 @@ public sealed class ReportApprovalService
         ReportApprovalModel approval)
     {
         ArgumentNullException.ThrowIfNull(approval);
+
+
+        using var db =
+            new SuperNDTDbContext();
 
 
         approval.Id =
@@ -41,10 +53,15 @@ public sealed class ReportApprovalService
             DateTime.Now;
 
 
-        approval.IsApproved = false;
+        approval.IsApproved =
+            false;
 
 
-        _approvals.Add(approval);
+        db.Set<ReportApprovalModel>()
+          .Add(approval);
+
+
+        db.SaveChanges();
     }
 
 
@@ -52,22 +69,33 @@ public sealed class ReportApprovalService
         Guid approvalId,
         string approvedBy)
     {
+        using var db =
+            new SuperNDTDbContext();
+
+
         var approval =
-            _approvals.FirstOrDefault(
-                x => x.Id == approvalId);
+            db.Set<ReportApprovalModel>()
+              .FirstOrDefault(
+                  x => x.Id == approvalId);
 
 
         if (approval == null)
             return;
 
 
-        approval.IsApproved = true;
+        approval.IsApproved =
+            true;
+
 
         approval.ApprovedBy =
             approvedBy;
 
+
         approval.ApprovedOn =
             DateTime.Now;
+
+
+        db.SaveChanges();
     }
 
 
@@ -76,27 +104,50 @@ public sealed class ReportApprovalService
         string rejectedBy,
         string reason)
     {
+        using var db =
+            new SuperNDTDbContext();
+
+
         var approval =
-            _approvals.FirstOrDefault(
-                x => x.Id == approvalId);
+            db.Set<ReportApprovalModel>()
+              .FirstOrDefault(
+                  x => x.Id == approvalId);
 
 
         if (approval == null)
             return;
 
 
-        approval.IsApproved = false;
+        approval.IsApproved =
+            false;
+
 
         approval.ApprovedBy =
             rejectedBy;
 
+
         approval.Remarks =
             reason;
+
+
+        db.SaveChanges();
     }
 
 
     public void Clear()
     {
-        _approvals.Clear();
+        using var db =
+            new SuperNDTDbContext();
+
+
+        var approvals =
+            db.Set<ReportApprovalModel>();
+
+
+        db.RemoveRange(
+            approvals);
+
+
+        db.SaveChanges();
     }
 }

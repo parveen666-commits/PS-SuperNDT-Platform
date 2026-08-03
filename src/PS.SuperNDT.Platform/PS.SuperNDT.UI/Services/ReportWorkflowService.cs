@@ -6,7 +6,14 @@ namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportWorkflowService
 {
-    private readonly List<ReportDataModel> _reports = new();
+    private readonly ReportRepository _reportRepository;
+
+
+    public ReportWorkflowService()
+    {
+        _reportRepository =
+            new ReportRepository();
+    }
 
 
     public void CreateReport(
@@ -26,7 +33,8 @@ public sealed class ReportWorkflowService
             DateTime.Now;
 
 
-        _reports.Add(report);
+        _reportRepository.Save(
+            report);
 
 
         new ReportAuditService()
@@ -51,7 +59,11 @@ public sealed class ReportWorkflowService
         var approval =
             new ReportApprovalModel
             {
-                ReportId = report.Id,
+                Id =
+                    Guid.NewGuid(),
+
+                ReportId =
+                    report.Id,
 
                 ReportNumber =
                     report.ReportNumber,
@@ -66,7 +78,10 @@ public sealed class ReportWorkflowService
                     submittedBy,
 
                 SubmittedOn =
-                    DateTime.Now
+                    DateTime.Now,
+
+                IsApproved =
+                    false
             };
 
 
@@ -87,6 +102,6 @@ public sealed class ReportWorkflowService
 
     public IReadOnlyList<ReportDataModel> GetReports()
     {
-        return _reports;
+        return _reportRepository.GetAll();
     }
 }

@@ -1,27 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PS.SuperNDT.UI.Database;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportSignatureService
 {
-    private readonly List<ReportSignatureModel> _signatures = new();
-
-
     public IReadOnlyList<ReportSignatureModel> GetAll()
     {
-        return _signatures;
+        using var db =
+            new SuperNDTDbContext();
+
+        return db.Set<ReportSignatureModel>()
+                 .OrderByDescending(x => x.SignedOn)
+                 .ToList();
     }
 
 
     public IEnumerable<ReportSignatureModel> GetByReport(
         Guid reportId)
     {
-        return _signatures
-            .Where(x => x.ReportId == reportId)
-            .OrderByDescending(x => x.SignedOn);
+        using var db =
+            new SuperNDTDbContext();
+
+        return db.Set<ReportSignatureModel>()
+                 .Where(x => x.ReportId == reportId)
+                 .OrderByDescending(x => x.SignedOn)
+                 .ToList();
     }
 
 
@@ -29,6 +36,10 @@ public sealed class ReportSignatureService
         ReportSignatureModel signature)
     {
         ArgumentNullException.ThrowIfNull(signature);
+
+
+        using var db =
+            new SuperNDTDbContext();
 
 
         if (signature.Id == Guid.Empty)
@@ -42,43 +53,83 @@ public sealed class ReportSignatureService
             DateTime.Now;
 
 
-        _signatures.Add(signature);
+        db.Set<ReportSignatureModel>()
+          .Add(signature);
+
+
+        db.SaveChanges();
+
+
+        new ReportAuditService()
+            .Record(
+                signature.ReportId,
+                signature.ReportNumber,
+                "Digital Signature Added",
+                "Report digitally signed",
+                signature.SignedBy);
     }
 
 
     public void Verify(
         Guid signatureId)
     {
+        using var db =
+            new SuperNDTDbContext();
+
+
         var signature =
-            _signatures.FirstOrDefault(
-                x => x.Id == signatureId);
+            db.Set<ReportSignatureModel>()
+              .FirstOrDefault(
+                  x => x.Id == signatureId);
 
 
         if (signature == null)
             return;
 
 
-        signature.IsValid = true;
+        signature.IsValid =
+            true;
+
+
+        db.SaveChanges();
     }
 
 
     public void Remove(
         Guid signatureId)
     {
+        using var db =
+            new SuperNDTDbContext();
+
+
         var signature =
-            _signatures.FirstOrDefault(
-                x => x.Id == signatureId);
+            db.Set<ReportSignatureModel>()
+              .FirstOrDefault(
+                  x => x.Id == signatureId);
 
 
-        if (signature != null)
-        {
-            _signatures.Remove(signature);
-        }
+        if (signature == null)
+            return;
+
+
+        db.Remove(signature);
+
+        db.SaveChanges();
     }
 
 
     public void Clear()
     {
-        _signatures.Clear();
+        using var db =
+            new SuperNDTDbContext();
+
+
+        var signatures =
+            db.Set<ReportSignatureModel>();
+
+
+        db.RemoveRange(signatures);
+
+        db.SaveChanges();
     }
 }

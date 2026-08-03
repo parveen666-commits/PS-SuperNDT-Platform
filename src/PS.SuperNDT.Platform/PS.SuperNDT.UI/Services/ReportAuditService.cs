@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using PS.SuperNDT.UI.Database;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportAuditService
 {
-    private readonly List<ReportAuditModel> _auditLogs = new();
-
-
     public IReadOnlyList<ReportAuditModel> GetAll()
     {
-        return _auditLogs;
+        using var db =
+            new SuperNDTDbContext();
+
+        return db.Set<ReportAuditModel>()
+                 .OrderByDescending(x => x.PerformedOn)
+                 .ToList();
     }
 
 
@@ -22,28 +26,54 @@ public sealed class ReportAuditService
         string description,
         string performedBy)
     {
-        _auditLogs.Add(
-            new ReportAuditModel
-            {
-                Id = Guid.NewGuid(),
+        using var db =
+            new SuperNDTDbContext();
 
-                ReportId = reportId,
 
-                ReportNumber = reportNumber,
+        db.Set<ReportAuditModel>()
+          .Add(
+              new ReportAuditModel
+              {
+                  Id =
+                      Guid.NewGuid(),
 
-                Action = action,
+                  ReportId =
+                      reportId,
 
-                Description = description,
+                  ReportNumber =
+                      reportNumber,
 
-                PerformedBy = performedBy,
+                  Action =
+                      action,
 
-                PerformedOn = DateTime.Now
-            });
+                  Description =
+                      description,
+
+                  PerformedBy =
+                      performedBy,
+
+                  PerformedOn =
+                      DateTime.Now
+              });
+
+
+        db.SaveChanges();
     }
 
 
     public void Clear()
     {
-        _auditLogs.Clear();
+        using var db =
+            new SuperNDTDbContext();
+
+
+        var logs =
+            db.Set<ReportAuditModel>();
+
+
+        db.RemoveRange(logs);
+
+
+        db.SaveChanges();
     }
 }
