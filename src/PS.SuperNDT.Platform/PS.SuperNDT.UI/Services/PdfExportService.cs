@@ -1,41 +1,116 @@
 ﻿using System;
 using System.IO;
-using System.Text;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class PdfExportService
 {
-    public string Export(string reportContent, string reportNumber)
+    public string Export(
+        string reportContent,
+        string reportNumber)
     {
         if (string.IsNullOrWhiteSpace(reportContent))
         {
-            throw new ArgumentException("Report content cannot be empty.", nameof(reportContent));
+            throw new ArgumentException(
+                "Report content cannot be empty.",
+                nameof(reportContent));
         }
 
-        string reportsFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "PS SuperNDT Reports");
 
-        Directory.CreateDirectory(reportsFolder);
+        QuestPDF.Settings.License =
+            LicenseType.Community;
+
+
+        string reportsFolder =
+            Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.MyDocuments),
+                "PS SuperNDT Reports");
+
+
+        Directory.CreateDirectory(
+            reportsFolder);
+
 
         string fileName =
             $"Report_{reportNumber}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
 
-        string filePath = Path.Combine(reportsFolder, fileName);
 
-        // Temporary PDF generation placeholder.
-        // Real AERB formatted PDF engine will be integrated in next phase.
+        string filePath =
+            Path.Combine(
+                reportsFolder,
+                fileName);
 
-        var pdfContent = new StringBuilder();
 
-        pdfContent.AppendLine("PS SuperNDT Platform");
-        pdfContent.AppendLine("AERB Style Inspection Report");
-        pdfContent.AppendLine("--------------------------------");
-        pdfContent.AppendLine();
-        pdfContent.AppendLine(reportContent);
 
-        File.WriteAllText(filePath, pdfContent.ToString());
+        Document.Create(document =>
+        {
+            document.Page(page =>
+            {
+                page.Size(
+                    PageSizes.A4);
+
+
+                page.Margin(
+                    40);
+
+
+                page.Header()
+                    .Text(
+                        "PS SuperNDT Platform")
+                    .FontSize(20)
+                    .Bold();
+
+
+                page.Content()
+                    .Column(column =>
+                    {
+                        column.Spacing(10);
+
+
+                        column.Item()
+                            .Text(
+                                "AERB Style Inspection Report")
+                            .FontSize(16)
+                            .Bold();
+
+
+                        column.Item()
+                            .Text(
+                                $"Report Number : {reportNumber}");
+
+
+                        column.Item()
+                            .Text(
+                                $"Generated On : {DateTime.Now:dd-MMM-yyyy HH:mm:ss}");
+
+
+                        column.Item()
+                            .LineHorizontal(1);
+
+
+                        column.Item()
+                            .Text(
+                                reportContent)
+                            .FontSize(11);
+
+                    });
+
+
+                page.Footer()
+                    .AlignCenter()
+                    .Text(
+                        "PS SuperNDT Platform - Confidential Inspection Report");
+
+            });
+
+        })
+        .GeneratePdf(
+            filePath);
+
 
         return filePath;
     }

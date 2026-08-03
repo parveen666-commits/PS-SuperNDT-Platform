@@ -1,14 +1,24 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using PS.SuperNDT.UI.ViewModels;
 
-namespace PS.SuperNDT.UI.Views
+namespace PS.SuperNDT.UI.Views;
+
+public partial class ShellWindow : Window
 {
-    public partial class ShellWindow : Window
+    public ShellWindow()
     {
-        public ShellWindow()
+        InitializeComponent();
+
+        try
         {
-            InitializeComponent();
             DataContext = new ShellViewModel();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.ToString(),
+                "Shell Error");
         }
     }
 }

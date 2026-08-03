@@ -17,6 +17,7 @@ public partial class LoginView : UserControl
             PasswordBox_PasswordChanged;
     }
 
+
     private void PasswordBox_PasswordChanged(
         object sender,
         RoutedEventArgs e)
@@ -28,21 +29,26 @@ public partial class LoginView : UserControl
         }
     }
 
+
     private void LoginButton_Click(
         object sender,
         RoutedEventArgs e)
     {
         if (DataContext is LoginViewModel viewModel)
         {
-            if (viewModel.Login())
+            bool result =
+                viewModel.Login();
+
+
+            if (result)
             {
                 var window =
                     Window.GetWindow(this);
 
+
                 if (window != null)
                 {
                     window.DialogResult = true;
-                    window.Close();
                 }
             }
         }
