@@ -1,0 +1,71 @@
+﻿<UserControl x:Class="PS.SuperNDT.UI.Views.ReportArchiveView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#1F232A">
+
+    <Grid Margin="15">
+
+        <Border Background="#252B33"
+                CornerRadius="8"
+                Padding="15">
+
+            <DockPanel>
+
+                <TextBlock DockPanel.Dock="Top"
+                           Text="Report Archive"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="0,0,0,15"/>
+
+                <Button DockPanel.Dock="Bottom"
+                        Content="Remove Selected"
+                        Width="150"
+                        Height="35"
+                        Margin="0,15,0,0"
+                        HorizontalAlignment="Left"
+                        Click="RemoveSelected_Click"/>
+
+                <TextBlock DockPanel.Dock="Bottom"
+                           Text="{Binding StatusMessage}"
+                           Foreground="White"
+                           Margin="0,10,0,0"/>
+
+                <DataGrid ItemsSource="{Binding ArchivedReports}"
+                          SelectedItem="{Binding SelectedReport}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True">
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Report No."
+                                            Binding="{Binding ReportNumber}"
+                                            Width="180"/>
+
+                        <DataGridTextColumn Header="Customer"
+                                            Binding="{Binding Customer}"
+                                            Width="180"/>
+
+                        <DataGridTextColumn Header="Project"
+                                            Binding="{Binding Project}"
+                                            Width="180"/>
+
+                        <DataGridTextColumn Header="Inspector"
+                                            Binding="{Binding Inspector}"
+                                            Width="150"/>
+
+                        <DataGridTextColumn Header="Generated"
+                                            Binding="{Binding GeneratedDate}"
+                                            Width="180"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </DockPanel>
+
+        </Border>
+
+    </Grid>
+
+</UserControl>

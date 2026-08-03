@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using PS.SuperNDT.UI.Models;
 
@@ -7,29 +6,52 @@ namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportStatisticsService
 {
-    public ReportStatisticsModel Generate(IEnumerable<ReportModel> reports)
+    private readonly ReportStorageService _storageService;
+
+    public ReportStatisticsService()
     {
-        ArgumentNullException.ThrowIfNull(reports);
+        _storageService = new ReportStorageService();
+    }
 
-        var reportList = reports.ToList();
+    public int GetTotalReports()
+    {
+        return _storageService.GetAll().Count;
+    }
 
-        return new ReportStatisticsModel
-        {
-            TotalReports = reportList.Count,
-            CompletedReports = reportList.Count(r =>
-                string.Equals(r.Result, "ACCEPTED", StringComparison.OrdinalIgnoreCase)),
-            PendingReports = reportList.Count(r =>
-                string.Equals(r.Result, "PENDING", StringComparison.OrdinalIgnoreCase)),
-            ApprovedReports = reportList.Count(r =>
-                string.Equals(r.Result, "APPROVED", StringComparison.OrdinalIgnoreCase)),
-            RejectedReports = reportList.Count(r =>
-                string.Equals(r.Result, "REJECTED", StringComparison.OrdinalIgnoreCase)),
-            ArchivedReports = 0,
-            TotalImages = 0,
-            TotalAnnotations = 0,
-            TotalStorageBytes = 0,
-            GeneratedOn = DateTime.Now,
-            GeneratedBy = Environment.UserName
-        };
+    public int GetApprovedReports()
+    {
+        return _storageService
+            .GetAll()
+            .Count(x => x.IsApproved);
+    }
+
+    public int GetPendingReports()
+    {
+        return _storageService
+            .GetAll()
+            .Count(x => !x.IsApproved);
+    }
+
+    public int GetTodayReports()
+    {
+        var today = DateTime.Today;
+
+        return _storageService
+            .GetAll()
+            .Count(x => x.GeneratedDate.Date == today);
+    }
+
+    public int GetTotalFindings()
+    {
+        return _storageService
+            .GetAll()
+            .Sum(x => x.Findings.Count);
+    }
+
+    public int GetTotalImages()
+    {
+        return _storageService
+            .GetAll()
+            .Sum(x => x.Images.Count);
     }
 }

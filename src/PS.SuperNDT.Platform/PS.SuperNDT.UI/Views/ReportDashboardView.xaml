@@ -6,125 +6,112 @@
     <Grid Margin="15">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <TextBlock Text="Reporting Dashboard"
+                   FontSize="26"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   Margin="5"/>
 
-        <Border Grid.Row="0"
-                Background="#252B33"
-                CornerRadius="8">
+        <UniformGrid Grid.Row="1"
+                     Rows="2"
+                     Columns="3"
+                     Margin="0,20,0,0">
 
-            <TextBlock Text="Report Dashboard"
-                       Margin="20,0"
-                       VerticalAlignment="Center"
-                       Foreground="White"
-                       FontSize="28"
-                       FontWeight="Bold"/>
-
-        </Border>
-
-
-        <Grid Grid.Row="1"
-              Margin="0,15,0,0">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-
-            <Border Grid.Column="0"
+            <Border Margin="8"
                     Background="#252B33"
-                    CornerRadius="8"
-                    Margin="5"
-                    Padding="20">
-
-                <StackPanel>
-
+                    CornerRadius="8">
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
                     <TextBlock Text="Total Reports"
                                Foreground="White"
-                               FontSize="18"/>
-
+                               FontSize="16"/>
                     <TextBlock Text="{Binding TotalReports}"
-                               Foreground="White"
-                               FontSize="36"
+                               Foreground="#00C853"
+                               FontSize="34"
                                FontWeight="Bold"/>
-
                 </StackPanel>
-
             </Border>
 
-
-            <Border Grid.Column="1"
+            <Border Margin="8"
                     Background="#252B33"
-                    CornerRadius="8"
-                    Margin="5"
-                    Padding="20">
-
-                <StackPanel>
-
+                    CornerRadius="8">
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
                     <TextBlock Text="Approved"
                                Foreground="White"
-                               FontSize="18"/>
-
+                               FontSize="16"/>
                     <TextBlock Text="{Binding ApprovedReports}"
-                               Foreground="White"
-                               FontSize="36"
+                               Foreground="#00C853"
+                               FontSize="34"
                                FontWeight="Bold"/>
-
                 </StackPanel>
-
             </Border>
 
-
-            <Border Grid.Column="2"
+            <Border Margin="8"
                     Background="#252B33"
-                    CornerRadius="8"
-                    Margin="5"
-                    Padding="20">
-
-                <StackPanel>
-
+                    CornerRadius="8">
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
                     <TextBlock Text="Pending"
                                Foreground="White"
-                               FontSize="18"/>
-
+                               FontSize="16"/>
                     <TextBlock Text="{Binding PendingReports}"
-                               Foreground="White"
-                               FontSize="36"
+                               Foreground="#FFC107"
+                               FontSize="34"
                                FontWeight="Bold"/>
-
                 </StackPanel>
-
             </Border>
 
-
-            <Border Grid.Column="3"
+            <Border Margin="8"
                     Background="#252B33"
-                    CornerRadius="8"
-                    Margin="5"
-                    Padding="20">
+                    CornerRadius="8">
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
+                    <TextBlock Text="Today's Reports"
+                               Foreground="White"
+                               FontSize="16"/>
+                    <TextBlock Text="{Binding TodayReports}"
+                               Foreground="#03A9F4"
+                               FontSize="34"
+                               FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
 
-                <StackPanel>
+            <Border Margin="8"
+                    Background="#252B33"
+                    CornerRadius="8">
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
+                    <TextBlock Text="Findings"
+                               Foreground="White"
+                               FontSize="16"/>
+                    <TextBlock Text="{Binding TotalFindings}"
+                               Foreground="#FF9800"
+                               FontSize="34"
+                               FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
 
+            <Border Margin="8"
+                    Background="#252B33"
+                    CornerRadius="8">
+                <StackPanel VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
                     <TextBlock Text="Images"
                                Foreground="White"
-                               FontSize="18"/>
-
+                               FontSize="16"/>
                     <TextBlock Text="{Binding TotalImages}"
-                               Foreground="White"
-                               FontSize="36"
+                               Foreground="#9C27B0"
+                               FontSize="34"
                                FontWeight="Bold"/>
-
                 </StackPanel>
-
             </Border>
 
-
-        </Grid>
+        </UniformGrid>
 
     </Grid>
 

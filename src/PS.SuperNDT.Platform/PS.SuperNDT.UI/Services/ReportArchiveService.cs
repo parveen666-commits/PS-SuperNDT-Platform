@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using PS.SuperNDT.UI.Models;
 
@@ -8,33 +7,49 @@ namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportArchiveService
 {
-    private readonly List<TransferArchiveRecordModel> _archiveRecords = new();
+    private readonly List<ReportDataModel> _archivedReports = new();
 
-    public IReadOnlyList<TransferArchiveRecordModel> GetAll()
+    public IReadOnlyList<ReportDataModel> GetAll()
     {
-        return _archiveRecords;
+        return _archivedReports;
     }
 
-    public void Add(TransferArchiveRecordModel record)
+    public void Archive(ReportDataModel report)
     {
-        ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullException.ThrowIfNull(report);
 
-        _archiveRecords.Add(record);
+        if (_archivedReports.Any(x => x.Id == report.Id))
+        {
+            return;
+        }
+
+        _archivedReports.Add(report);
+
+        new ReportAuditService().Record(
+            report.Id,
+            report.ReportNumber,
+            "Archive",
+            "Report archived",
+            "System");
     }
 
-    public IEnumerable<TransferArchiveRecordModel> GetByJob(string jobNumber)
+    public bool IsArchived(Guid reportId)
     {
-        return _archiveRecords.Where(x =>
-            string.Equals(x.JobNumber, jobNumber, StringComparison.OrdinalIgnoreCase));
+        return _archivedReports.Any(x => x.Id == reportId);
     }
 
-    public bool Verify(string archivePath)
+    public void Remove(Guid reportId)
     {
-        return File.Exists(archivePath);
+        var report = _archivedReports.FirstOrDefault(x => x.Id == reportId);
+
+        if (report != null)
+        {
+            _archivedReports.Remove(report);
+        }
     }
 
     public void Clear()
     {
-        _archiveRecords.Clear();
+        _archivedReports.Clear();
     }
 }

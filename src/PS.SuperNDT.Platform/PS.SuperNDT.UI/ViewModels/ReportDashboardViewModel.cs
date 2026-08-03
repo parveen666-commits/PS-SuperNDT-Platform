@@ -6,18 +6,26 @@ namespace PS.SuperNDT.UI.ViewModels;
 
 public sealed class ReportDashboardViewModel : INotifyPropertyChanged
 {
-    private readonly ReportStorageService _reportStorageService;
-    private readonly ImageService _imageService;
+    private readonly ReportStatisticsService _statisticsService;
 
     private int _totalReports;
     private int _approvedReports;
     private int _pendingReports;
+    private int _todayReports;
+    private int _totalFindings;
     private int _totalImages;
+
+    public ReportDashboardViewModel()
+    {
+        _statisticsService = new ReportStatisticsService();
+
+        Refresh();
+    }
 
     public int TotalReports
     {
         get => _totalReports;
-        set
+        private set
         {
             _totalReports = value;
             OnPropertyChanged();
@@ -27,7 +35,7 @@ public sealed class ReportDashboardViewModel : INotifyPropertyChanged
     public int ApprovedReports
     {
         get => _approvedReports;
-        set
+        private set
         {
             _approvedReports = value;
             OnPropertyChanged();
@@ -37,9 +45,29 @@ public sealed class ReportDashboardViewModel : INotifyPropertyChanged
     public int PendingReports
     {
         get => _pendingReports;
-        set
+        private set
         {
             _pendingReports = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int TodayReports
+    {
+        get => _todayReports;
+        private set
+        {
+            _todayReports = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int TotalFindings
+    {
+        get => _totalFindings;
+        private set
+        {
+            _totalFindings = value;
             OnPropertyChanged();
         }
     }
@@ -47,48 +75,27 @@ public sealed class ReportDashboardViewModel : INotifyPropertyChanged
     public int TotalImages
     {
         get => _totalImages;
-        set
+        private set
         {
             _totalImages = value;
             OnPropertyChanged();
         }
     }
 
-    public ReportDashboardViewModel()
+    public void Refresh()
     {
-        _reportStorageService =
-            new ReportStorageService();
-
-        _imageService =
-            new ImageService();
-
-        LoadDashboard();
-    }
-
-    public void LoadDashboard()
-    {
-        var reports =
-            _reportStorageService.GetAll();
-
-        TotalReports =
-            reports.Count;
-
-        ApprovedReports =
-            reports.Count(x =>
-                x.IsApproved);
-
-        PendingReports =
-            reports.Count(x =>
-                !x.IsApproved);
-
-        TotalImages =
-            _imageService.GetTotalImageCount();
+        TotalReports = _statisticsService.GetTotalReports();
+        ApprovedReports = _statisticsService.GetApprovedReports();
+        PendingReports = _statisticsService.GetPendingReports();
+        TodayReports = _statisticsService.GetTodayReports();
+        TotalFindings = _statisticsService.GetTotalFindings();
+        TotalImages = _statisticsService.GetTotalImages();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(
-        [CallerMemberName] string propertyName = "")
+        [CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(
             this,
