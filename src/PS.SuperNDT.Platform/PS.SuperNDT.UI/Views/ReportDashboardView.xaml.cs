@@ -9,6 +9,7 @@ public partial class ReportDashboardView : UserControl
     {
         InitializeComponent();
 
-        DataContext = new ReportDashboardViewModel();
+        DataContext =
+            new ReportDashboardViewModel();
     }
 }

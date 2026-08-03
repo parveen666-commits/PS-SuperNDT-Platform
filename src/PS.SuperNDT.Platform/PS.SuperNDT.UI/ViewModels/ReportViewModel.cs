@@ -14,49 +14,75 @@ public sealed class ReportViewModel : INotifyPropertyChanged
     private readonly ReportGeneratorService _reportGeneratorService;
     private readonly PdfExportService _pdfExportService;
     private readonly ReportHistoryService _reportHistoryService;
+    private readonly ReportRepository _reportRepository;
 
     private ReportDataModel _currentReport;
+
     private string _generatedReport = string.Empty;
+
     private string _exportedFilePath = string.Empty;
 
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
 
     public ReportViewModel()
     {
         _reportGeneratorService =
             new ReportGeneratorService();
 
+
         _pdfExportService =
             new PdfExportService();
+
 
         _reportHistoryService =
             new ReportHistoryService();
 
-        _currentReport = new ReportDataModel
-        {
-            ReportNumber =
-                $"RPT-{DateTime.Now:yyyyMMdd-HHmmss}",
 
-            InspectionDate =
-                DateTime.Now
-        };
+        _reportRepository =
+            new ReportRepository();
+
+
+        _currentReport =
+            new ReportDataModel
+            {
+                Id = Guid.NewGuid(),
+
+                ReportNumber =
+                    $"RPT-{DateTime.Now:yyyyMMdd-HHmmss}",
+
+                InspectionDate =
+                    DateTime.Now,
+
+                GeneratedDate =
+                    DateTime.Now
+            };
+
 
         Findings =
             new ObservableCollection<ReportFindingModel>();
 
+
         Images =
             new ObservableCollection<ReportImageModel>();
 
+
         GenerateReportCommand =
-            new RelayCommand(_ => GenerateReport());
+            new RelayCommand(
+                _ => GenerateReport());
+
 
         ExportPdfCommand =
-            new RelayCommand(_ => ExportPdf());
+            new RelayCommand(
+                _ => ExportPdf());
     }
+
 
     public ReportDataModel CurrentReport
     {
         get => _currentReport;
+
         set
         {
             _currentReport = value;
@@ -64,29 +90,35 @@ public sealed class ReportViewModel : INotifyPropertyChanged
         }
     }
 
+
     public ObservableCollection<ReportFindingModel> Findings
     {
         get;
     }
+
 
     public ObservableCollection<ReportImageModel> Images
     {
         get;
     }
 
+
     public ICommand GenerateReportCommand
     {
         get;
     }
+
 
     public ICommand ExportPdfCommand
     {
         get;
     }
 
+
     public string GeneratedReport
     {
         get => _generatedReport;
+
         private set
         {
             _generatedReport = value;
@@ -94,9 +126,11 @@ public sealed class ReportViewModel : INotifyPropertyChanged
         }
     }
 
+
     public string ExportedFilePath
     {
         get => _exportedFilePath;
+
         private set
         {
             _exportedFilePath = value;
@@ -104,71 +138,117 @@ public sealed class ReportViewModel : INotifyPropertyChanged
         }
     }
 
+
     public void GenerateReport()
     {
         CurrentReport.Findings.Clear();
+
 
         foreach (var finding in Findings)
         {
             CurrentReport.Findings.Add(finding);
         }
 
+
         CurrentReport.Images.Clear();
+
 
         foreach (var image in Images)
         {
             CurrentReport.Images.Add(image);
         }
 
+
+        _reportRepository.Save(
+            CurrentReport);
+
+
         GeneratedReport =
             _reportGeneratorService
-                .GenerateReportSummary(CurrentReport);
+                .GenerateReportSummary(
+                    CurrentReport);
+
 
         _reportHistoryService.Add(
             new ReportHistoryModel
             {
                 Id = Guid.NewGuid(),
-                ReportId = CurrentReport.Id,
-                ReportNumber = CurrentReport.ReportNumber,
-                Version = "1.0",
-                Action = "Generate",
-                Description = "Report generated",
-                PerformedBy = "Current User",
-                PerformedOn = DateTime.Now
+
+                ReportId =
+                    CurrentReport.Id,
+
+                ReportNumber =
+                    CurrentReport.ReportNumber,
+
+                Version =
+                    "1.0",
+
+                Action =
+                    "Generate",
+
+                Description =
+                    "Report generated and stored",
+
+                PerformedBy =
+                    "Current User",
+
+                PerformedOn =
+                    DateTime.Now
             });
     }
 
+
     public void ExportPdf()
     {
-        if (string.IsNullOrWhiteSpace(GeneratedReport))
+        if (string.IsNullOrWhiteSpace(
+            GeneratedReport))
         {
             GenerateReport();
         }
+
 
         ExportedFilePath =
             _pdfExportService.Export(
                 GeneratedReport,
                 CurrentReport.ReportNumber);
 
+
         _reportHistoryService.Add(
             new ReportHistoryModel
             {
                 Id = Guid.NewGuid(),
-                ReportId = CurrentReport.Id,
-                ReportNumber = CurrentReport.ReportNumber,
-                Version = "1.0",
-                Action = "Export PDF",
-                Description = ExportedFilePath,
-                PerformedBy = "Current User",
-                PerformedOn = DateTime.Now
+
+                ReportId =
+                    CurrentReport.Id,
+
+                ReportNumber =
+                    CurrentReport.ReportNumber,
+
+                Version =
+                    "1.0",
+
+                Action =
+                    "Export PDF",
+
+                Description =
+                    ExportedFilePath,
+
+                PerformedBy =
+                    "Current User",
+
+                PerformedOn =
+                    DateTime.Now
             });
     }
 
+
     private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+        [CallerMemberName]
+        string? propertyName = null)
     {
         PropertyChanged?.Invoke(
             this,
-            new PropertyChangedEventArgs(propertyName));
+            new PropertyChangedEventArgs(
+                propertyName));
     }
 }

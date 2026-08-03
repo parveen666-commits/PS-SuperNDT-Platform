@@ -7,72 +7,62 @@ namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportStorageService
 {
-    private readonly List<ReportDataModel> _reports = new();
-
+    private static readonly List<ReportDataModel> Reports = new();
 
     public IReadOnlyList<ReportDataModel> GetAll()
     {
-        return _reports;
+        return Reports;
     }
 
-
-    public ReportDataModel? GetById(
-        Guid id)
+    public ReportDataModel? GetById(Guid id)
     {
-        return _reports.FirstOrDefault(
-            x => x.Id == id);
+        return Reports.FirstOrDefault(x => x.Id == id);
     }
 
-
-    public ReportDataModel? GetByNumber(
-        string reportNumber)
+    public ReportDataModel? GetByReportNumber(string reportNumber)
     {
-        return _reports.FirstOrDefault(
-            x =>
-                string.Equals(
-                    x.ReportNumber,
-                    reportNumber,
-                    StringComparison.OrdinalIgnoreCase));
+        return Reports.FirstOrDefault(x =>
+            string.Equals(
+                x.ReportNumber,
+                reportNumber,
+                StringComparison.OrdinalIgnoreCase));
     }
 
-
-    public void Save(
-        ReportDataModel report)
+    public void Save(ReportDataModel report)
     {
         ArgumentNullException.ThrowIfNull(report);
 
-
-        var existing =
-            _reports.FirstOrDefault(
-                x => x.Id == report.Id);
-
+        var existing = GetById(report.Id);
 
         if (existing != null)
         {
-            _reports.Remove(existing);
+            Reports.Remove(existing);
         }
 
-
-        _reports.Add(report);
+        Reports.Add(report);
     }
 
-
-    public void Delete(
-        Guid id)
+    public void Delete(Guid id)
     {
-        var report =
-            GetById(id);
-
+        var report = GetById(id);
 
         if (report != null)
         {
-            _reports.Remove(report);
+            Reports.Remove(report);
         }
     }
 
+    public bool Exists(string reportNumber)
+    {
+        return Reports.Any(x =>
+            string.Equals(
+                x.ReportNumber,
+                reportNumber,
+                StringComparison.OrdinalIgnoreCase));
+    }
 
     public void Clear()
     {
-        _reports.Clear();
+        Reports.Clear();
     }
 }

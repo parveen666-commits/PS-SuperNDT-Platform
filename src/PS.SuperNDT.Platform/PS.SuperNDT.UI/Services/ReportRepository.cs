@@ -1,111 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using PS.SuperNDT.UI.Database;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReportRepository
 {
-    private readonly string _reportFile =
-        Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "reports.json");
-
-    public List<ReportModel> GetAll()
+    public IReadOnlyList<ReportDataModel> GetAll()
     {
-        try
-        {
-            if (!File.Exists(_reportFile))
-            {
-                return new List<ReportModel>();
-            }
+        using var db = new SuperNDTDbContext();
 
-            var json =
-                File.ReadAllText(_reportFile);
-
-            var reports =
-                JsonSerializer.Deserialize<List<ReportModel>>(json);
-
-            return reports ??
-                   new List<ReportModel>();
-        }
-        catch
-        {
-            return new List<ReportModel>();
-        }
+        return db.Set<ReportDataModel>()
+                 .Include(x => x.Findings)
+                 .Include(x => x.Images)
+                 .OrderByDescending(x => x.GeneratedDate)
+                 .ToList();
     }
 
-    public ReportModel? GetByReportNumber(
-        string reportNumber)
+    public ReportDataModel? Get(Guid id)
     {
-        return GetAll()
-            .FirstOrDefault(x =>
-                x.ReportNumber.Equals(
-                    reportNumber,
-                    StringComparison.OrdinalIgnoreCase));
+        using var db = new SuperNDTDbContext();
+
+        return db.Set<ReportDataModel>()
+                 .Include(x => x.Findings)
+                 .Include(x => x.Images)
+                 .FirstOrDefault(x => x.Id == id);
     }
 
-    public void AddOrUpdate(
-        ReportModel report)
+    public void Save(ReportDataModel report)
     {
-        var reports = GetAll();
+        using var db = new SuperNDTDbContext();
 
-        var existing =
-            reports.FirstOrDefault(x =>
-                x.ReportNumber.Equals(
-                    report.ReportNumber,
-                    StringComparison.OrdinalIgnoreCase));
+        var existing = db.Set<ReportDataModel>()
+                         .FirstOrDefault(x => x.Id == report.Id);
 
         if (existing == null)
         {
-            reports.Add(report);
+            db.Set<ReportDataModel>().Add(report);
         }
         else
         {
-            existing.JobNumber = report.JobNumber;
-            existing.Customer = report.Customer;
-            existing.Project = report.Project;
-            existing.Component = report.Component;
-            existing.WeldNumber = report.WeldNumber;
-            existing.Inspector = report.Inspector;
-            existing.ReportDate = report.ReportDate;
-            existing.Result = report.Result;
-            existing.Remarks = report.Remarks;
-            existing.ReportFilePath = report.ReportFilePath;
+            db.Entry(existing).CurrentValues.SetValues(report);
         }
 
-        Save(reports);
+        db.SaveChanges();
     }
 
-    public void Delete(
-        string reportNumber)
+    public void Delete(Guid id)
     {
-        var reports = GetAll();
+        using var db = new SuperNDTDbContext();
 
-        reports.RemoveAll(x =>
-            x.ReportNumber.Equals(
-                reportNumber,
-                StringComparison.OrdinalIgnoreCase));
+        var report = db.Set<ReportDataModel>()
+                       .FirstOrDefault(x => x.Id == id);
 
-        Save(reports);
-    }
+        if (report == null)
+            return;
 
-    private void Save(
-        List<ReportModel> reports)
-    {
-        var json =
-            JsonSerializer.Serialize(
-                reports,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+        db.Remove(report);
 
-        File.WriteAllText(
-            _reportFile,
-            json);
+        db.SaveChanges();
     }
 }

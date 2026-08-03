@@ -20,6 +20,7 @@ public class ShellViewModel : INotifyPropertyChanged
 
     public ICommand NavigateCommand { get; }
 
+
     private UserControl _currentPage = new DashboardView();
 
     public UserControl CurrentPage
@@ -31,6 +32,7 @@ public class ShellViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
 
     private string _currentTime = "";
 
@@ -44,6 +46,7 @@ public class ShellViewModel : INotifyPropertyChanged
         }
     }
 
+
     public ShellViewModel()
     {
         _authorizationService =
@@ -51,15 +54,41 @@ public class ShellViewModel : INotifyPropertyChanged
                 new AccessControlService(
                     new UserRoleService()));
 
-        MenuItems = new ObservableCollection<NavigationItem>()
-        {
-            new NavigationItem(){Title="Dashboard"},
-            new NavigationItem(){Title="Acquisition"},
-            new NavigationItem(){Title="Review"},
-            new NavigationItem(){Title="Calculator"},
-            new NavigationItem(){Title="Reports"},
-            new NavigationItem(){Title="Settings"}
-        };
+
+        MenuItems =
+            new ObservableCollection<NavigationItem>()
+            {
+                new NavigationItem()
+                {
+                    Title = "Dashboard"
+                },
+
+                new NavigationItem()
+                {
+                    Title = "Acquisition"
+                },
+
+                new NavigationItem()
+                {
+                    Title = "Review"
+                },
+
+                new NavigationItem()
+                {
+                    Title = "Calculator"
+                },
+
+                new NavigationItem()
+                {
+                    Title = "Reports"
+                },
+
+                new NavigationItem()
+                {
+                    Title = "Settings"
+                }
+            };
+
 
         if (_authorizationService.CanManageUsers())
         {
@@ -70,12 +99,18 @@ public class ShellViewModel : INotifyPropertyChanged
                 });
         }
 
-        NavigateCommand = new RelayCommand(
-            item => Navigate(item as NavigationItem));
 
-        DispatcherTimer timer = new DispatcherTimer();
+        NavigateCommand =
+            new RelayCommand(
+                item => Navigate(item as NavigationItem));
 
-        timer.Interval = TimeSpan.FromSeconds(1);
+
+        DispatcherTimer timer =
+            new DispatcherTimer();
+
+        timer.Interval =
+            TimeSpan.FromSeconds(1);
+
 
         timer.Tick += (s, e) =>
         {
@@ -84,8 +119,10 @@ public class ShellViewModel : INotifyPropertyChanged
                     "dd-MMM-yyyy HH:mm:ss");
         };
 
+
         timer.Start();
     }
+
 
     private void Navigate(
         NavigationItem? item)
@@ -93,39 +130,73 @@ public class ShellViewModel : INotifyPropertyChanged
         if (item == null)
             return;
 
+
         switch (item.Title)
         {
             case "Dashboard":
-                CurrentPage = new DashboardView();
+
+                CurrentPage =
+                    new DashboardView();
+
                 break;
+
 
             case "Acquisition":
+
                 if (_authorizationService.CanCreateJob())
-                    CurrentPage = new AcquisitionView();
+                {
+                    CurrentPage =
+                        new AcquisitionView();
+                }
+
                 break;
+
 
             case "Calculator":
-                CurrentPage = new CalculatorView();
+
+                CurrentPage =
+                    new CalculatorView();
+
                 break;
+
 
             case "Reports":
+
                 if (_authorizationService.CanGenerateReports())
-                    CurrentPage = new ReportView();
+                {
+                    CurrentPage =
+                        new ReportDashboardView();
+                }
+
                 break;
+
 
             case "Review":
+
                 if (_authorizationService.CanReview())
-                    CurrentPage = new ReviewView();
+                {
+                    CurrentPage =
+                        new ReviewView();
+                }
+
                 break;
 
+
             case "Settings":
+
                 if (_authorizationService.CanOpenSettings())
-                    CurrentPage = new SettingsView();
+                {
+                    CurrentPage =
+                        new SettingsView();
+                }
+
                 break;
         }
     }
 
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
 
     private void OnPropertyChanged(
         [CallerMemberName] string name = "")
