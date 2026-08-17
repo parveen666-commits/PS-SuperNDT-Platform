@@ -20,8 +20,8 @@ public class ShellViewModel : INotifyPropertyChanged
 
     public ICommand NavigateCommand { get; }
 
-
-    private UserControl _currentPage = new DashboardView();
+    private UserControl _currentPage =
+        new DashboardView();
 
     public UserControl CurrentPage
     {
@@ -32,7 +32,6 @@ public class ShellViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
 
     private string _currentTime = "";
 
@@ -46,7 +45,6 @@ public class ShellViewModel : INotifyPropertyChanged
         }
     }
 
-
     public ShellViewModel()
     {
         _authorizationService =
@@ -54,82 +52,87 @@ public class ShellViewModel : INotifyPropertyChanged
                 new AccessControlService(
                     new UserRoleService()));
 
-
         MenuItems =
-            new ObservableCollection<NavigationItem>()
+            new ObservableCollection<NavigationItem>
             {
-                new NavigationItem()
+                new NavigationItem
                 {
                     Title = "Dashboard"
                 },
 
-                new NavigationItem()
+                new NavigationItem
                 {
                     Title = "Acquisition"
                 },
 
-                new NavigationItem()
+                new NavigationItem
                 {
                     Title = "Review"
                 },
 
-                new NavigationItem()
+                new NavigationItem
                 {
                     Title = "Calculator"
                 },
 
-                new NavigationItem()
+                new NavigationItem
                 {
                     Title = "Reports"
                 },
 
-                new NavigationItem()
+                new NavigationItem
                 {
                     Title = "Settings"
                 }
             };
 
-
         if (_authorizationService.CanManageUsers())
         {
             MenuItems.Add(
-                new NavigationItem()
+                new NavigationItem
                 {
                     Title = "User Management"
                 });
         }
 
+        if (_authorizationService.CanViewAuditLog())
+        {
+            MenuItems.Add(
+                new NavigationItem
+                {
+                    Title = "Audit Log"
+                });
+        }
 
         NavigateCommand =
             new RelayCommand(
-                item => Navigate(item as NavigationItem));
+                item =>
+                    Navigate(
+                        item as NavigationItem));
 
+        var timer =
+            new DispatcherTimer
+            {
+                Interval =
+                    TimeSpan.FromSeconds(1)
+            };
 
-        DispatcherTimer timer =
-            new DispatcherTimer();
-
-        timer.Interval =
-            TimeSpan.FromSeconds(1);
-
-
-        timer.Tick += (s, e) =>
-        {
-            CurrentTime =
-                DateTime.Now.ToString(
-                    "dd-MMM-yyyy HH:mm:ss");
-        };
-
+        timer.Tick +=
+            (s, e) =>
+            {
+                CurrentTime =
+                    DateTime.Now.ToString(
+                        "dd-MMM-yyyy HH:mm:ss");
+            };
 
         timer.Start();
     }
-
 
     private void Navigate(
         NavigationItem? item)
     {
         if (item == null)
             return;
-
 
         switch (item.Title)
         {
@@ -139,7 +142,6 @@ public class ShellViewModel : INotifyPropertyChanged
                     new DashboardView();
 
                 break;
-
 
             case "Acquisition":
 
@@ -151,6 +153,15 @@ public class ShellViewModel : INotifyPropertyChanged
 
                 break;
 
+            case "Review":
+
+                if (_authorizationService.CanReview())
+                {
+                    CurrentPage =
+                        new ReviewView();
+                }
+
+                break;
 
             case "Calculator":
 
@@ -158,7 +169,6 @@ public class ShellViewModel : INotifyPropertyChanged
                     new CalculatorView();
 
                 break;
-
 
             case "Reports":
 
@@ -170,18 +180,6 @@ public class ShellViewModel : INotifyPropertyChanged
 
                 break;
 
-
-            case "Review":
-
-                if (_authorizationService.CanReview())
-                {
-                    CurrentPage =
-                        new ReviewView();
-                }
-
-                break;
-
-
             case "Settings":
 
                 if (_authorizationService.CanOpenSettings())
@@ -191,18 +189,38 @@ public class ShellViewModel : INotifyPropertyChanged
                 }
 
                 break;
+
+            case "User Management":
+
+                if (_authorizationService.CanManageUsers())
+                {
+                    CurrentPage =
+                        new UserManagementView();
+                }
+
+                break;
+
+            case "Audit Log":
+
+                if (_authorizationService.CanViewAuditLog())
+                {
+                    CurrentPage =
+                        new AuditLogView();
+                }
+
+                break;
         }
     }
 
-
     public event PropertyChangedEventHandler? PropertyChanged;
 
-
     private void OnPropertyChanged(
-        [CallerMemberName] string name = "")
+        [CallerMemberName]
+        string name = "")
     {
         PropertyChanged?.Invoke(
             this,
-            new PropertyChangedEventArgs(name));
+            new PropertyChangedEventArgs(
+                name));
     }
 }

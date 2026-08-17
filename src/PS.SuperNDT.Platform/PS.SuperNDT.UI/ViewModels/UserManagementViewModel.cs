@@ -14,10 +14,12 @@ namespace PS.SuperNDT.UI.ViewModels;
 public class UserManagementViewModel : INotifyPropertyChanged
 {
     private readonly UserManagementService _userManagementService;
+    private readonly AuditLogService _auditLogService;
 
     private UserModel? _selectedUser;
 
-    public ObservableCollection<UserModel> Users { get; } = new();
+    public ObservableCollection<UserModel> Users { get; } =
+        new();
 
     public UserModel? SelectedUser
     {
@@ -58,6 +60,9 @@ public class UserManagementViewModel : INotifyPropertyChanged
         _userManagementService =
             new UserManagementService();
 
+        _auditLogService =
+            new AuditLogService();
+
         AddUserCommand =
             new RelayCommand(
                 _ => AddUser());
@@ -95,19 +100,27 @@ public class UserManagementViewModel : INotifyPropertyChanged
 
     private void AddUser()
     {
-        var user = new UserModel
-        {
-            Username = string.Empty,
-            Password = string.Empty,
-            FullName = string.Empty,
-            Role = UserRole.Operator,
-            IsActive = true
-        };
+        var user =
+            new UserModel
+            {
+                Username =
+                    $"user{Users.Count + 1}",
+
+                FullName =
+                    "New User",
+
+                Role =
+                    UserRole.Operator,
+
+                IsActive =
+                    true
+            };
 
         var dialog =
             new UserEditorDialog(user)
             {
-                Owner = Application.Current.MainWindow
+                Owner =
+                    GetOwnerWindow()
             };
 
         if (dialog.ShowDialog() != true)
@@ -116,13 +129,19 @@ public class UserManagementViewModel : INotifyPropertyChanged
         if (!_userManagementService.AddOrUpdate(user))
         {
             MessageBox.Show(
-                "Username already exists or the user data is invalid.",
+                "Unable to create user. Username may already exist.",
                 "User Management",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
 
             return;
         }
+
+        _auditLogService.Add(
+            UserSessionService.Instance.Username,
+            "User Created",
+            "User Management",
+            $"User '{user.Username}' was created with role '{user.Role}'.");
 
         LoadUsers();
     }
@@ -132,26 +151,17 @@ public class UserManagementViewModel : INotifyPropertyChanged
         if (SelectedUser == null)
             return;
 
-        var originalUsername =
-            SelectedUser.Username;
-
         var user =
-            new UserModel
-            {
-                Id = SelectedUser.Id,
-                Username = SelectedUser.Username,
-                Password = SelectedUser.Password,
-                FullName = SelectedUser.FullName,
-                Role = SelectedUser.Role,
-                IsActive = SelectedUser.IsActive,
-                CreatedOn = SelectedUser.CreatedOn,
-                LastLoginOn = SelectedUser.LastLoginOn
-            };
+            SelectedUser;
+
+        var usernameBeforeEdit =
+            user.Username;
 
         var dialog =
             new UserEditorDialog(user)
             {
-                Owner = Application.Current.MainWindow
+                Owner =
+                    GetOwnerWindow()
             };
 
         if (dialog.ShowDialog() != true)
@@ -160,7 +170,7 @@ public class UserManagementViewModel : INotifyPropertyChanged
         if (!_userManagementService.AddOrUpdate(user))
         {
             MessageBox.Show(
-                "Username already exists or the user data is invalid.",
+                "Unable to update user. Username may already exist.",
                 "User Management",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -168,17 +178,11 @@ public class UserManagementViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (!string.Equals(
-                originalUsername,
-                user.Username,
-                StringComparison.OrdinalIgnoreCase))
-        {
-            MessageBox.Show(
-                "Username updated successfully.",
-                "User Management",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
+        _auditLogService.Add(
+            UserSessionService.Instance.Username,
+            "User Updated",
+            "User Management",
+            $"User '{usernameBeforeEdit}' was updated.");
 
         LoadUsers();
     }
@@ -194,7 +198,7 @@ public class UserManagementViewModel : INotifyPropertyChanged
         var result =
             MessageBox.Show(
                 $"Delete user '{username}'?",
-                "Confirm Delete",
+                "User Management",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -204,7 +208,7 @@ public class UserManagementViewModel : INotifyPropertyChanged
         if (!_userManagementService.Delete(username))
         {
             MessageBox.Show(
-                "User could not be deleted.",
+                "Unable to delete user.",
                 "User Management",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -212,7 +216,21 @@ public class UserManagementViewModel : INotifyPropertyChanged
             return;
         }
 
+        _auditLogService.Add(
+            UserSessionService.Instance.Username,
+            "User Deleted",
+            "User Management",
+            $"User '{username}' was deleted.");
+
         LoadUsers();
+    }
+
+    private static Window? GetOwnerWindow()
+    {
+        return Application.Current?.Windows.Count > 0
+            ? Application.Current.Windows[
+                Application.Current.Windows.Count - 1]
+            : null;
     }
 
     private void RaiseCommandCanExecuteChanged()
@@ -231,11 +249,13 @@ public class UserManagementViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(
-        [CallerMemberName] string propertyName = "")
+        [CallerMemberName]
+        string propertyName = "")
     {
         PropertyChanged?.Invoke(
             this,
-            new PropertyChangedEventArgs(propertyName));
+            new PropertyChangedEventArgs(
+                propertyName));
 
         RaiseCommandCanExecuteChanged();
     }

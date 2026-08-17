@@ -22,6 +22,13 @@ public partial class MainMenu : UserControl
         NewJobMenuItem.Click += NewJobMenuItem_Click;
         OpenJobMenuItem.Click += OpenJobMenuItem_Click;
         CloseJobMenuItem.Click += CloseJobMenuItem_Click;
+
+        UserManagementMenuItem.Click +=
+            UserManagementMenuItem_Click;
+
+        AuditLogMenuItem.Click +=
+            AuditLogMenuItem_Click;
+
         LogoutMenuItem.Click += LogoutMenuItem_Click;
         ExitMenuItem.Click += ExitMenuItem_Click;
     }
@@ -32,11 +39,8 @@ public partial class MainMenu : UserControl
     {
         if (!_authorizationService.CanCreateJob())
         {
-            MessageBox.Show(
-                "You do not have permission to create a job.",
-                "PS SuperNDT",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            ShowAccessDenied(
+                "You do not have permission to create a job.");
 
             return;
         }
@@ -55,11 +59,8 @@ public partial class MainMenu : UserControl
     {
         if (!_authorizationService.CanOpenJob())
         {
-            MessageBox.Show(
-                "You do not have permission to open a job.",
-                "PS SuperNDT",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            ShowAccessDenied(
+                "You do not have permission to open a job.");
 
             return;
         }
@@ -78,11 +79,8 @@ public partial class MainMenu : UserControl
     {
         if (!_authorizationService.CanOpenJob())
         {
-            MessageBox.Show(
-                "You do not have permission to close a job.",
-                "PS SuperNDT",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            ShowAccessDenied(
+                "You do not have permission to close a job.");
 
             return;
         }
@@ -114,6 +112,62 @@ public partial class MainMenu : UserControl
             "PS SuperNDT",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+    }
+
+    private void UserManagementMenuItem_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (!_authorizationService.CanManageUsers())
+        {
+            ShowAccessDenied(
+                "You do not have permission to manage users.");
+
+            return;
+        }
+
+        var window = new Window
+        {
+            Title = "PS SuperNDT - User Management",
+            Width = 1100,
+            Height = 700,
+            MinWidth = 900,
+            MinHeight = 550,
+            WindowStartupLocation =
+                WindowStartupLocation.CenterOwner,
+            Owner = Window.GetWindow(this),
+            Content = new UserManagementView()
+        };
+
+        window.ShowDialog();
+    }
+
+    private void AuditLogMenuItem_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (!_authorizationService.CanViewAuditLog())
+        {
+            ShowAccessDenied(
+                "You do not have permission to view the audit log.");
+
+            return;
+        }
+
+        var window = new Window
+        {
+            Title = "PS SuperNDT - Audit Log",
+            Width = 1200,
+            Height = 700,
+            MinWidth = 950,
+            MinHeight = 550,
+            WindowStartupLocation =
+                WindowStartupLocation.CenterOwner,
+            Owner = Window.GetWindow(this),
+            Content = new AuditLogView()
+        };
+
+        window.ShowDialog();
     }
 
     private void LogoutMenuItem_Click(
@@ -193,5 +247,15 @@ public partial class MainMenu : UserControl
         RoutedEventArgs e)
     {
         Application.Current.Shutdown();
+    }
+
+    private static void ShowAccessDenied(
+        string message)
+    {
+        MessageBox.Show(
+            message,
+            "Access Denied",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
     }
 }

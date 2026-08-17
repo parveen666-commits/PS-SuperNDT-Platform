@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
@@ -13,9 +15,16 @@ public class AuditLogViewModel : INotifyPropertyChanged
     public ObservableCollection<AuditLogModel> Logs { get; } =
         new();
 
+    public ICommand RefreshCommand { get; }
+
     public AuditLogViewModel()
     {
-        _auditLogService = new AuditLogService();
+        _auditLogService =
+            new AuditLogService();
+
+        RefreshCommand =
+            new RelayCommand(
+                _ => LoadLogs());
 
         LoadLogs();
     }
@@ -28,15 +37,19 @@ public class AuditLogViewModel : INotifyPropertyChanged
         {
             Logs.Add(log);
         }
+
+        OnPropertyChanged(nameof(Logs));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(
-        [CallerMemberName] string propertyName = "")
+        [CallerMemberName]
+        string propertyName = "")
     {
         PropertyChanged?.Invoke(
             this,
-            new PropertyChangedEventArgs(propertyName));
+            new PropertyChangedEventArgs(
+                propertyName));
     }
 }

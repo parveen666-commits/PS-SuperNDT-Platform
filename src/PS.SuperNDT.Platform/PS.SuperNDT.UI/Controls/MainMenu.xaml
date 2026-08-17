@@ -6,36 +6,59 @@
 
     <UserControl.Resources>
 
-        <SolidColorBrush x:Key="MenuBackgroundBrush" Color="#252B33"/>
-        <SolidColorBrush x:Key="MenuForegroundBrush" Color="#EAEAEA"/>
-        <SolidColorBrush x:Key="MenuHoverBrush" Color="#0E639C"/>
-        <SolidColorBrush x:Key="MenuBorderBrush" Color="#3A404C"/>
-        <SolidColorBrush x:Key="SubMenuBackgroundBrush" Color="#2B313C"/>
+        <SolidColorBrush x:Key="MenuBackgroundBrush"
+                         Color="#252B33"/>
+
+        <SolidColorBrush x:Key="MenuForegroundBrush"
+                         Color="#EAEAEA"/>
+
+        <SolidColorBrush x:Key="MenuHoverBrush"
+                         Color="#0E639C"/>
+
+        <SolidColorBrush x:Key="MenuBorderBrush"
+                         Color="#3A404C"/>
+
+        <SolidColorBrush x:Key="SubMenuBackgroundBrush"
+                         Color="#2B313C"/>
 
         <Style TargetType="{x:Type Menu}">
-            <Setter Property="Background" Value="{StaticResource MenuBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource MenuForegroundBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background"
+                    Value="{StaticResource MenuBackgroundBrush}"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource MenuForegroundBrush}"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+            <Setter Property="Padding"
+                    Value="0"/>
         </Style>
 
         <Style TargetType="{x:Type Separator}">
-            <Setter Property="Background" Value="#3F4653"/>
-            <Setter Property="Height" Value="1"/>
-            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Background"
+                    Value="#3F4653"/>
+            <Setter Property="Height"
+                    Value="1"/>
+            <Setter Property="Margin"
+                    Value="4"/>
         </Style>
 
         <Style TargetType="{x:Type MenuItem}">
-            <Setter Property="Foreground" Value="{StaticResource MenuForegroundBrush}"/>
-            <Setter Property="Background" Value="{StaticResource MenuBackgroundBrush}"/>
-            <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground"
+                    Value="{StaticResource MenuForegroundBrush}"/>
+            <Setter Property="Background"
+                    Value="{StaticResource MenuBackgroundBrush}"/>
+            <Setter Property="Padding"
+                    Value="10,5"/>
+            <Setter Property="FontSize"
+                    Value="13"/>
 
             <Style.Triggers>
 
-                <Trigger Property="IsHighlighted" Value="True">
-                    <Setter Property="Background" Value="{StaticResource MenuHoverBrush}"/>
-                    <Setter Property="Foreground" Value="White"/>
+                <Trigger Property="IsHighlighted"
+                         Value="True">
+                    <Setter Property="Background"
+                            Value="{StaticResource MenuHoverBrush}"/>
+                    <Setter Property="Foreground"
+                            Value="White"/>
                 </Trigger>
 
             </Style.Triggers>
@@ -44,7 +67,10 @@
         <Style x:Key="SubMenuItemStyle"
                TargetType="{x:Type MenuItem}"
                BasedOn="{StaticResource {x:Type MenuItem}}">
-            <Setter Property="Background" Value="{StaticResource SubMenuBackgroundBrush}"/>
+
+            <Setter Property="Background"
+                    Value="{StaticResource SubMenuBackgroundBrush}"/>
+
         </Style>
 
     </UserControl.Resources>
@@ -56,6 +82,8 @@
         <Menu Background="#252B33"
               Foreground="White"
               FontSize="14">
+
+            <!-- FILE -->
 
             <MenuItem Header="_File">
 
@@ -97,6 +125,8 @@
 
             </MenuItem>
 
+            <!-- VIEW -->
+
             <MenuItem Header="_View">
 
                 <MenuItem Header="Dashboard"
@@ -117,7 +147,19 @@
                 <MenuItem Header="Settings"
                           Style="{StaticResource SubMenuItemStyle}"/>
 
+                <Separator/>
+
+                <MenuItem Header="User Management"
+                          Name="UserManagementMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Audit Log"
+                          Name="AuditLogMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
             </MenuItem>
+
+            <!-- DETECTOR -->
 
             <MenuItem Header="_Detector">
 
@@ -134,6 +176,8 @@
 
             </MenuItem>
 
+            <!-- PLC -->
+
             <MenuItem Header="_PLC">
 
                 <MenuItem Header="Connect"
@@ -149,6 +193,8 @@
 
             </MenuItem>
 
+            <!-- TOOLS -->
+
             <MenuItem Header="_Tools">
 
                 <MenuItem Header="Exposure Calculator"
@@ -161,6 +207,8 @@
                           Style="{StaticResource SubMenuItemStyle}"/>
 
             </MenuItem>
+
+            <!-- HELP -->
 
             <MenuItem Header="_Help">
 

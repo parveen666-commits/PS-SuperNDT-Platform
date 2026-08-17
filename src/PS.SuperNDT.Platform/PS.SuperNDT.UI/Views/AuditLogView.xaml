@@ -30,7 +30,8 @@
 
             <Button Content="Refresh"
                     Width="120"
-                    Height="35"/>
+                    Height="35"
+                    Command="{Binding RefreshCommand}"/>
 
         </StackPanel>
 
@@ -41,12 +42,16 @@
             <DataGrid ItemsSource="{Binding Logs}"
                       Margin="10"
                       AutoGenerateColumns="False"
-                      IsReadOnly="True">
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      SelectionMode="Single"
+                      HeadersVisibility="Column">
 
                 <DataGrid.Columns>
 
                     <DataGridTextColumn Header="Time"
-                                        Binding="{Binding Timestamp}"
+                                        Binding="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                         Width="180"/>
 
                     <DataGridTextColumn Header="User"
@@ -55,11 +60,11 @@
 
                     <DataGridTextColumn Header="Action"
                                         Binding="{Binding Action}"
-                                        Width="120"/>
+                                        Width="140"/>
 
                     <DataGridTextColumn Header="Module"
                                         Binding="{Binding Module}"
-                                        Width="150"/>
+                                        Width="160"/>
 
                     <DataGridTextColumn Header="Description"
                                         Binding="{Binding Description}"
