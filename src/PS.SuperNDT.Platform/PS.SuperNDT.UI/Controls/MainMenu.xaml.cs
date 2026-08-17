@@ -22,6 +22,7 @@ public partial class MainMenu : UserControl
         NewJobMenuItem.Click += NewJobMenuItem_Click;
         OpenJobMenuItem.Click += OpenJobMenuItem_Click;
         CloseJobMenuItem.Click += CloseJobMenuItem_Click;
+        LogoutMenuItem.Click += LogoutMenuItem_Click;
         ExitMenuItem.Click += ExitMenuItem_Click;
     }
 
@@ -113,6 +114,78 @@ public partial class MainMenu : UserControl
             "PS SuperNDT",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+    }
+
+    private void LogoutMenuItem_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        var username =
+            UserSessionService.Instance.Username;
+
+        var result = MessageBox.Show(
+            "Do you want to logout from PS SuperNDT?",
+            "Logout",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        var auditLogService =
+            new AuditLogService();
+
+        auditLogService.Add(
+            username,
+            "Logout",
+            "Security",
+            "User logged out successfully.");
+
+        UserSessionService.Instance.Logout();
+
+        var currentWindow =
+            Window.GetWindow(this);
+
+        if (currentWindow == null)
+        {
+            Application.Current.Shutdown();
+            return;
+        }
+
+        currentWindow.Hide();
+
+        var loginWindow =
+            new Window
+            {
+                Title = "PS SuperNDT Login",
+                Width = 500,
+                Height = 450,
+                WindowStartupLocation =
+                    WindowStartupLocation.CenterScreen,
+                ResizeMode =
+                    ResizeMode.NoResize,
+                Content = new LoginView()
+            };
+
+        var loginResult =
+            loginWindow.ShowDialog();
+
+        if (loginResult == true)
+        {
+            var shell =
+                new ShellWindow();
+
+            Application.Current.MainWindow =
+                shell;
+
+            shell.Show();
+
+            currentWindow.Close();
+
+            return;
+        }
+
+        Application.Current.Shutdown();
     }
 
     private void ExitMenuItem_Click(

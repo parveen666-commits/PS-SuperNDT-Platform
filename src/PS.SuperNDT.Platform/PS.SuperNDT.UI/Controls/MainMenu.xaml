@@ -85,6 +85,12 @@
 
                 <Separator/>
 
+                <MenuItem Header="_Logout"
+                          Name="LogoutMenuItem"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <Separator/>
+
                 <MenuItem Header="E_xit"
                           Name="ExitMenuItem"
                           Style="{StaticResource SubMenuItemStyle}"/>
@@ -93,19 +99,33 @@
 
             <MenuItem Header="_View">
 
-                <MenuItem Header="Dashboard" Style="{StaticResource SubMenuItemStyle}"/>
-                <MenuItem Header="Acquisition" Style="{StaticResource SubMenuItemStyle}"/>
-                <MenuItem Header="Review" Style="{StaticResource SubMenuItemStyle}"/>
-                <MenuItem Header="Calculator" Style="{StaticResource SubMenuItemStyle}"/>
-                <MenuItem Header="Reports" Style="{StaticResource SubMenuItemStyle}"/>
-                <MenuItem Header="Settings" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Dashboard"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Acquisition"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Review"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Calculator"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Reports"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Settings"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
             </MenuItem>
 
             <MenuItem Header="_Detector">
 
-                <MenuItem Header="Connect" Style="{StaticResource SubMenuItemStyle}"/>
-                <MenuItem Header="Disconnect" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Connect"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Disconnect"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
                 <Separator/>
 
@@ -116,8 +136,11 @@
 
             <MenuItem Header="_PLC">
 
-                <MenuItem Header="Connect" Style="{StaticResource SubMenuItemStyle}"/>
-                <MenuItem Header="Disconnect" Style="{StaticResource SubMenuItemStyle}"/>
+                <MenuItem Header="Connect"
+                          Style="{StaticResource SubMenuItemStyle}"/>
+
+                <MenuItem Header="Disconnect"
+                          Style="{StaticResource SubMenuItemStyle}"/>
 
                 <Separator/>
 

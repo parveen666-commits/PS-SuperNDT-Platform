@@ -2,8 +2,10 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using PS.SuperNDT.UI.Commands;
+using PS.SuperNDT.UI.Dialogs;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
@@ -13,12 +15,11 @@ public class UserManagementViewModel : INotifyPropertyChanged
 {
     private readonly UserManagementService _userManagementService;
 
-    private UserRoleModel? _selectedUser;
+    private UserModel? _selectedUser;
 
-    public ObservableCollection<UserRoleModel> Users { get; } =
-        new();
+    public ObservableCollection<UserModel> Users { get; } = new();
 
-    public UserRoleModel? SelectedUser
+    public UserModel? SelectedUser
     {
         get => _selectedUser;
         set
@@ -94,15 +95,34 @@ public class UserManagementViewModel : INotifyPropertyChanged
 
     private void AddUser()
     {
-        var user = new UserRoleModel
+        var user = new UserModel
         {
-            Username = $"user{Users.Count + 1}",
-            FullName = "New User",
-            Role = "Operator",
+            Username = string.Empty,
+            Password = string.Empty,
+            FullName = string.Empty,
+            Role = UserRole.Operator,
             IsActive = true
         };
 
-        _userManagementService.AddOrUpdate(user);
+        var dialog =
+            new UserEditorDialog(user)
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        if (!_userManagementService.AddOrUpdate(user))
+        {
+            MessageBox.Show(
+                "Username already exists or the user data is invalid.",
+                "User Management",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
 
         LoadUsers();
     }
@@ -112,8 +132,53 @@ public class UserManagementViewModel : INotifyPropertyChanged
         if (SelectedUser == null)
             return;
 
-        _userManagementService.AddOrUpdate(
-            SelectedUser);
+        var originalUsername =
+            SelectedUser.Username;
+
+        var user =
+            new UserModel
+            {
+                Id = SelectedUser.Id,
+                Username = SelectedUser.Username,
+                Password = SelectedUser.Password,
+                FullName = SelectedUser.FullName,
+                Role = SelectedUser.Role,
+                IsActive = SelectedUser.IsActive,
+                CreatedOn = SelectedUser.CreatedOn,
+                LastLoginOn = SelectedUser.LastLoginOn
+            };
+
+        var dialog =
+            new UserEditorDialog(user)
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        if (!_userManagementService.AddOrUpdate(user))
+        {
+            MessageBox.Show(
+                "Username already exists or the user data is invalid.",
+                "User Management",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
+
+        if (!string.Equals(
+                originalUsername,
+                user.Username,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show(
+                "Username updated successfully.",
+                "User Management",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
 
         LoadUsers();
     }
@@ -123,8 +188,29 @@ public class UserManagementViewModel : INotifyPropertyChanged
         if (!CanDeleteUser || SelectedUser == null)
             return;
 
-        _userManagementService.Delete(
-            SelectedUser.Username);
+        var username =
+            SelectedUser.Username;
+
+        var result =
+            MessageBox.Show(
+                $"Delete user '{username}'?",
+                "Confirm Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        if (!_userManagementService.Delete(username))
+        {
+            MessageBox.Show(
+                "User could not be deleted.",
+                "User Management",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
 
         LoadUsers();
     }

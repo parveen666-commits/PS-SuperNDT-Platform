@@ -8,31 +8,29 @@ namespace PS.SuperNDT.UI.ViewModels;
 public class LoginViewModel : INotifyPropertyChanged
 {
     private readonly UserService _userService;
+    private readonly AuditLogService _auditLogService;
 
     private string _username = string.Empty;
-
     private string _password = string.Empty;
-
     private string _message = string.Empty;
-
 
     public LoginViewModel()
     {
         _userService =
             new UserService();
 
+        _auditLogService =
+            new AuditLogService();
 
         LoginCommand =
             new RelayCommand(
                 _ => Login());
     }
 
-
     public RelayCommand LoginCommand
     {
         get;
     }
-
 
     public string Username
     {
@@ -49,7 +47,6 @@ public class LoginViewModel : INotifyPropertyChanged
         }
     }
 
-
     public string Password
     {
         get => _password;
@@ -64,7 +61,6 @@ public class LoginViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-
 
     public string Message
     {
@@ -81,58 +77,57 @@ public class LoginViewModel : INotifyPropertyChanged
         }
     }
 
-
     public bool Login()
     {
         if (string.IsNullOrWhiteSpace(Username))
         {
-            Message =
-                "Enter Username";
-
+            Message = "Enter Username";
             return false;
         }
-
 
         if (string.IsNullOrWhiteSpace(Password))
         {
-            Message =
-                "Enter Password";
-
+            Message = "Enter Password";
             return false;
         }
-
 
         var user =
             _userService.Login(
                 Username,
                 Password);
 
-
         if (user == null)
         {
+            _auditLogService.Add(
+                Username.Trim(),
+                "Login Failed",
+                "Security",
+                "Invalid username or password.");
+
             Message =
                 "Invalid username or password";
 
             return false;
         }
 
-
         UserSessionService.Instance.Login(
             user.Username,
             user.FullName,
             user.Role.ToString());
 
+        _auditLogService.Add(
+            user.Username,
+            "Login",
+            "Security",
+            $"User logged in successfully with role {user.Role}.");
 
         Message =
             "Login Successful";
 
-
         return true;
     }
 
-
     public event PropertyChangedEventHandler? PropertyChanged;
-
 
     private void OnPropertyChanged(
         [CallerMemberName]

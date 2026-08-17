@@ -1,45 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class UserService
 {
-    private static readonly List<UserModel> _users = new();
+    private readonly string _usersFile =
+        Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "users.json");
 
     public UserService()
     {
-        if (_users.Count == 0)
-        {
-            _users.Add(new UserModel
-            {
-                Username = "admin",
-                Password = "admin",
-                FullName = "System Administrator",
-                Role = UserRole.Admin,
-                IsActive = true
-            });
-        }
+        EnsureDefaultAdmin();
     }
 
     public List<UserModel> GetAll()
     {
-        return _users
+        return LoadUsers()
             .OrderBy(x => x.Username)
             .ToList();
     }
 
     public UserModel? GetById(Guid id)
     {
-        return _users
+        return LoadUsers()
             .FirstOrDefault(x => x.Id == id);
     }
 
-    public UserModel? GetByUsername(string username)
+    public UserModel? GetByUsername(
+        string username)
     {
-        return _users
+        if (string.IsNullOrWhiteSpace(username))
+            return null;
+
+        return LoadUsers()
             .FirstOrDefault(x =>
                 string.Equals(
                     x.Username,
@@ -49,10 +48,15 @@ public sealed class UserService
 
     public bool Create(UserModel user)
     {
-        if (user == null)
+        if (user == null ||
+            string.IsNullOrWhiteSpace(user.Username))
+        {
             return false;
+        }
 
-        if (_users.Any(x =>
+        var users = LoadUsers();
+
+        if (users.Any(x =>
                 string.Equals(
                     x.Username,
                     user.Username,
@@ -61,7 +65,9 @@ public sealed class UserService
             return false;
         }
 
-        _users.Add(user);
+        users.Add(user);
+
+        SaveUsers(users);
 
         return true;
     }
@@ -70,8 +76,10 @@ public sealed class UserService
         string username,
         string password)
     {
+        var users = LoadUsers();
+
         var user =
-            _users.FirstOrDefault(x =>
+            users.FirstOrDefault(x =>
                 x.IsActive &&
                 string.Equals(
                     x.Username,
@@ -79,22 +87,101 @@ public sealed class UserService
                     StringComparison.OrdinalIgnoreCase) &&
                 x.Password == password);
 
-        if (user != null)
-        {
-            user.LastLoginOn = DateTime.Now;
-        }
+        if (user == null)
+            return null;
+
+        user.LastLoginOn = DateTime.Now;
+
+        SaveUsers(users);
 
         return user;
     }
 
     public void Delete(Guid id)
     {
-        var user =
-            _users.FirstOrDefault(x => x.Id == id);
+        var users = LoadUsers();
 
-        if (user != null)
+        var user =
+            users.FirstOrDefault(x =>
+                x.Id == id);
+
+        if (user == null)
+            return;
+
+        if (string.Equals(
+                user.Username,
+                "admin",
+                StringComparison.OrdinalIgnoreCase))
         {
-            _users.Remove(user);
+            return;
+        }
+
+        users.Remove(user);
+
+        SaveUsers(users);
+    }
+
+    private List<UserModel> LoadUsers()
+    {
+        try
+        {
+            if (!File.Exists(_usersFile))
+            {
+                return new List<UserModel>();
+            }
+
+            var json =
+                File.ReadAllText(_usersFile);
+
+            return JsonSerializer.Deserialize<List<UserModel>>(json)
+                   ?? new List<UserModel>();
+        }
+        catch
+        {
+            return new List<UserModel>();
+        }
+    }
+
+    private void SaveUsers(
+        List<UserModel> users)
+    {
+        var json =
+            JsonSerializer.Serialize(
+                users,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+        File.WriteAllText(
+            _usersFile,
+            json);
+    }
+
+    private void EnsureDefaultAdmin()
+    {
+        var users = LoadUsers();
+
+        var admin =
+            users.FirstOrDefault(x =>
+                string.Equals(
+                    x.Username,
+                    "admin",
+                    StringComparison.OrdinalIgnoreCase));
+
+        if (admin == null)
+        {
+            users.Add(
+                new UserModel
+                {
+                    Username = "admin",
+                    Password = "admin",
+                    FullName = "System Administrator",
+                    Role = UserRole.Admin,
+                    IsActive = true
+                });
+
+            SaveUsers(users);
         }
     }
 }
