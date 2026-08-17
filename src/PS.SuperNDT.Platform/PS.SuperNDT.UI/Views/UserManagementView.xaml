@@ -35,21 +35,25 @@
             <Button Content="Refresh"
                     Width="120"
                     Height="35"
-                    Margin="0,0,10,0"/>
+                    Margin="0,0,10,0"
+                    Command="{Binding RefreshCommand}"/>
 
             <Button Content="Add User"
                     Width="120"
                     Height="35"
-                    Margin="0,0,10,0"/>
+                    Margin="0,0,10,0"
+                    Command="{Binding AddUserCommand}"/>
 
             <Button Content="Edit User"
                     Width="120"
                     Height="35"
-                    Margin="0,0,10,0"/>
+                    Margin="0,0,10,0"
+                    Command="{Binding UpdateUserCommand}"/>
 
             <Button Content="Delete User"
                     Width="120"
-                    Height="35"/>
+                    Height="35"
+                    Command="{Binding DeleteUserCommand}"/>
 
         </StackPanel>
 
@@ -60,10 +64,12 @@
                 CornerRadius="8">
 
             <DataGrid ItemsSource="{Binding Users}"
-                      SelectedItem="{Binding SelectedUser}"
+                      SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
                       Margin="10"
                       AutoGenerateColumns="False"
-                      IsReadOnly="True">
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      SelectionUnit="FullRow">
 
                 <DataGrid.Columns>
 

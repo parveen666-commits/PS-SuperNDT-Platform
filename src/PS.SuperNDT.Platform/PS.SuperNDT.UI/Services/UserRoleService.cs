@@ -11,7 +11,7 @@ public sealed class UserRoleService
     public UserRoleService()
     {
         RegisterRole(
-            "Administrator",
+            "Admin",
             new[]
             {
                 "Dashboard",
@@ -27,13 +27,25 @@ public sealed class UserRoleService
             });
 
         RegisterRole(
-            "Level2",
+            "LevelII",
             new[]
             {
                 "Dashboard",
                 "Acquisition",
                 "Review",
                 "Reporting"
+            });
+
+        RegisterRole(
+            "LevelIII",
+            new[]
+            {
+                "Dashboard",
+                "Acquisition",
+                "Review",
+                "Reporting",
+                "Settings",
+                "Audit"
             });
 
         RegisterRole(
