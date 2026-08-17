@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 using PS.SuperNDT.UI.Database;
 using PS.SuperNDT.UI.Services;
 using PS.SuperNDT.UI.Views;
@@ -12,6 +13,12 @@ public partial class App : Application
     protected override void OnStartup(
         StartupEventArgs e)
     {
+        ShutdownMode =
+            ShutdownMode.OnExplicitShutdown;
+
+        DispatcherUnhandledException +=
+            App_DispatcherUnhandledException;
+
         base.OnStartup(e);
 
         try
@@ -83,18 +90,41 @@ public partial class App : Application
                 shell;
 
 
+            ShutdownMode =
+                ShutdownMode.OnMainWindowClose;
+
+
             shell.Show();
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                ex.ToString(),
-                "PS SuperNDT Startup Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            ShowStartupError(ex);
 
             Shutdown();
         }
+    }
+
+
+    private void App_DispatcherUnhandledException(
+        object sender,
+        DispatcherUnhandledExceptionEventArgs e)
+    {
+        ShowStartupError(e.Exception);
+
+        e.Handled = true;
+
+        Shutdown();
+    }
+
+
+    private static void ShowStartupError(
+        Exception ex)
+    {
+        MessageBox.Show(
+            ex.ToString(),
+            "PS SuperNDT Startup Error",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
     }
 
 
