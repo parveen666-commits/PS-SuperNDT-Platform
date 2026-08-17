@@ -19,8 +19,21 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         get => _selectedImage;
         set
         {
+            if (ReferenceEquals(_selectedImage, value))
+                return;
+
             _selectedImage = value;
+
             OnPropertyChanged();
+
+            if (value != null)
+            {
+                ImageViewerService.Instance.OpenImage(value);
+            }
+            else
+            {
+                ImageViewerService.Instance.Clear();
+            }
         }
     }
 
@@ -30,16 +43,30 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
         ImageViewerService.Instance.CurrentImageChanged +=
             ImageViewerService_CurrentImageChanged;
+
+        var currentImage =
+            ImageViewerService.Instance.CurrentImage;
+
+        if (currentImage != null)
+        {
+            _selectedImage = currentImage;
+            OnPropertyChanged(nameof(SelectedImage));
+        }
     }
 
     private void ImageViewerService_CurrentImageChanged(
         object? sender,
         System.EventArgs e)
     {
-        LoadImages();
-
-        SelectedImage =
+        var currentImage =
             ImageViewerService.Instance.CurrentImage;
+
+        if (ReferenceEquals(_selectedImage, currentImage))
+            return;
+
+        _selectedImage = currentImage;
+
+        OnPropertyChanged(nameof(SelectedImage));
     }
 
     private void LoadImages()
