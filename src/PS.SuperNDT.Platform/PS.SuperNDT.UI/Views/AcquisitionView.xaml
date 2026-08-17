@@ -8,7 +8,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="70"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="90"/>
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
@@ -21,7 +21,7 @@
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
-                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="350"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="Acquisition"
@@ -30,12 +30,22 @@
                            FontWeight="Bold"
                            VerticalAlignment="Center"/>
 
-                <TextBlock Grid.Column="1"
-                           Text="{Binding DetectorStatus}"
-                           Foreground="Orange"
-                           FontSize="18"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="{Binding DetectorStatus}"
+                               Foreground="Orange"
+                               FontSize="18"
+                               HorizontalAlignment="Right"/>
+
+                    <TextBlock Text="{Binding AcquisitionStatus}"
+                               Foreground="#B0BEC5"
+                               FontSize="12"
+                               HorizontalAlignment="Right"
+                               Margin="0,3,0,0"/>
+
+                </StackPanel>
 
             </Grid>
 
@@ -86,27 +96,27 @@
                                Margin="0,15,0,5"/>
 
                     <TextBox Height="35"
-                             Text="{Binding KV}"/>
+                             Text="{Binding KV, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="mA"
                                Foreground="White"
                                Margin="0,15,0,5"/>
 
                     <TextBox Height="35"
-                             Text="{Binding MA}"/>
+                             Text="{Binding MA, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Text="Exposure Time"
                                Foreground="White"
                                Margin="0,15,0,5"/>
 
                     <TextBox Height="35"
-                             Text="{Binding ExposureTime}"/>
+                             Text="{Binding ExposureTime, UpdateSourceTrigger=PropertyChanged}"/>
 
                 </StackPanel>
 
             </Border>
 
-            <!-- IMAGE -->
+            <!-- IMAGE AREA -->
 
             <Border Grid.Column="1"
                     Background="Black"
@@ -122,6 +132,41 @@
                                FontWeight="Bold"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
+
+                    <Border HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Margin="15"
+                            Padding="10,5"
+                            Background="#252B33"
+                            CornerRadius="5">
+
+                        <TextBlock Text="{Binding AcquisitionStatus}"
+                                   Foreground="#00E5FF"
+                                   FontSize="13"/>
+
+                    </Border>
+
+                    <Border HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="15"
+                            Padding="10,5"
+                            Background="#252B33"
+                            CornerRadius="5">
+
+                        <StackPanel Orientation="Horizontal">
+
+                            <TextBlock Text="Frame: "
+                                       Foreground="#B0BEC5"
+                                       FontSize="14"/>
+
+                            <TextBlock Text="{Binding FrameNumber}"
+                                       Foreground="#00E5FF"
+                                       FontSize="14"
+                                       FontWeight="Bold"/>
+
+                        </StackPanel>
+
+                    </Border>
 
                 </Grid>
 
@@ -143,6 +188,7 @@
 
                     <TextBlock Text="{Binding ConnectionStatus}"
                                Foreground="Lime"
+                               FontSize="16"
                                Margin="0,20,0,0"/>
 
                     <Separator Margin="0,20"/>
@@ -155,6 +201,25 @@
                                FontSize="30"
                                FontWeight="Bold"
                                Margin="0,10"/>
+
+                    <Separator Margin="0,15"/>
+
+                    <TextBlock Text="Exposure Summary"
+                               Foreground="White"
+                               FontSize="18"
+                               FontWeight="Bold"/>
+
+                    <TextBlock Text="{Binding KV, StringFormat=KV: {0:F1}}"
+                               Foreground="#B0BEC5"
+                               Margin="0,12,0,0"/>
+
+                    <TextBlock Text="{Binding MA, StringFormat=mA: {0:F2}}"
+                               Foreground="#B0BEC5"
+                               Margin="0,5,0,0"/>
+
+                    <TextBlock Text="{Binding ExposureTime, StringFormat=Time: {0:F2} s}"
+                               Foreground="#B0BEC5"
+                               Margin="0,5,0,0"/>
 
                 </StackPanel>
 
@@ -173,36 +238,40 @@
                         VerticalAlignment="Center">
 
                 <Button Content="Connect"
-                        Width="130"
+                        Width="120"
                         Height="45"
                         Margin="5"
                         Command="{Binding ConnectCommand}"/>
 
                 <Button Content="Capture"
-                        Width="130"
+                        Width="120"
                         Height="45"
                         Margin="5"
                         Command="{Binding CaptureCommand}"/>
 
                 <Button Content="Save"
-                        Width="130"
+                        Width="120"
                         Height="45"
-                        Margin="5"/>
+                        Margin="5"
+                        Command="{Binding SaveCommand}"/>
 
                 <Button Content="Retake"
-                        Width="130"
+                        Width="120"
                         Height="45"
-                        Margin="5"/>
+                        Margin="5"
+                        Command="{Binding RetakeCommand}"/>
 
                 <Button Content="Window / Level"
                         Width="150"
                         Height="45"
-                        Margin="5"/>
+                        Margin="5"
+                        Command="{Binding WindowLevelCommand}"/>
 
                 <Button Content="Zoom"
-                        Width="130"
+                        Width="120"
                         Height="45"
-                        Margin="5"/>
+                        Margin="5"
+                        Command="{Binding ZoomCommand}"/>
 
             </StackPanel>
 

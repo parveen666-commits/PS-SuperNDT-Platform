@@ -10,22 +10,30 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-
         <!-- HEADER -->
 
         <Border Grid.Row="0"
                 Background="#252B33"
                 CornerRadius="6">
 
-            <TextBlock Text="Image Viewer"
-                       Foreground="White"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       VerticalAlignment="Center"
-                       Margin="20,0"/>
+            <Grid Margin="20,0">
+
+                <TextBlock Text="Image Viewer"
+                           Foreground="White"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Text="{Binding ImageInfo}"
+                           Foreground="#B0BEC5"
+                           FontSize="12"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           TextAlignment="Right"/>
+
+            </Grid>
 
         </Border>
-
 
         <!-- VIEW AREA -->
 
@@ -38,32 +46,68 @@
 
             <Grid>
 
-                <TextBlock Text="NDT IMAGE DISPLAY AREA"
+                <!-- IMAGE -->
+
+                <Image Source="{Binding CurrentImage.FilePath}"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Margin="20"/>
+
+                <!-- NO IMAGE -->
+
+                <TextBlock Text="NO IMAGE SELECTED"
                            Foreground="Gray"
                            FontSize="28"
+                           FontWeight="Bold"
                            HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center">
+
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility"
+                                    Value="Collapsed"/>
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentImage}"
+                                             Value="{x:Null}">
+                                    <Setter Property="Visibility"
+                                            Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+
+                </TextBlock>
+
+                <!-- IMAGE INFORMATION -->
+
+                <Border HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="20"
+                        Width="280"
+                        Background="#252B33"
+                        CornerRadius="6"
+                        Opacity="0.95">
+
+                    <StackPanel Margin="15">
+
+                        <TextBlock Text="Image Information"
+                                   Foreground="White"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,12"/>
+
+                        <TextBlock Text="{Binding ImageInfo}"
+                                   Foreground="#D0D7DE"
+                                   FontSize="14"
+                                   TextWrapping="Wrap"/>
+
+                    </StackPanel>
+
+                </Border>
 
             </Grid>
-
-        </Border>
-
-
-        <!-- IMAGE INFORMATION -->
-
-        <Border Grid.Row="1"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="20"
-                Width="280"
-                Background="#252B33"
-                CornerRadius="6">
-
-            <TextBlock Text="{Binding ImageInfo}"
-                       Foreground="White"
-                       FontSize="16"
-                       Margin="15"
-                       TextWrapping="Wrap"/>
 
         </Border>
 

@@ -14,15 +14,26 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
     private string _detectorStatus = "Offline";
     private string _connectionStatus = "Disconnected";
     private string _currentJob = "No Active Job";
+    private string _acquisitionStatus = "Ready";
 
     private int _frameNumber;
     private double _kv = 120;
     private double _ma = 5;
     private double _exposureTime = 2;
 
+    private ImageRecordModel? _capturedImage;
+
     public RelayCommand ConnectCommand { get; }
 
     public RelayCommand CaptureCommand { get; }
+
+    public RelayCommand SaveCommand { get; }
+
+    public RelayCommand RetakeCommand { get; }
+
+    public RelayCommand WindowLevelCommand { get; }
+
+    public RelayCommand ZoomCommand { get; }
 
     public string DetectorStatus
     {
@@ -50,6 +61,16 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         set
         {
             _currentJob = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string AcquisitionStatus
+    {
+        get => _acquisitionStatus;
+        set
+        {
+            _acquisitionStatus = value;
             OnPropertyChanged();
         }
     }
@@ -94,86 +115,238 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsConnected =>
+        ConnectionStatus == "Connected";
+
+    public bool HasCapturedImage =>
+        _capturedImage != null;
+
     public AcquisitionViewModel()
     {
         UpdateCurrentJob();
 
-        CurrentJobService.Instance.CurrentJobChanged += (_, _) =>
-        {
-            UpdateCurrentJob();
-        };
+        CurrentJobService.Instance.CurrentJobChanged +=
+            (_, _) =>
+            {
+                UpdateCurrentJob();
+            };
 
         ConnectCommand =
-            new RelayCommand(_ => ConnectDetector());
+            new RelayCommand(
+                _ => ConnectDetector());
 
         CaptureCommand =
-            new RelayCommand(_ => CaptureImage());
+            new RelayCommand(
+                _ => CaptureImage());
+
+        SaveCommand =
+            new RelayCommand(
+                _ => SaveImage());
+
+        RetakeCommand =
+            new RelayCommand(
+                _ => RetakeImage());
+
+        WindowLevelCommand =
+            new RelayCommand(
+                _ => ApplyWindowLevel());
+
+        ZoomCommand =
+            new RelayCommand(
+                _ => ApplyZoom());
     }
 
     private void UpdateCurrentJob()
     {
-        if (CurrentJobService.Instance.CurrentJob != null)
+        var job =
+            CurrentJobService.Instance.CurrentJob;
+
+        if (job != null)
         {
             CurrentJob =
-                CurrentJobService.Instance.CurrentJob!.JobNumber;
+                job.JobNumber;
+
+            AcquisitionStatus =
+                "Ready";
         }
         else
         {
-            CurrentJob = "No Active Job";
+            CurrentJob =
+                "No Active Job";
+
+            AcquisitionStatus =
+                "Open a job before acquisition";
         }
     }
 
     private void ConnectDetector()
     {
-        DetectorStatus = "Ready";
+        DetectorStatus = "Connecting...";
+        ConnectionStatus = "Connecting...";
+        AcquisitionStatus = "Connecting to detector...";
+
+        // Virtual detector connection.
+        // Real detector communication can be connected
+        // here later without changing the UI workflow.
         ConnectionStatus = "Connected";
+        DetectorStatus = "Ready";
+        AcquisitionStatus = "Detector connected";
+
+        OnPropertyChanged(nameof(IsConnected));
     }
 
     private void CaptureImage()
     {
-        var job = CurrentJobService.Instance.CurrentJob;
+        var job =
+            CurrentJobService.Instance.CurrentJob;
 
         if (job == null)
+        {
+            AcquisitionStatus =
+                "No active job. Open or create a job first.";
+
             return;
+        }
+
+        if (!IsConnected)
+        {
+            AcquisitionStatus =
+                "Detector is not connected.";
+
+            return;
+        }
+
+        if (KV <= 0 ||
+            MA <= 0 ||
+            ExposureTime <= 0)
+        {
+            AcquisitionStatus =
+                "Exposure values must be greater than zero.";
+
+            return;
+        }
 
         FrameNumber++;
 
-        var image = new ImageRecordModel
+        _capturedImage =
+            new ImageRecordModel
+            {
+                JobId = job.Id,
+                JobNumber = job.JobNumber,
+                Operator = job.Operator,
+
+                FrameNumber = FrameNumber,
+
+                FileName =
+                    $"IMG_{FrameNumber:0000}.ndt",
+
+                FilePath =
+                    string.Empty,
+
+                DetectorName =
+                    "Virtual Detector",
+
+                KV = KV,
+                MA = MA,
+                ExposureTime = ExposureTime,
+
+                ImageWidth = 2048,
+                ImageHeight = 2048,
+                BitDepth = 16,
+
+                CapturedOn = DateTime.Now
+            };
+
+        AcquisitionStatus =
+            $"Frame {FrameNumber:0000} captured";
+
+        OnPropertyChanged(nameof(HasCapturedImage));
+
+        ImageViewerService.Instance.OpenImage(
+            _capturedImage);
+    }
+
+    private void SaveImage()
+    {
+        if (_capturedImage == null)
         {
-            JobId = job.Id,
-            JobNumber = job.JobNumber,
-            Operator = job.Operator,
+            AcquisitionStatus =
+                "No captured image available to save.";
 
-            FrameNumber = FrameNumber,
+            return;
+        }
 
-            FileName = $"IMG_{FrameNumber:0000}.ndt",
-            FilePath = string.Empty,
+        _imageService.Save(
+            _capturedImage);
 
-            DetectorName = "Virtual Detector",
+        AcquisitionStatus =
+            $"Image {_capturedImage.FileName} saved";
 
-            KV = KV,
-            MA = MA,
-            ExposureTime = ExposureTime,
+        _capturedImage = null;
 
-            ImageWidth = 2048,
-            ImageHeight = 2048,
-            BitDepth = 16,
+        OnPropertyChanged(nameof(HasCapturedImage));
+    }
 
-            CapturedOn = DateTime.Now
-        };
+    private void RetakeImage()
+    {
+        if (_capturedImage == null)
+        {
+            AcquisitionStatus =
+                "No captured image to retake.";
 
-        _imageService.Save(image);
+            return;
+        }
 
-        ImageViewerService.Instance.OpenImage(image);
+        _capturedImage = null;
+
+        if (FrameNumber > 0)
+        {
+            FrameNumber--;
+        }
+
+        AcquisitionStatus =
+            "Ready for retake";
+
+        OnPropertyChanged(nameof(HasCapturedImage));
+    }
+
+    private void ApplyWindowLevel()
+    {
+        if (_capturedImage == null)
+        {
+            AcquisitionStatus =
+                "Capture an image before adjusting Window / Level.";
+
+            return;
+        }
+
+        AcquisitionStatus =
+            "Window / Level adjustment ready";
+    }
+
+    private void ApplyZoom()
+    {
+        if (_capturedImage == null)
+        {
+            AcquisitionStatus =
+                "Capture an image before using Zoom.";
+
+            return;
+        }
+
+        AcquisitionStatus =
+            "Zoom adjustment ready";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(
-        [CallerMemberName] string propertyName = "")
+        [CallerMemberName]
+        string propertyName = "")
     {
         PropertyChanged?.Invoke(
             this,
-            new PropertyChangedEventArgs(propertyName));
+            new PropertyChangedEventArgs(
+                propertyName));
     }
 }
