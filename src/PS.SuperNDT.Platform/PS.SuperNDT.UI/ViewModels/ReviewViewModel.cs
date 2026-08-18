@@ -24,7 +24,29 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     private string _detectorFilter = string.Empty;
     private string _frameFilter = string.Empty;
 
+    private double _zoomLevel = 1.0;
+
     public RelayCommand ClearFilterCommand { get; }
+
+    public RelayCommand ZoomInCommand { get; }
+
+    public RelayCommand ZoomOutCommand { get; }
+
+    public RelayCommand ResetZoomCommand { get; }
+
+    public double ZoomLevel
+    {
+        get => _zoomLevel;
+        private set
+        {
+            if (Math.Abs(_zoomLevel - value) < 0.001)
+                return;
+
+            _zoomLevel = value;
+
+            OnPropertyChanged();
+        }
+    }
 
     public string JobNumberFilter
     {
@@ -35,6 +57,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 return;
 
             _jobNumberFilter = value;
+
             OnPropertyChanged();
 
             ApplyFilter();
@@ -50,6 +73,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 return;
 
             _operatorFilter = value;
+
             OnPropertyChanged();
 
             ApplyFilter();
@@ -65,6 +89,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 return;
 
             _detectorFilter = value;
+
             OnPropertyChanged();
 
             ApplyFilter();
@@ -80,6 +105,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 return;
 
             _frameFilter = value;
+
             OnPropertyChanged();
 
             ApplyFilter();
@@ -115,6 +141,18 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             new RelayCommand(
                 _ => ClearFilters());
 
+        ZoomInCommand =
+            new RelayCommand(
+                _ => ZoomIn());
+
+        ZoomOutCommand =
+            new RelayCommand(
+                _ => ZoomOut());
+
+        ResetZoomCommand =
+            new RelayCommand(
+                _ => ResetZoom());
+
         LoadImages();
 
         ImageViewerService.Instance.CurrentImageChanged +=
@@ -144,10 +182,15 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         var currentImage =
             ImageViewerService.Instance.CurrentImage;
 
-        if (ReferenceEquals(_selectedImage, currentImage))
+        if (ReferenceEquals(
+                _selectedImage,
+                currentImage))
+        {
             return;
+        }
 
-        _selectedImage = currentImage;
+        _selectedImage =
+            currentImage;
 
         OnPropertyChanged(
             nameof(SelectedImage));
@@ -235,6 +278,27 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         OperatorFilter = string.Empty;
         DetectorFilter = string.Empty;
         FrameFilter = string.Empty;
+    }
+
+    private void ZoomIn()
+    {
+        ZoomLevel =
+            Math.Min(
+                5.0,
+                ZoomLevel + 0.25);
+    }
+
+    private void ZoomOut()
+    {
+        ZoomLevel =
+            Math.Max(
+                0.25,
+                ZoomLevel - 0.25);
+    }
+
+    private void ResetZoom()
+    {
+        ZoomLevel = 1.0;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

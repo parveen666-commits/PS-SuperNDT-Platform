@@ -7,6 +7,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="70"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -24,9 +25,123 @@
 
         </Border>
 
-        <!-- Content -->
-        <Grid Grid.Row="1"
-              Margin="0,15,0,0">
+        <!-- Filter Panel -->
+        <Border Grid.Row="1"
+                Background="#252B33"
+                CornerRadius="8"
+                Margin="0,12,0,0"
+                Padding="12">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="130"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Job Number -->
+                <StackPanel Grid.Column="0"
+                            Margin="0,0,10,0">
+
+                    <TextBlock Text="Job Number"
+                               Foreground="#B8C0CC"
+                               FontSize="12"
+                               Margin="2,0,0,5"/>
+
+                    <TextBox Text="{Binding JobNumberFilter,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Height="34"
+                             Padding="8,4"
+                             Foreground="White"
+                             Background="#1F232A"
+                             BorderBrush="#4A5360"
+                             BorderThickness="1"/>
+
+                </StackPanel>
+
+                <!-- Operator -->
+                <StackPanel Grid.Column="1"
+                            Margin="0,0,10,0">
+
+                    <TextBlock Text="Operator"
+                               Foreground="#B8C0CC"
+                               FontSize="12"
+                               Margin="2,0,0,5"/>
+
+                    <TextBox Text="{Binding OperatorFilter,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Height="34"
+                             Padding="8,4"
+                             Foreground="White"
+                             Background="#1F232A"
+                             BorderBrush="#4A5360"
+                             BorderThickness="1"/>
+
+                </StackPanel>
+
+                <!-- Detector -->
+                <StackPanel Grid.Column="2"
+                            Margin="0,0,10,0">
+
+                    <TextBlock Text="Detector"
+                               Foreground="#B8C0CC"
+                               FontSize="12"
+                               Margin="2,0,0,5"/>
+
+                    <TextBox Text="{Binding DetectorFilter,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Height="34"
+                             Padding="8,4"
+                             Foreground="White"
+                             Background="#1F232A"
+                             BorderBrush="#4A5360"
+                             BorderThickness="1"/>
+
+                </StackPanel>
+
+                <!-- Frame -->
+                <StackPanel Grid.Column="3"
+                            Margin="0,0,10,0">
+
+                    <TextBlock Text="Frame"
+                               Foreground="#B8C0CC"
+                               FontSize="12"
+                               Margin="2,0,0,5"/>
+
+                    <TextBox Text="{Binding FrameFilter,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Height="34"
+                             Padding="8,4"
+                             Foreground="White"
+                             Background="#1F232A"
+                             BorderBrush="#4A5360"
+                             BorderThickness="1"/>
+
+                </StackPanel>
+
+                <!-- Clear -->
+                <Button Grid.Column="4"
+                        Content="CLEAR FILTERS"
+                        Command="{Binding ClearFilterCommand}"
+                        Height="34"
+                        Margin="5,20,0,0"
+                        Background="#3A424D"
+                        Foreground="White"
+                        BorderBrush="#5A6470"
+                        BorderThickness="1"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"/>
+
+            </Grid>
+
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="2"
+              Margin="0,12,0,0">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="420"/>
@@ -67,20 +182,28 @@
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
+
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
+
                                         <Setter Property="Visibility"
                                                 Value="Collapsed"/>
 
                                         <Style.Triggers>
+
                                             <DataTrigger Binding="{Binding SelectedImage}"
                                                          Value="{x:Null}">
+
                                                 <Setter Property="Visibility"
                                                         Value="Visible"/>
+
                                             </DataTrigger>
+
                                         </Style.Triggers>
+
                                     </Style>
                                 </TextBlock.Style>
+
                             </TextBlock>
 
                         </Grid>
@@ -120,35 +243,41 @@
                     Background="#252B33"
                     CornerRadius="8">
 
-                <DataGrid ItemsSource="{Binding Images}"
+                <DataGrid ItemsSource="{Binding FilteredImages}"
                           SelectedItem="{Binding SelectedImage}"
                           Margin="10"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           SelectionMode="Single"
-                          SelectionUnit="FullRow">
+                          SelectionUnit="FullRow"
+                          Background="#252B33"
+                          Foreground="White"
+                          BorderBrush="#404752"
+                          BorderThickness="1"
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal">
 
                     <DataGrid.Columns>
 
                         <DataGridTextColumn Header="Frame"
                                             Binding="{Binding FrameNumber}"
-                                            Width="90"/>
+                                            Width="80"/>
 
                         <DataGridTextColumn Header="Job Number"
                                             Binding="{Binding JobNumber}"
-                                            Width="160"/>
+                                            Width="150"/>
 
                         <DataGridTextColumn Header="Operator"
                                             Binding="{Binding Operator}"
-                                            Width="140"/>
+                                            Width="130"/>
 
                         <DataGridTextColumn Header="kV"
                                             Binding="{Binding KV}"
-                                            Width="80"/>
+                                            Width="70"/>
 
                         <DataGridTextColumn Header="mA"
                                             Binding="{Binding MA}"
-                                            Width="80"/>
+                                            Width="70"/>
 
                         <DataGridTextColumn Header="Exposure"
                                             Binding="{Binding ExposureTime}"
