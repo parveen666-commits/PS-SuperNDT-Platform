@@ -21,14 +21,22 @@
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
-                    <ColumnDefinition Width="350"/>
+                    <ColumnDefinition Width="450"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Acquisition"
-                           Foreground="White"
-                           FontSize="30"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"/>
+                <StackPanel VerticalAlignment="Center">
+
+                    <TextBlock Text="Acquisition"
+                               Foreground="White"
+                               FontSize="30"
+                               FontWeight="Bold"/>
+
+                    <TextBlock Text="{Binding ShotPosition}"
+                               Foreground="#00E5FF"
+                               FontSize="14"
+                               Margin="0,3,0,0"/>
+
+                </StackPanel>
 
                 <StackPanel Grid.Column="1"
                             HorizontalAlignment="Right"
@@ -59,7 +67,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="320"/>
             </Grid.ColumnDefinitions>
 
             <!-- LEFT -->
@@ -69,50 +77,82 @@
                     CornerRadius="8"
                     Margin="0,0,10,0">
 
-                <StackPanel Margin="15">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
 
-                    <TextBlock Text="Job Information"
-                               Foreground="White"
-                               FontSize="20"
-                               FontWeight="Bold"/>
+                    <StackPanel Margin="15">
 
-                    <TextBlock Text="Current Job"
-                               Foreground="White"
-                               Margin="0,20,0,5"/>
+                        <TextBlock Text="Job Information"
+                                   Foreground="White"
+                                   FontSize="20"
+                                   FontWeight="Bold"/>
 
-                    <TextBox Height="35"
-                             IsReadOnly="True"
-                             Text="{Binding CurrentJob}"/>
+                        <TextBlock Text="Current Job"
+                                   Foreground="White"
+                                   Margin="0,20,0,5"/>
 
-                    <Separator Margin="0,20"/>
+                        <TextBox Height="35"
+                                 IsReadOnly="True"
+                                 Text="{Binding CurrentJob}"/>
 
-                    <TextBlock Text="Exposure"
-                               Foreground="White"
-                               FontSize="20"
-                               FontWeight="Bold"/>
+                        <Separator Margin="0,20"/>
 
-                    <TextBlock Text="kV"
-                               Foreground="White"
-                               Margin="0,15,0,5"/>
+                        <TextBlock Text="Shot Planning"
+                                   Foreground="White"
+                                   FontSize="20"
+                                   FontWeight="Bold"/>
 
-                    <TextBox Height="35"
-                             Text="{Binding KV, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="Pipe Length (mm)"
+                                   Foreground="White"
+                                   Margin="0,15,0,5"/>
 
-                    <TextBlock Text="mA"
-                               Foreground="White"
-                               Margin="0,15,0,5"/>
+                        <TextBox Height="35"
+                                 Text="{Binding PipeLength, UpdateSourceTrigger=PropertyChanged}"/>
 
-                    <TextBox Height="35"
-                             Text="{Binding MA, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="DR Shot Size (mm)"
+                                   Foreground="White"
+                                   Margin="0,15,0,5"/>
 
-                    <TextBlock Text="Exposure Time"
-                               Foreground="White"
-                               Margin="0,15,0,5"/>
+                        <TextBox Height="35"
+                                 Text="{Binding ShotSize, UpdateSourceTrigger=PropertyChanged}"/>
 
-                    <TextBox Height="35"
-                             Text="{Binding ExposureTime, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="Overlap (mm)"
+                                   Foreground="White"
+                                   Margin="0,15,0,5"/>
 
-                </StackPanel>
+                        <TextBox Height="35"
+                                 Text="{Binding Overlap, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <Separator Margin="0,20"/>
+
+                        <TextBlock Text="Exposure"
+                                   Foreground="White"
+                                   FontSize="20"
+                                   FontWeight="Bold"/>
+
+                        <TextBlock Text="kV"
+                                   Foreground="White"
+                                   Margin="0,15,0,5"/>
+
+                        <TextBox Height="35"
+                                 Text="{Binding KV, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Text="mA"
+                                   Foreground="White"
+                                   Margin="0,15,0,5"/>
+
+                        <TextBox Height="35"
+                                 Text="{Binding MA, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBlock Text="Exposure Time"
+                                   Foreground="White"
+                                   Margin="0,15,0,5"/>
+
+                        <TextBox Height="35"
+                                 Text="{Binding ExposureTime, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    </StackPanel>
+
+                </ScrollViewer>
 
             </Border>
 
@@ -133,18 +173,31 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
 
+                    <!-- SHOT POSITION -->
+
                     <Border HorizontalAlignment="Left"
                             VerticalAlignment="Top"
                             Margin="15"
-                            Padding="10,5"
+                            Padding="12,7"
                             Background="#252B33"
                             CornerRadius="5">
 
-                        <TextBlock Text="{Binding AcquisitionStatus}"
-                                   Foreground="#00E5FF"
-                                   FontSize="13"/>
+                        <StackPanel>
+
+                            <TextBlock Text="CURRENT SHOT"
+                                       Foreground="#B0BEC5"
+                                       FontSize="11"/>
+
+                            <TextBlock Text="{Binding ShotPosition}"
+                                       Foreground="#00E5FF"
+                                       FontSize="16"
+                                       FontWeight="Bold"/>
+
+                        </StackPanel>
 
                     </Border>
+
+                    <!-- FRAME -->
 
                     <Border HorizontalAlignment="Right"
                             VerticalAlignment="Top"
@@ -168,6 +221,43 @@
 
                     </Border>
 
+                    <!-- POSITION RULER -->
+
+                    <Border HorizontalAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Margin="20"
+                            Padding="15,8"
+                            Background="#252B33"
+                            CornerRadius="5">
+
+                        <StackPanel>
+
+                            <TextBlock Text="PIPE POSITION"
+                                       Foreground="#B0BEC5"
+                                       FontSize="10"
+                                       HorizontalAlignment="Center"/>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,3,0,0">
+
+                                <TextBlock Text="{Binding CurrentShotStart, StringFormat={}{0:0} mm}"
+                                           Foreground="White"
+                                           FontSize="14"/>
+
+                                <TextBlock Text="  ─────────────  "
+                                           Foreground="#00E5FF"
+                                           FontSize="14"/>
+
+                                <TextBlock Text="{Binding CurrentShotEnd, StringFormat={}{0:0} mm}"
+                                           Foreground="White"
+                                           FontSize="14"/>
+
+                            </StackPanel>
+
+                        </StackPanel>
+
+                    </Border>
+
                 </Grid>
 
             </Border>
@@ -179,49 +269,103 @@
                     CornerRadius="8"
                     Margin="10,0,0,0">
 
-                <StackPanel Margin="15">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
 
-                    <TextBlock Text="Detector Status"
-                               Foreground="White"
-                               FontSize="20"
-                               FontWeight="Bold"/>
+                    <StackPanel Margin="15">
 
-                    <TextBlock Text="{Binding ConnectionStatus}"
-                               Foreground="Lime"
-                               FontSize="16"
-                               Margin="0,20,0,0"/>
+                        <TextBlock Text="Shot Status"
+                                   Foreground="White"
+                                   FontSize="20"
+                                   FontWeight="Bold"/>
 
-                    <Separator Margin="0,20"/>
+                        <Border Background="#1F232A"
+                                CornerRadius="6"
+                                Margin="0,15,0,0"
+                                Padding="12">
 
-                    <TextBlock Text="Frame Number"
-                               Foreground="White"/>
+                            <StackPanel>
 
-                    <TextBlock Text="{Binding FrameNumber}"
-                               Foreground="#00E5FF"
-                               FontSize="30"
-                               FontWeight="Bold"
-                               Margin="0,10"/>
+                                <TextBlock Text="Current Shot"
+                                           Foreground="#B0BEC5"
+                                           FontSize="12"/>
 
-                    <Separator Margin="0,15"/>
+                                <TextBlock Text="{Binding CurrentShotNumber}"
+                                           Foreground="#00E5FF"
+                                           FontSize="38"
+                                           FontWeight="Bold"/>
 
-                    <TextBlock Text="Exposure Summary"
-                               Foreground="White"
-                               FontSize="18"
-                               FontWeight="Bold"/>
+                                <TextBlock Text="{Binding TotalShots, StringFormat=of {0} total shots}"
+                                           Foreground="#B0BEC5"
+                                           FontSize="13"/>
 
-                    <TextBlock Text="{Binding KV, StringFormat=KV: {0:F1}}"
-                               Foreground="#B0BEC5"
-                               Margin="0,12,0,0"/>
+                            </StackPanel>
 
-                    <TextBlock Text="{Binding MA, StringFormat=mA: {0:F2}}"
-                               Foreground="#B0BEC5"
-                               Margin="0,5,0,0"/>
+                        </Border>
 
-                    <TextBlock Text="{Binding ExposureTime, StringFormat=Time: {0:F2} s}"
-                               Foreground="#B0BEC5"
-                               Margin="0,5,0,0"/>
+                        <Separator Margin="0,18"/>
 
-                </StackPanel>
+                        <TextBlock Text="Position"
+                                   Foreground="White"
+                                   FontSize="18"
+                                   FontWeight="Bold"/>
+
+                        <TextBlock Text="{Binding CurrentShotStart, StringFormat=Start: {0:0} mm}"
+                                   Foreground="#B0BEC5"
+                                   Margin="0,12,0,0"/>
+
+                        <TextBlock Text="{Binding CurrentShotEnd, StringFormat=End: {0:0} mm}"
+                                   Foreground="#B0BEC5"
+                                   Margin="0,5,0,0"/>
+
+                        <TextBlock Text="{Binding Overlap, StringFormat=Overlap: {0:0} mm}"
+                                   Foreground="#B0BEC5"
+                                   Margin="0,5,0,0"/>
+
+                        <Separator Margin="0,18"/>
+
+                        <TextBlock Text="Detector Status"
+                                   Foreground="White"
+                                   FontSize="18"
+                                   FontWeight="Bold"/>
+
+                        <TextBlock Text="{Binding ConnectionStatus}"
+                                   Foreground="Lime"
+                                   FontSize="16"
+                                   Margin="0,12,0,0"/>
+
+                        <Separator Margin="0,18"/>
+
+                        <TextBlock Text="Frame Number"
+                                   Foreground="White"/>
+
+                        <TextBlock Text="{Binding FrameNumber}"
+                                   Foreground="#00E5FF"
+                                   FontSize="30"
+                                   FontWeight="Bold"
+                                   Margin="0,8"/>
+
+                        <Separator Margin="0,15"/>
+
+                        <TextBlock Text="Exposure Summary"
+                                   Foreground="White"
+                                   FontSize="18"
+                                   FontWeight="Bold"/>
+
+                        <TextBlock Text="{Binding KV, StringFormat=KV: {0:F1}}"
+                                   Foreground="#B0BEC5"
+                                   Margin="0,12,0,0"/>
+
+                        <TextBlock Text="{Binding MA, StringFormat=mA: {0:F2}}"
+                                   Foreground="#B0BEC5"
+                                   Margin="0,5,0,0"/>
+
+                        <TextBlock Text="{Binding ExposureTime, StringFormat=Time: {0:F2} s}"
+                                   Foreground="#B0BEC5"
+                                   Margin="0,5,0,0"/>
+
+                    </StackPanel>
+
+                </ScrollViewer>
 
             </Border>
 

@@ -25,6 +25,13 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
     private double _ma = 5;
     private double _exposureTime = 2;
 
+    private double _pipeLength = 6000;
+    private double _shotSize = 300;
+    private double _overlap = 10;
+    private double _currentShotStart;
+    private double _currentShotEnd;
+    private int _currentShotNumber = 1;
+
     private ImageRecordModel? _capturedImage;
 
     public RelayCommand ConnectCommand { get; }
@@ -56,6 +63,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         {
             _connectionStatus = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsConnected));
         }
     }
 
@@ -119,6 +127,137 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
+    public double PipeLength
+    {
+        get => _pipeLength;
+        set
+        {
+            if (value < 0)
+            {
+                value = 0;
+            }
+
+            _pipeLength = value;
+
+            OnPropertyChanged();
+
+            RecalculateCurrentShot();
+        }
+    }
+
+    public double ShotSize
+    {
+        get => _shotSize;
+        set
+        {
+            if (value < 1)
+            {
+                value = 1;
+            }
+
+            _shotSize = value;
+
+            OnPropertyChanged();
+
+            RecalculateCurrentShot();
+        }
+    }
+
+    public double Overlap
+    {
+        get => _overlap;
+        set
+        {
+            if (value < 0)
+            {
+                value = 0;
+            }
+
+            if (value >= ShotSize)
+            {
+                value = Math.Max(0, ShotSize - 1);
+            }
+
+            _overlap = value;
+
+            OnPropertyChanged();
+
+            RecalculateCurrentShot();
+        }
+    }
+
+    public double EffectiveStep =>
+        Math.Max(1, ShotSize - Overlap);
+
+    public int TotalShots
+    {
+        get
+        {
+            if (PipeLength <= 0 ||
+                ShotSize <= 0)
+            {
+                return 0;
+            }
+
+            if (PipeLength <= ShotSize)
+            {
+                return 1;
+            }
+
+            return (int)Math.Ceiling(
+                (PipeLength - ShotSize) /
+                EffectiveStep) + 1;
+        }
+    }
+
+    public int CurrentShotNumber
+    {
+        get => _currentShotNumber;
+        private set
+        {
+            if (_currentShotNumber == value)
+            {
+                return;
+            }
+
+            _currentShotNumber = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public double CurrentShotStart
+    {
+        get => _currentShotStart;
+        private set
+        {
+            if (Math.Abs(_currentShotStart - value) < 0.001)
+            {
+                return;
+            }
+
+            _currentShotStart = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public double CurrentShotEnd
+    {
+        get => _currentShotEnd;
+        private set
+        {
+            if (Math.Abs(_currentShotEnd - value) < 0.001)
+            {
+                return;
+            }
+
+            _currentShotEnd = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ShotPosition =>
+        $"Shot {CurrentShotNumber}  |  {CurrentShotStart:0} - {CurrentShotEnd:0} mm";
+
     public bool IsConnected =>
         ConnectionStatus == "Connected";
 
@@ -158,6 +297,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         ZoomCommand =
             new RelayCommand(
                 _ => ApplyZoom());
+
+        RecalculateCurrentShot();
     }
 
     private void UpdateCurrentJob()
@@ -181,6 +322,76 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             AcquisitionStatus =
                 "Open a job before acquisition";
         }
+    }
+
+    private void RecalculateCurrentShot()
+    {
+        if (PipeLength <= 0 ||
+            ShotSize <= 0)
+        {
+            CurrentShotNumber = 1;
+            CurrentShotStart = 0;
+            CurrentShotEnd = 0;
+
+            OnPropertyChanged(nameof(TotalShots));
+            OnPropertyChanged(nameof(EffectiveStep));
+            OnPropertyChanged(nameof(ShotPosition));
+
+            return;
+        }
+
+        int shot =
+            Math.Max(
+                1,
+                CurrentShotNumber);
+
+        int totalShots =
+            TotalShots;
+
+        if (shot > totalShots)
+        {
+            shot = totalShots;
+        }
+
+        double start =
+            (shot - 1) *
+            EffectiveStep;
+
+        double end =
+            Math.Min(
+                start + ShotSize,
+                PipeLength);
+
+        CurrentShotNumber = shot;
+        CurrentShotStart = start;
+        CurrentShotEnd = end;
+
+        OnPropertyChanged(nameof(TotalShots));
+        OnPropertyChanged(nameof(EffectiveStep));
+        OnPropertyChanged(nameof(ShotPosition));
+    }
+
+    private void MoveToNextShot()
+    {
+        if (TotalShots <= 0)
+        {
+            return;
+        }
+
+        if (CurrentShotNumber >= TotalShots)
+        {
+            AcquisitionStatus =
+                $"Shot {CurrentShotNumber} of {TotalShots} completed";
+
+            return;
+        }
+
+        CurrentShotNumber++;
+
+        RecalculateCurrentShot();
+
+        AcquisitionStatus =
+            $"Ready for Shot {CurrentShotNumber} of {TotalShots}";
     }
 
     private void ConnectDetector()
@@ -230,6 +441,17 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (PipeLength <= 0 ||
+            ShotSize <= 0)
+        {
+            AcquisitionStatus =
+                "Enter valid pipe length and shot size.";
+
+            return;
+        }
+
+        RecalculateCurrentShot();
+
         FrameNumber++;
 
         string imageFolder =
@@ -253,6 +475,13 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             CreateVirtualRadiographyImage(
                 filePath,
                 FrameNumber);
+
+            string shotRemarks =
+                $"Shot {CurrentShotNumber}/{TotalShots}; " +
+                $"Position {CurrentShotStart:0}-{CurrentShotEnd:0} mm; " +
+                $"Pipe Length {PipeLength:0} mm; " +
+                $"Shot Size {ShotSize:0} mm; " +
+                $"Overlap {Overlap:0} mm";
 
             _capturedImage =
                 new ImageRecordModel
@@ -278,14 +507,20 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                     ImageHeight = 768,
                     BitDepth = 8,
 
+                    Remarks = shotRemarks,
+
                     CapturedOn = DateTime.Now
                 };
 
             AcquisitionStatus =
-                $"Frame {FrameNumber:0000} captured";
+                $"Shot {CurrentShotNumber}/{TotalShots} captured " +
+                $"({CurrentShotStart:0}-{CurrentShotEnd:0} mm)";
 
             OnPropertyChanged(
                 nameof(HasCapturedImage));
+
+            OnPropertyChanged(
+                nameof(ShotPosition));
 
             ImageViewerService.Instance.OpenImage(
                 _capturedImage);
@@ -508,13 +743,25 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             _imageService.Save(
                 _capturedImage);
 
-            AcquisitionStatus =
+            string savedStatus =
                 $"Image {_capturedImage.FileName} saved";
 
             _capturedImage = null;
 
             OnPropertyChanged(
                 nameof(HasCapturedImage));
+
+            if (CurrentShotNumber < TotalShots)
+            {
+                MoveToNextShot();
+                AcquisitionStatus =
+                    $"{savedStatus}. Ready for {ShotPosition}";
+            }
+            else
+            {
+                AcquisitionStatus =
+                    $"{savedStatus}. All {TotalShots} shots completed.";
+            }
         }
         catch (Exception ex)
         {
@@ -541,7 +788,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
 
         AcquisitionStatus =
-            "Ready for retake";
+            $"Ready for retake: {ShotPosition}";
 
         OnPropertyChanged(
             nameof(HasCapturedImage));

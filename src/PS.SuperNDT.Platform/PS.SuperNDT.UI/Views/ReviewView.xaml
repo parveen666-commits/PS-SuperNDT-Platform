@@ -5,7 +5,6 @@
 
     <UserControl.Resources>
 
-        <!-- Status colors -->
         <Style x:Key="ReviewStatusCellStyle"
                TargetType="TextBlock">
 
@@ -66,7 +65,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- HEADER -->
+
         <Border Grid.Row="0"
                 Background="#252B33"
                 CornerRadius="8">
@@ -80,7 +80,8 @@
 
         </Border>
 
-        <!-- Filter Panel -->
+        <!-- FILTER PANEL -->
+
         <Border Grid.Row="1"
                 Background="#252B33"
                 CornerRadius="8"
@@ -98,7 +99,6 @@
                     <ColumnDefinition Width="130"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Job Number -->
                 <StackPanel Grid.Column="0"
                             Margin="0,0,10,0">
 
@@ -117,7 +117,6 @@
 
                 </StackPanel>
 
-                <!-- Operator -->
                 <StackPanel Grid.Column="1"
                             Margin="0,0,10,0">
 
@@ -136,7 +135,6 @@
 
                 </StackPanel>
 
-                <!-- Detector -->
                 <StackPanel Grid.Column="2"
                             Margin="0,0,10,0">
 
@@ -155,7 +153,6 @@
 
                 </StackPanel>
 
-                <!-- Frame -->
                 <StackPanel Grid.Column="3"
                             Margin="0,0,10,0">
 
@@ -174,7 +171,6 @@
 
                 </StackPanel>
 
-                <!-- Status -->
                 <StackPanel Grid.Column="4"
                             Margin="0,0,10,0">
 
@@ -194,7 +190,6 @@
 
                 </StackPanel>
 
-                <!-- Clear -->
                 <Button Grid.Column="5"
                         Content="CLEAR FILTERS"
                         Command="{Binding ClearFilterCommand}"
@@ -210,7 +205,8 @@
 
         </Border>
 
-        <!-- Main Content -->
+        <!-- MAIN CONTENT -->
+
         <Grid Grid.Row="2"
               Margin="0,12,0,0">
 
@@ -219,7 +215,8 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Preview Panel -->
+            <!-- PREVIEW -->
+
             <Border Grid.Column="0"
                     Background="#252B33"
                     CornerRadius="8"
@@ -235,7 +232,8 @@
                         <RowDefinition Height="125"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Image Viewer -->
+                    <!-- IMAGE -->
+
                     <Border Grid.Row="0"
                             Background="Black"
                             BorderBrush="#404040"
@@ -251,15 +249,22 @@
                                 <Grid HorizontalAlignment="Center"
                                       VerticalAlignment="Center">
 
-                                    <Image Source="{Binding SelectedImage.FilePath}"
+                                    <!-- IMPORTANT:
+                                         Use prepared DisplayImage instead
+                                         of loading FilePath directly. -->
+
+                                    <Image Source="{Binding DisplayImage}"
                                            Stretch="None"
                                            RenderOptions.BitmapScalingMode="HighQuality"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
 
                                         <Image.RenderTransform>
-                                            <ScaleTransform ScaleX="{Binding ZoomLevel}"
-                                                            ScaleY="{Binding ZoomLevel}"/>
+
+                                            <ScaleTransform
+                                                ScaleX="{Binding ZoomLevel}"
+                                                ScaleY="{Binding ZoomLevel}"/>
+
                                         </Image.RenderTransform>
 
                                     </Image>
@@ -304,7 +309,8 @@
 
                     </Border>
 
-                    <!-- Zoom -->
+                    <!-- ZOOM -->
+
                     <Border Grid.Row="1"
                             Background="#20252C"
                             CornerRadius="6"
@@ -371,7 +377,8 @@
 
                     </Border>
 
-                    <!-- Navigation -->
+                    <!-- NAVIGATION -->
+
                     <Border Grid.Row="2"
                             Background="#20252C"
                             CornerRadius="6"
@@ -426,7 +433,8 @@
 
                     </Border>
 
-                    <!-- Review Decision -->
+                    <!-- REVIEW DECISION -->
+
                     <Border Grid.Row="3"
                             Background="#20252C"
                             CornerRadius="6"
@@ -494,7 +502,8 @@
 
                     </Border>
 
-                    <!-- Image Information -->
+                    <!-- IMAGE INFORMATION -->
+
                     <StackPanel Grid.Row="4"
                                 Margin="0,10,0,0">
 
@@ -535,7 +544,8 @@
 
             </Border>
 
-            <!-- Records Grid -->
+            <!-- RECORDS GRID -->
+
             <Border Grid.Column="1"
                     Background="#252B33"
                     CornerRadius="8">
@@ -568,6 +578,10 @@
                                             Binding="{Binding Operator}"
                                             Width="120"/>
 
+                        <DataGridTextColumn Header="Detector"
+                                            Binding="{Binding DetectorName}"
+                                            Width="130"/>
+
                         <DataGridTextColumn Header="kV"
                                             Binding="{Binding KV}"
                                             Width="65"/>
@@ -580,18 +594,25 @@
                                             Binding="{Binding ExposureTime}"
                                             Width="90"/>
 
-                        <DataGridTextColumn Header="Detector"
-                                            Binding="{Binding DetectorName}"
-                                            Width="130"/>
-
-                        <DataGridTextColumn Header="Status"
-                                            Binding="{Binding ReviewStatus}"
-                                            ElementStyle="{StaticResource ReviewStatusCellStyle}"
-                                            Width="100"/>
-
-                        <DataGridTextColumn Header="Captured On"
+                        <DataGridTextColumn Header="Captured"
                                             Binding="{Binding CapturedOn}"
-                                            Width="170"/>
+                                            Width="150"/>
+
+                        <DataGridTemplateColumn Header="Review"
+                                                Width="100">
+
+                            <DataGridTemplateColumn.CellTemplate>
+
+                                <DataTemplate>
+
+                                    <TextBlock Text="{Binding ReviewStatus}"
+                                               Style="{StaticResource ReviewStatusCellStyle}"/>
+
+                                </DataTemplate>
+
+                            </DataGridTemplateColumn.CellTemplate>
+
+                        </DataGridTemplateColumn>
 
                     </DataGrid.Columns>
 

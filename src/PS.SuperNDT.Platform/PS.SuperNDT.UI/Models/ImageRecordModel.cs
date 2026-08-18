@@ -36,6 +36,25 @@ public sealed class ImageRecordModel
 
     public DateTime CapturedOn { get; set; } = DateTime.Now;
 
+    // Shot Planning Information
+
+    public int ShotNumber { get; set; }
+
+    public int TotalShots { get; set; }
+
+    public double PipeLength { get; set; }
+
+    public double ShotSize { get; set; }
+
+    public double Overlap { get; set; }
+
+    public double ShotStartPosition { get; set; }
+
+    public double ShotEndPosition { get; set; }
+
+    public string ShotPosition =>
+        $"{ShotStartPosition:0}-{ShotEndPosition:0} mm";
+
     // Review Information
 
     public string ReviewStatus { get; set; } = "PENDING";

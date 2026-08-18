@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Media.Imaging;
 using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
@@ -18,6 +20,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public ObservableCollection<ImageRecordModel> FilteredImages { get; } = new();
 
     private ImageRecordModel? _selectedImage;
+
+    private BitmapImage? _displayImage;
 
     private string _jobNumberFilter = string.Empty;
     private string _operatorFilter = string.Empty;
@@ -193,6 +197,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             ResetZoom();
 
+            LoadDisplayImage();
+
             UpdateNavigationState();
 
             if (value != null)
@@ -203,6 +209,20 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             {
                 ImageViewerService.Instance.Clear();
             }
+        }
+    }
+
+    public BitmapImage? DisplayImage
+    {
+        get => _displayImage;
+        private set
+        {
+            if (ReferenceEquals(_displayImage, value))
+                return;
+
+            _displayImage = value;
+
+            OnPropertyChanged();
         }
     }
 
@@ -259,6 +279,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             OnPropertyChanged(
                 nameof(SelectedImage));
 
+            LoadDisplayImage();
+
             UpdateNavigationState();
         }
         else if (FilteredImages.Count > 0)
@@ -288,9 +310,60 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         OnPropertyChanged(
             nameof(SelectedImage));
 
+        LoadDisplayImage();
+
         ResetZoom();
 
         UpdateNavigationState();
+    }
+
+    private void LoadDisplayImage()
+    {
+        DisplayImage = null;
+
+        if (_selectedImage == null)
+            return;
+
+        string filePath =
+            _selectedImage.FilePath;
+
+        if (string.IsNullOrWhiteSpace(filePath))
+            return;
+
+        if (!File.Exists(filePath))
+            return;
+
+        try
+        {
+            var bitmap =
+                new BitmapImage();
+
+            using var stream =
+                new FileStream(
+                    filePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite);
+
+            bitmap.BeginInit();
+
+            bitmap.CacheOption =
+                BitmapCacheOption.OnLoad;
+
+            bitmap.StreamSource =
+                stream;
+
+            bitmap.EndInit();
+
+            bitmap.Freeze();
+
+            DisplayImage =
+                bitmap;
+        }
+        catch
+        {
+            DisplayImage = null;
+        }
     }
 
     private void LoadImages()
@@ -435,8 +508,11 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         if (currentIndex < 0)
             return;
 
-        if (currentIndex >= FilteredImages.Count - 1)
+        if (currentIndex >=
+            FilteredImages.Count - 1)
+        {
             return;
+        }
 
         SelectedImage =
             FilteredImages[currentIndex + 1];
@@ -448,6 +524,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         {
             HasPreviousImage = false;
             HasNextImage = false;
+
             return;
         }
 
@@ -458,6 +535,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         {
             HasPreviousImage = false;
             HasNextImage = false;
+
             return;
         }
 
@@ -469,7 +547,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             FilteredImages.Count - 1;
     }
 
-    private void SetReviewStatus(string status)
+    private void SetReviewStatus(
+        string status)
     {
         if (_selectedImage == null)
             return;
