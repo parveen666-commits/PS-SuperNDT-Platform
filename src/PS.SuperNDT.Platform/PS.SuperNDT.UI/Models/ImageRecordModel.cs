@@ -35,4 +35,12 @@ public sealed class ImageRecordModel
     public int BitDepth { get; set; }
 
     public DateTime CapturedOn { get; set; } = DateTime.Now;
+
+    // Review Information
+
+    public string ReviewStatus { get; set; } = "PENDING";
+
+    public string ReviewedBy { get; set; } = "";
+
+    public DateTime? ReviewedOn { get; set; }
 }

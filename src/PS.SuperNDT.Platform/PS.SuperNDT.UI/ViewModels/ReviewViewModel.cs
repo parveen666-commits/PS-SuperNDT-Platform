@@ -26,6 +26,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     private double _zoomLevel = 1.0;
 
+    private bool _hasPreviousImage;
+    private bool _hasNextImage;
+
     public RelayCommand ClearFilterCommand { get; }
 
     public RelayCommand ZoomInCommand { get; }
@@ -33,6 +36,16 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public RelayCommand ZoomOutCommand { get; }
 
     public RelayCommand ResetZoomCommand { get; }
+
+    public RelayCommand PreviousImageCommand { get; }
+
+    public RelayCommand NextImageCommand { get; }
+
+    public RelayCommand AcceptCommand { get; }
+
+    public RelayCommand RejectCommand { get; }
+
+    public RelayCommand HoldCommand { get; }
 
     public double ZoomLevel
     {
@@ -43,6 +56,34 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 return;
 
             _zoomLevel = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasPreviousImage
+    {
+        get => _hasPreviousImage;
+        private set
+        {
+            if (_hasPreviousImage == value)
+                return;
+
+            _hasPreviousImage = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasNextImage
+    {
+        get => _hasNextImage;
+        private set
+        {
+            if (_hasNextImage == value)
+                return;
+
+            _hasNextImage = value;
 
             OnPropertyChanged();
         }
@@ -124,6 +165,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             OnPropertyChanged();
 
+            ResetZoom();
+
+            UpdateNavigationState();
+
             if (value != null)
             {
                 ImageViewerService.Instance.OpenImage(value);
@@ -153,6 +198,26 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             new RelayCommand(
                 _ => ResetZoom());
 
+        PreviousImageCommand =
+            new RelayCommand(
+                _ => PreviousImage());
+
+        NextImageCommand =
+            new RelayCommand(
+                _ => NextImage());
+
+        AcceptCommand =
+            new RelayCommand(
+                _ => SetReviewStatus("ACCEPT"));
+
+        RejectCommand =
+            new RelayCommand(
+                _ => SetReviewStatus("REJECT"));
+
+        HoldCommand =
+            new RelayCommand(
+                _ => SetReviewStatus("HOLD"));
+
         LoadImages();
 
         ImageViewerService.Instance.CurrentImageChanged +=
@@ -167,6 +232,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             OnPropertyChanged(
                 nameof(SelectedImage));
+
+            UpdateNavigationState();
         }
         else if (FilteredImages.Count > 0)
         {
@@ -194,6 +261,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(
             nameof(SelectedImage));
+
+        ResetZoom();
+
+        UpdateNavigationState();
     }
 
     private void LoadImages()
@@ -270,6 +341,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             SelectedImage =
                 FilteredImages[0];
         }
+
+        UpdateNavigationState();
     }
 
     private void ClearFilters()
@@ -299,6 +372,96 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     private void ResetZoom()
     {
         ZoomLevel = 1.0;
+    }
+
+    private void PreviousImage()
+    {
+        if (_selectedImage == null)
+            return;
+
+        var currentIndex =
+            FilteredImages.IndexOf(_selectedImage);
+
+        if (currentIndex <= 0)
+            return;
+
+        SelectedImage =
+            FilteredImages[currentIndex - 1];
+    }
+
+    private void NextImage()
+    {
+        if (_selectedImage == null)
+            return;
+
+        var currentIndex =
+            FilteredImages.IndexOf(_selectedImage);
+
+        if (currentIndex < 0)
+            return;
+
+        if (currentIndex >= FilteredImages.Count - 1)
+            return;
+
+        SelectedImage =
+            FilteredImages[currentIndex + 1];
+    }
+
+    private void UpdateNavigationState()
+    {
+        if (_selectedImage == null)
+        {
+            HasPreviousImage = false;
+            HasNextImage = false;
+            return;
+        }
+
+        var currentIndex =
+            FilteredImages.IndexOf(_selectedImage);
+
+        if (currentIndex < 0)
+        {
+            HasPreviousImage = false;
+            HasNextImage = false;
+            return;
+        }
+
+        HasPreviousImage =
+            currentIndex > 0;
+
+        HasNextImage =
+            currentIndex <
+            FilteredImages.Count - 1;
+    }
+
+    private void SetReviewStatus(string status)
+    {
+        if (_selectedImage == null)
+            return;
+
+        _selectedImage.ReviewStatus =
+            status;
+
+        _selectedImage.ReviewedBy =
+            Environment.UserName;
+
+        _selectedImage.ReviewedOn =
+            DateTime.Now;
+
+        _imageService.Save(
+            _selectedImage);
+
+        OnPropertyChanged(
+            nameof(SelectedImage));
+
+        FilteredImages.Clear();
+
+        foreach (var image in Images)
+        {
+            FilteredImages.Add(image);
+        }
+
+        UpdateNavigationState();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

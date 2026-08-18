@@ -42,7 +42,6 @@
                     <ColumnDefinition Width="130"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Job Number -->
                 <StackPanel Grid.Column="0"
                             Margin="0,0,10,0">
 
@@ -57,12 +56,10 @@
                              Padding="8,4"
                              Foreground="White"
                              Background="#1F232A"
-                             BorderBrush="#4A5360"
-                             BorderThickness="1"/>
+                             BorderBrush="#4A5360"/>
 
                 </StackPanel>
 
-                <!-- Operator -->
                 <StackPanel Grid.Column="1"
                             Margin="0,0,10,0">
 
@@ -77,12 +74,10 @@
                              Padding="8,4"
                              Foreground="White"
                              Background="#1F232A"
-                             BorderBrush="#4A5360"
-                             BorderThickness="1"/>
+                             BorderBrush="#4A5360"/>
 
                 </StackPanel>
 
-                <!-- Detector -->
                 <StackPanel Grid.Column="2"
                             Margin="0,0,10,0">
 
@@ -97,12 +92,10 @@
                              Padding="8,4"
                              Foreground="White"
                              Background="#1F232A"
-                             BorderBrush="#4A5360"
-                             BorderThickness="1"/>
+                             BorderBrush="#4A5360"/>
 
                 </StackPanel>
 
-                <!-- Frame -->
                 <StackPanel Grid.Column="3"
                             Margin="0,0,10,0">
 
@@ -117,12 +110,10 @@
                              Padding="8,4"
                              Foreground="White"
                              Background="#1F232A"
-                             BorderBrush="#4A5360"
-                             BorderThickness="1"/>
+                             BorderBrush="#4A5360"/>
 
                 </StackPanel>
 
-                <!-- Clear -->
                 <Button Grid.Column="4"
                         Content="CLEAR FILTERS"
                         Command="{Binding ClearFilterCommand}"
@@ -131,7 +122,6 @@
                         Background="#3A424D"
                         Foreground="White"
                         BorderBrush="#5A6470"
-                        BorderThickness="1"
                         FontWeight="SemiBold"
                         Cursor="Hand"/>
 
@@ -158,10 +148,13 @@
 
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="140"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="125"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Actual Image Preview -->
+                    <!-- Image Viewer -->
                     <Border Grid.Row="0"
                             Background="Black"
                             BorderBrush="#404040"
@@ -169,13 +162,31 @@
 
                         <Grid>
 
-                            <!-- Selected Image -->
-                            <Image Source="{Binding SelectedImage.FilePath}"
-                                   Stretch="Uniform"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Auto"
+                                          Background="Black"
+                                          CanContentScroll="False">
 
-                            <!-- No Image Message -->
+                                <Grid HorizontalAlignment="Center"
+                                      VerticalAlignment="Center">
+
+                                    <Image Source="{Binding SelectedImage.FilePath}"
+                                           Stretch="None"
+                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+
+                                        <Image.RenderTransform>
+                                            <ScaleTransform ScaleX="{Binding ZoomLevel}"
+                                                            ScaleY="{Binding ZoomLevel}"/>
+                                        </Image.RenderTransform>
+
+                                    </Image>
+
+                                </Grid>
+
+                            </ScrollViewer>
+
                             <TextBlock Text="NO IMAGE SELECTED"
                                        Foreground="Gray"
                                        FontSize="22"
@@ -210,8 +221,198 @@
 
                     </Border>
 
+                    <!-- Zoom Controls -->
+                    <Border Grid.Row="1"
+                            Background="#20252C"
+                            CornerRadius="6"
+                            Margin="0,8,0,0"
+                            Padding="8">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="45"/>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="45"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0"
+                                    Content="FIT"
+                                    Command="{Binding ResetZoomCommand}"
+                                    Width="50"
+                                    Height="30"
+                                    HorizontalAlignment="Left"
+                                    Background="#3A424D"
+                                    Foreground="White"
+                                    BorderBrush="#5A6470"
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Cursor="Hand"/>
+
+                            <Button Grid.Column="1"
+                                    Content="−"
+                                    Command="{Binding ZoomOutCommand}"
+                                    Width="40"
+                                    Height="34"
+                                    Background="#3A424D"
+                                    Foreground="White"
+                                    BorderBrush="#5A6470"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"/>
+
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding ZoomLevel,
+                                                      StringFormat={}{0:P0}}"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+
+                            <Button Grid.Column="3"
+                                    Content="+"
+                                    Command="{Binding ZoomInCommand}"
+                                    Width="40"
+                                    Height="34"
+                                    Background="#3A424D"
+                                    Foreground="White"
+                                    BorderBrush="#5A6470"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Cursor="Hand"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <!-- Navigation -->
+                    <Border Grid.Row="2"
+                            Background="#20252C"
+                            CornerRadius="6"
+                            Margin="0,8,0,0"
+                            Padding="8">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0"
+                                    Content="◀  PREVIOUS"
+                                    Command="{Binding PreviousImageCommand}"
+                                    IsEnabled="{Binding HasPreviousImage}"
+                                    Height="34"
+                                    Width="115"
+                                    HorizontalAlignment="Left"
+                                    Background="#3A424D"
+                                    Foreground="White"
+                                    BorderBrush="#5A6470"
+                                    FontWeight="SemiBold"
+                                    Cursor="Hand"/>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding SelectedImage.FrameNumber,
+                                                      StringFormat=FRAME {0},
+                                                      TargetNullValue=FRAME —}"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+
+                            <Button Grid.Column="2"
+                                    Content="NEXT  ▶"
+                                    Command="{Binding NextImageCommand}"
+                                    IsEnabled="{Binding HasNextImage}"
+                                    Height="34"
+                                    Width="115"
+                                    HorizontalAlignment="Right"
+                                    Background="#3A424D"
+                                    Foreground="White"
+                                    BorderBrush="#5A6470"
+                                    FontWeight="SemiBold"
+                                    Cursor="Hand"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <!-- Review Decision -->
+                    <Border Grid.Row="3"
+                            Background="#20252C"
+                            CornerRadius="6"
+                            Margin="0,8,0,0"
+                            Padding="8">
+
+                        <Grid>
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Text="REVIEW DECISION"
+                                       Foreground="#B8C0CC"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Margin="2,0,0,7"/>
+
+                            <Grid Grid.Row="1">
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Button Grid.Column="0"
+                                        Content="ACCEPT"
+                                        Command="{Binding AcceptCommand}"
+                                        Height="34"
+                                        Margin="0,0,4,0"
+                                        Background="#315B3A"
+                                        Foreground="White"
+                                        BorderBrush="#4C8A59"
+                                        FontWeight="Bold"
+                                        Cursor="Hand"/>
+
+                                <Button Grid.Column="1"
+                                        Content="HOLD"
+                                        Command="{Binding HoldCommand}"
+                                        Height="34"
+                                        Margin="4,0"
+                                        Background="#66552B"
+                                        Foreground="White"
+                                        BorderBrush="#9B803D"
+                                        FontWeight="Bold"
+                                        Cursor="Hand"/>
+
+                                <Button Grid.Column="2"
+                                        Content="REJECT"
+                                        Command="{Binding RejectCommand}"
+                                        Height="34"
+                                        Margin="4,0,0,0"
+                                        Background="#633535"
+                                        Foreground="White"
+                                        BorderBrush="#A65353"
+                                        FontWeight="Bold"
+                                        Cursor="Hand"/>
+
+                            </Grid>
+
+                        </Grid>
+
+                    </Border>
+
                     <!-- Image Information -->
-                    <StackPanel Grid.Row="1"
+                    <StackPanel Grid.Row="4"
                                 Margin="0,10,0,0">
 
                         <TextBlock Text="{Binding SelectedImage.JobNumber,
@@ -222,15 +423,28 @@
 
                         <TextBlock Text="{Binding SelectedImage.Operator}"
                                    Foreground="White"
-                                   Margin="0,8,0,0"/>
+                                   Margin="0,5,0,0"/>
 
                         <TextBlock Text="{Binding SelectedImage.DetectorName}"
                                    Foreground="White"
-                                   Margin="0,4,0,0"/>
+                                   Margin="0,3,0,0"/>
 
-                        <TextBlock Text="{Binding SelectedImage.CapturedOn}"
+                        <TextBlock Text="{Binding SelectedImage.ReviewStatus,
+                                                  TargetNullValue=PENDING}"
                                    Foreground="White"
-                                   Margin="0,4,0,0"/>
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Margin="0,6,0,0"/>
+
+                        <TextBlock Text="{Binding SelectedImage.ReviewedBy}"
+                                   Foreground="#B8C0CC"
+                                   FontSize="11"
+                                   Margin="0,3,0,0"/>
+
+                        <TextBlock Text="{Binding SelectedImage.ReviewedOn}"
+                                   Foreground="#B8C0CC"
+                                   FontSize="11"
+                                   Margin="0,2,0,0"/>
 
                     </StackPanel>
 
@@ -261,35 +475,39 @@
 
                         <DataGridTextColumn Header="Frame"
                                             Binding="{Binding FrameNumber}"
-                                            Width="80"/>
+                                            Width="70"/>
 
                         <DataGridTextColumn Header="Job Number"
                                             Binding="{Binding JobNumber}"
-                                            Width="150"/>
+                                            Width="140"/>
 
                         <DataGridTextColumn Header="Operator"
                                             Binding="{Binding Operator}"
-                                            Width="130"/>
+                                            Width="120"/>
 
                         <DataGridTextColumn Header="kV"
                                             Binding="{Binding KV}"
-                                            Width="70"/>
+                                            Width="65"/>
 
                         <DataGridTextColumn Header="mA"
                                             Binding="{Binding MA}"
-                                            Width="70"/>
+                                            Width="65"/>
 
                         <DataGridTextColumn Header="Exposure"
                                             Binding="{Binding ExposureTime}"
-                                            Width="100"/>
+                                            Width="90"/>
 
                         <DataGridTextColumn Header="Detector"
                                             Binding="{Binding DetectorName}"
-                                            Width="140"/>
+                                            Width="130"/>
+
+                        <DataGridTextColumn Header="Status"
+                                            Binding="{Binding ReviewStatus}"
+                                            Width="100"/>
 
                         <DataGridTextColumn Header="Captured On"
                                             Binding="{Binding CapturedOn}"
-                                            Width="180"/>
+                                            Width="170"/>
 
                     </DataGrid.Columns>
 

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.Data.Sqlite;
 using PS.SuperNDT.UI.Database;
 using PS.SuperNDT.UI.Services;
 using PS.SuperNDT.UI.Views;
@@ -26,7 +27,6 @@ public partial class App : Application
             var licenseService =
                 new LicenseService();
 
-
             if (!licenseService.IsLicenseValid())
             {
                 MessageBox.Show(
@@ -40,12 +40,9 @@ public partial class App : Application
                 return;
             }
 
-
             InitializeDatabase();
 
-
             RestoreLastOpenJob();
-
 
             var loginWindow =
                 new Window
@@ -69,10 +66,8 @@ public partial class App : Application
                         new LoginView()
                 };
 
-
             bool? loginResult =
                 loginWindow.ShowDialog();
-
 
             if (loginResult != true)
             {
@@ -81,18 +76,14 @@ public partial class App : Application
                 return;
             }
 
-
             var shell =
                 new ShellWindow();
-
 
             MainWindow =
                 shell;
 
-
             ShutdownMode =
                 ShutdownMode.OnMainWindowClose;
-
 
             shell.Show();
         }
@@ -103,7 +94,6 @@ public partial class App : Application
             Shutdown();
         }
     }
-
 
     private void App_DispatcherUnhandledException(
         object sender,
@@ -116,7 +106,6 @@ public partial class App : Application
         Shutdown();
     }
 
-
     private static void ShowStartupError(
         Exception ex)
     {
@@ -127,26 +116,84 @@ public partial class App : Application
             MessageBoxImage.Error);
     }
 
-
     private static void InitializeDatabase()
     {
         using var db =
             new SuperNDTDbContext();
 
         db.Database.EnsureCreated();
+
+        EnsureReviewColumns();
     }
 
+    private static void EnsureReviewColumns()
+    {
+        const string connectionString =
+            "Data Source=PS_SuperNDT.db";
+
+        using var connection =
+            new SqliteConnection(connectionString);
+
+        connection.Open();
+
+        AddColumnIfMissing(
+            connection,
+            "ReviewStatus",
+            "TEXT NOT NULL DEFAULT 'PENDING'");
+
+        AddColumnIfMissing(
+            connection,
+            "ReviewedBy",
+            "TEXT NOT NULL DEFAULT ''");
+
+        AddColumnIfMissing(
+            connection,
+            "ReviewedOn",
+            "TEXT NULL");
+    }
+
+    private static void AddColumnIfMissing(
+        SqliteConnection connection,
+        string columnName,
+        string columnDefinition)
+    {
+        using var checkCommand =
+            connection.CreateCommand();
+
+        checkCommand.CommandText =
+            "SELECT COUNT(*) " +
+            "FROM pragma_table_info('Images') " +
+            "WHERE name = $columnName;";
+
+        checkCommand.Parameters.AddWithValue(
+            "$columnName",
+            columnName);
+
+        var exists =
+            Convert.ToInt32(
+                checkCommand.ExecuteScalar()) > 0;
+
+        if (exists)
+            return;
+
+        using var alterCommand =
+            connection.CreateCommand();
+
+        alterCommand.CommandText =
+            $"ALTER TABLE Images " +
+            $"ADD COLUMN {columnName} {columnDefinition};";
+
+        alterCommand.ExecuteNonQuery();
+    }
 
     private static void RestoreLastOpenJob()
     {
         var jobService =
             new JobService();
 
-
         var lastOpenJob =
             jobService.GetOpenJobs()
                       .FirstOrDefault();
-
 
         if (lastOpenJob != null)
         {
