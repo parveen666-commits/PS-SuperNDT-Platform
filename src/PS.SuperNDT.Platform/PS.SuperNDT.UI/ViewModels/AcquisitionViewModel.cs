@@ -1,6 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
@@ -228,42 +232,265 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         FrameNumber++;
 
-        _capturedImage =
-            new ImageRecordModel
+        string imageFolder =
+            Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "CapturedImages");
+
+        Directory.CreateDirectory(
+            imageFolder);
+
+        string fileName =
+            $"IMG_{FrameNumber:0000}.png";
+
+        string filePath =
+            Path.Combine(
+                imageFolder,
+                fileName);
+
+        try
+        {
+            CreateVirtualRadiographyImage(
+                filePath,
+                FrameNumber);
+
+            _capturedImage =
+                new ImageRecordModel
+                {
+                    JobId = job.Id,
+                    JobNumber = job.JobNumber,
+                    Operator = job.Operator,
+
+                    FrameNumber = FrameNumber,
+
+                    FileName = fileName,
+
+                    FilePath = filePath,
+
+                    DetectorName =
+                        "Virtual Detector",
+
+                    KV = KV,
+                    MA = MA,
+                    ExposureTime = ExposureTime,
+
+                    ImageWidth = 1024,
+                    ImageHeight = 768,
+                    BitDepth = 8,
+
+                    CapturedOn = DateTime.Now
+                };
+
+            AcquisitionStatus =
+                $"Frame {FrameNumber:0000} captured";
+
+            OnPropertyChanged(
+                nameof(HasCapturedImage));
+
+            ImageViewerService.Instance.OpenImage(
+                _capturedImage);
+        }
+        catch (Exception ex)
+        {
+            FrameNumber--;
+
+            _capturedImage = null;
+
+            AcquisitionStatus =
+                $"Capture failed: {ex.Message}";
+
+            OnPropertyChanged(
+                nameof(HasCapturedImage));
+        }
+    }
+
+    private static void CreateVirtualRadiographyImage(
+        string filePath,
+        int frameNumber)
+    {
+        const int width = 1024;
+        const int height = 768;
+
+        var bitmap =
+            new WriteableBitmap(
+                width,
+                height,
+                96,
+                96,
+                PixelFormats.Bgra32,
+                null);
+
+        int stride =
+            width * 4;
+
+        byte[] pixels =
+            new byte[
+                stride *
+                height];
+
+        double centerX =
+            width / 2.0;
+
+        double centerY =
+            height / 2.0;
+
+        double pipeRadius =
+            Math.Min(width, height) *
+            0.31;
+
+        double pipeInnerRadius =
+            pipeRadius * 0.72;
+
+        for (int y = 0;
+             y < height;
+             y++)
+        {
+            for (int x = 0;
+                 x < width;
+                 x++)
             {
-                JobId = job.Id,
-                JobNumber = job.JobNumber,
-                Operator = job.Operator,
+                double dx =
+                    x - centerX;
 
-                FrameNumber = FrameNumber,
+                double dy =
+                    y - centerY;
 
-                FileName =
-                    $"IMG_{FrameNumber:0000}.ndt",
+                double distance =
+                    Math.Sqrt(
+                        (dx * dx) +
+                        (dy * dy));
 
-                FilePath =
-                    string.Empty,
+                byte intensity;
 
-                DetectorName =
-                    "Virtual Detector",
+                if (distance <= pipeRadius &&
+                    distance >= pipeInnerRadius)
+                {
+                    intensity = 150;
+                }
+                else if (distance < pipeInnerRadius)
+                {
+                    intensity = 52;
+                }
+                else
+                {
+                    double gradient =
+                        18 +
+                        (170.0 *
+                         (double)y /
+                         height);
 
-                KV = KV,
-                MA = MA,
-                ExposureTime = ExposureTime,
+                    intensity =
+                        (byte)Math.Clamp(
+                            gradient,
+                            10,
+                            220);
+                }
 
-                ImageWidth = 2048,
-                ImageHeight = 2048,
-                BitDepth = 16,
+                /*
+                 * Simulated weld indication.
+                 */
 
-                CapturedOn = DateTime.Now
-            };
+                double weldY =
+                    centerY +
+                    Math.Sin(
+                        x * 0.025) *
+                    18;
 
-        AcquisitionStatus =
-            $"Frame {FrameNumber:0000} captured";
+                if (Math.Abs(
+                        y - weldY) < 5 &&
+                    distance < pipeRadius &&
+                    distance > pipeInnerRadius)
+                {
+                    intensity = 235;
+                }
 
-        OnPropertyChanged(nameof(HasCapturedImage));
+                /*
+                 * Simulated defect indications.
+                 */
 
-        ImageViewerService.Instance.OpenImage(
-            _capturedImage);
+                double defect1 =
+                    Math.Sqrt(
+                        Math.Pow(
+                            x - 430,
+                            2) +
+                        Math.Pow(
+                            y - 355,
+                            2));
+
+                double defect2 =
+                    Math.Sqrt(
+                        Math.Pow(
+                            x - 610,
+                            2) +
+                        Math.Pow(
+                            y - 405,
+                            2));
+
+                if (defect1 < 13 ||
+                    defect2 < 9)
+                {
+                    intensity = 245;
+                }
+
+                /*
+                 * Small frame variation so every
+                 * captured virtual image is unique.
+                 */
+
+                int variation =
+                    frameNumber % 12;
+
+                intensity =
+                    (byte)Math.Clamp(
+                        intensity + variation,
+                        0,
+                        255);
+
+                int index =
+                    (y * stride) +
+                    (x * 4);
+
+                pixels[index] =
+                    intensity;
+
+                pixels[index + 1] =
+                    intensity;
+
+                pixels[index + 2] =
+                    intensity;
+
+                pixels[index + 3] =
+                    255;
+            }
+        }
+
+        bitmap.WritePixels(
+            new Int32Rect(
+                0,
+                0,
+                width,
+                height),
+            pixels,
+            stride,
+            0);
+
+        bitmap.Freeze();
+
+        var encoder =
+            new PngBitmapEncoder();
+
+        encoder.Frames.Add(
+            BitmapFrame.Create(
+                bitmap));
+
+        using FileStream stream =
+            new(
+                filePath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None);
+
+        encoder.Save(stream);
     }
 
     private void SaveImage()
@@ -276,15 +503,24 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             return;
         }
 
-        _imageService.Save(
-            _capturedImage);
+        try
+        {
+            _imageService.Save(
+                _capturedImage);
 
-        AcquisitionStatus =
-            $"Image {_capturedImage.FileName} saved";
+            AcquisitionStatus =
+                $"Image {_capturedImage.FileName} saved";
 
-        _capturedImage = null;
+            _capturedImage = null;
 
-        OnPropertyChanged(nameof(HasCapturedImage));
+            OnPropertyChanged(
+                nameof(HasCapturedImage));
+        }
+        catch (Exception ex)
+        {
+            AcquisitionStatus =
+                $"Image save failed: {ex.Message}";
+        }
     }
 
     private void RetakeImage()
@@ -307,7 +543,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         AcquisitionStatus =
             "Ready for retake";
 
-        OnPropertyChanged(nameof(HasCapturedImage));
+        OnPropertyChanged(
+            nameof(HasCapturedImage));
     }
 
     private void ApplyWindowLevel()

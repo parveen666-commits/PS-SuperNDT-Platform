@@ -1,7 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using PS.SuperNDT.UI.Commands;
 using PS.SuperNDT.UI.Models;
 using PS.SuperNDT.UI.Services;
 
@@ -13,30 +15,92 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ImageRecordModel> Images { get; } = new();
 
+    public ObservableCollection<ImageRecordModel> FilteredImages { get; } = new();
+
     private ImageRecordModel? _selectedImage;
+
+    private string _jobNumberFilter = string.Empty;
+    private string _operatorFilter = string.Empty;
+    private string _detectorFilter = string.Empty;
+    private string _frameFilter = string.Empty;
+
+    public RelayCommand ClearFilterCommand { get; }
+
+    public string JobNumberFilter
+    {
+        get => _jobNumberFilter;
+        set
+        {
+            if (_jobNumberFilter == value)
+                return;
+
+            _jobNumberFilter = value;
+            OnPropertyChanged();
+
+            ApplyFilter();
+        }
+    }
+
+    public string OperatorFilter
+    {
+        get => _operatorFilter;
+        set
+        {
+            if (_operatorFilter == value)
+                return;
+
+            _operatorFilter = value;
+            OnPropertyChanged();
+
+            ApplyFilter();
+        }
+    }
+
+    public string DetectorFilter
+    {
+        get => _detectorFilter;
+        set
+        {
+            if (_detectorFilter == value)
+                return;
+
+            _detectorFilter = value;
+            OnPropertyChanged();
+
+            ApplyFilter();
+        }
+    }
+
+    public string FrameFilter
+    {
+        get => _frameFilter;
+        set
+        {
+            if (_frameFilter == value)
+                return;
+
+            _frameFilter = value;
+            OnPropertyChanged();
+
+            ApplyFilter();
+        }
+    }
 
     public ImageRecordModel? SelectedImage
     {
         get => _selectedImage;
-
         set
         {
-            if (ReferenceEquals(
-                    _selectedImage,
-                    value))
-            {
+            if (ReferenceEquals(_selectedImage, value))
                 return;
-            }
 
-            _selectedImage =
-                value;
+            _selectedImage = value;
 
             OnPropertyChanged();
 
             if (value != null)
             {
-                ImageViewerService.Instance.OpenImage(
-                    value);
+                ImageViewerService.Instance.OpenImage(value);
             }
             else
             {
@@ -47,6 +111,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     public ReviewViewModel()
     {
+        ClearFilterCommand =
+            new RelayCommand(
+                _ => ClearFilters());
+
         LoadImages();
 
         ImageViewerService.Instance.CurrentImageChanged +=
@@ -57,16 +125,32 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
         if (currentImage != null)
         {
-            _selectedImage =
-                currentImage;
+            _selectedImage = currentImage;
 
             OnPropertyChanged(
                 nameof(SelectedImage));
         }
-        else
+        else if (FilteredImages.Count > 0)
         {
-            SelectFirstAvailableImage();
+            SelectedImage =
+                FilteredImages[0];
         }
+    }
+
+    private void ImageViewerService_CurrentImageChanged(
+        object? sender,
+        EventArgs e)
+    {
+        var currentImage =
+            ImageViewerService.Instance.CurrentImage;
+
+        if (ReferenceEquals(_selectedImage, currentImage))
+            return;
+
+        _selectedImage = currentImage;
+
+        OnPropertyChanged(
+            nameof(SelectedImage));
     }
 
     private void LoadImages()
@@ -80,79 +164,80 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         {
             Images.Add(record);
         }
+
+        ApplyFilter();
     }
 
-    private void SelectFirstAvailableImage()
+    private void ApplyFilter()
     {
-        if (Images.Count == 0)
+        var filtered =
+            Images
+                .Where(image =>
+                    string.IsNullOrWhiteSpace(
+                        JobNumberFilter)
+                    ||
+                    image.JobNumber.Contains(
+                        JobNumberFilter,
+                        StringComparison.OrdinalIgnoreCase))
+
+                .Where(image =>
+                    string.IsNullOrWhiteSpace(
+                        OperatorFilter)
+                    ||
+                    image.Operator.Contains(
+                        OperatorFilter,
+                        StringComparison.OrdinalIgnoreCase))
+
+                .Where(image =>
+                    string.IsNullOrWhiteSpace(
+                        DetectorFilter)
+                    ||
+                    image.DetectorName.Contains(
+                        DetectorFilter,
+                        StringComparison.OrdinalIgnoreCase))
+
+                .Where(image =>
+                    string.IsNullOrWhiteSpace(
+                        FrameFilter)
+                    ||
+                    image.FrameNumber
+                        .ToString()
+                        .Contains(
+                            FrameFilter,
+                            StringComparison.OrdinalIgnoreCase))
+
+                .ToList();
+
+        FilteredImages.Clear();
+
+        foreach (var image in filtered)
+        {
+            FilteredImages.Add(image);
+        }
+
+        if (_selectedImage != null &&
+            !FilteredImages.Contains(_selectedImage))
         {
             SelectedImage = null;
-            return;
         }
 
-        foreach (var image in Images)
+        if (_selectedImage == null &&
+            FilteredImages.Count > 0)
         {
-            if (IsImageFileAvailable(image))
-            {
-                SelectedImage = image;
-                return;
-            }
+            SelectedImage =
+                FilteredImages[0];
         }
-
-        /*
-         * If the database contains records but the
-         * physical image file is not currently found,
-         * still select the first database record so
-         * the user can see its information and path.
-         */
-
-        SelectedImage =
-            Images[0];
     }
 
-    private static bool IsImageFileAvailable(
-        ImageRecordModel image)
+    private void ClearFilters()
     {
-        if (string.IsNullOrWhiteSpace(
-                image.FilePath))
-        {
-            return false;
-        }
-
-        try
-        {
-            return File.Exists(
-                image.FilePath);
-        }
-        catch
-        {
-            return false;
-        }
+        JobNumberFilter = string.Empty;
+        OperatorFilter = string.Empty;
+        DetectorFilter = string.Empty;
+        FrameFilter = string.Empty;
     }
 
-    private void ImageViewerService_CurrentImageChanged(
-        object? sender,
-        System.EventArgs e)
-    {
-        var currentImage =
-            ImageViewerService.Instance.CurrentImage;
-
-        if (ReferenceEquals(
-                _selectedImage,
-                currentImage))
-        {
-            return;
-        }
-
-        _selectedImage =
-            currentImage;
-
-        OnPropertyChanged(
-            nameof(SelectedImage));
-    }
-
-    public event PropertyChangedEventHandler?
-        PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(
         [CallerMemberName]
