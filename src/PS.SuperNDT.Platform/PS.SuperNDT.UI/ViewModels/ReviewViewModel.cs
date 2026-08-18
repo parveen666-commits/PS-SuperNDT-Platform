@@ -15,24 +15,33 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 {
     private readonly ImageService _imageService = new();
 
-    public ObservableCollection<ImageRecordModel> Images { get; } = new();
-
-    public ObservableCollection<ImageRecordModel> FilteredImages { get; } = new();
-
     private ImageRecordModel? _selectedImage;
-
     private BitmapImage? _displayImage;
 
-    private string _jobNumberFilter = string.Empty;
-    private string _operatorFilter = string.Empty;
-    private string _detectorFilter = string.Empty;
-    private string _frameFilter = string.Empty;
-    private string _statusFilter = "ALL";
+    private string _searchText = string.Empty;
+    private string _reviewStatusFilter = "ALL";
 
     private double _zoomLevel = 1.0;
 
     private bool _hasPreviousImage;
     private bool _hasNextImage;
+
+    private string _reviewMessage = "Ready";
+
+    public ObservableCollection<ImageRecordModel> Images { get; } = new();
+
+    public ObservableCollection<ImageRecordModel> FilteredImages { get; } = new();
+
+    public ObservableCollection<string> StatusFilterItems { get; } =
+        new()
+        {
+            "ALL",
+            "PENDING",
+            "ACCEPTED",
+            "REJECTED"
+        };
+
+    public RelayCommand RefreshCommand { get; }
 
     public RelayCommand ClearFilterCommand { get; }
 
@@ -46,72 +55,27 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     public RelayCommand NextImageCommand { get; }
 
-    public RelayCommand AcceptCommand { get; }
+    public RelayCommand ApproveCommand { get; }
 
     public RelayCommand RejectCommand { get; }
 
-    public RelayCommand HoldCommand { get; }
+    public RelayCommand PendingCommand { get; }
 
-    public string[] ReviewStatuses { get; } =
+    public RelayCommand OpenImageCommand { get; }
+
+    public string SearchText
     {
-        "ALL",
-        "PENDING",
-        "ACCEPT",
-        "REJECT",
-        "HOLD"
-    };
-
-    public double ZoomLevel
-    {
-        get => _zoomLevel;
-        private set
-        {
-            if (Math.Abs(_zoomLevel - value) < 0.001)
-                return;
-
-            _zoomLevel = value;
-
-            OnPropertyChanged();
-        }
-    }
-
-    public bool HasPreviousImage
-    {
-        get => _hasPreviousImage;
-        private set
-        {
-            if (_hasPreviousImage == value)
-                return;
-
-            _hasPreviousImage = value;
-
-            OnPropertyChanged();
-        }
-    }
-
-    public bool HasNextImage
-    {
-        get => _hasNextImage;
-        private set
-        {
-            if (_hasNextImage == value)
-                return;
-
-            _hasNextImage = value;
-
-            OnPropertyChanged();
-        }
-    }
-
-    public string JobNumberFilter
-    {
-        get => _jobNumberFilter;
+        get => _searchText;
         set
         {
-            if (_jobNumberFilter == value)
-                return;
+            value ??= string.Empty;
 
-            _jobNumberFilter = value;
+            if (_searchText == value)
+            {
+                return;
+            }
+
+            _searchText = value;
 
             OnPropertyChanged();
 
@@ -119,63 +83,19 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
-    public string OperatorFilter
+    public string ReviewStatusFilter
     {
-        get => _operatorFilter;
+        get => _reviewStatusFilter;
         set
         {
-            if (_operatorFilter == value)
+            value ??= "ALL";
+
+            if (_reviewStatusFilter == value)
+            {
                 return;
+            }
 
-            _operatorFilter = value;
-
-            OnPropertyChanged();
-
-            ApplyFilter();
-        }
-    }
-
-    public string DetectorFilter
-    {
-        get => _detectorFilter;
-        set
-        {
-            if (_detectorFilter == value)
-                return;
-
-            _detectorFilter = value;
-
-            OnPropertyChanged();
-
-            ApplyFilter();
-        }
-    }
-
-    public string FrameFilter
-    {
-        get => _frameFilter;
-        set
-        {
-            if (_frameFilter == value)
-                return;
-
-            _frameFilter = value;
-
-            OnPropertyChanged();
-
-            ApplyFilter();
-        }
-    }
-
-    public string StatusFilter
-    {
-        get => _statusFilter;
-        set
-        {
-            if (_statusFilter == value)
-                return;
-
-            _statusFilter = value;
+            _reviewStatusFilter = value;
 
             OnPropertyChanged();
 
@@ -188,18 +108,21 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         get => _selectedImage;
         set
         {
-            if (ReferenceEquals(_selectedImage, value))
+            if (ReferenceEquals(
+                    _selectedImage,
+                    value))
+            {
                 return;
+            }
 
             _selectedImage = value;
 
             OnPropertyChanged();
 
             ResetZoom();
-
             LoadDisplayImage();
-
             UpdateNavigationState();
+            UpdateReviewMessage();
 
             if (value != null)
             {
@@ -217,8 +140,12 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         get => _displayImage;
         private set
         {
-            if (ReferenceEquals(_displayImage, value))
+            if (ReferenceEquals(
+                    _displayImage,
+                    value))
+            {
                 return;
+            }
 
             _displayImage = value;
 
@@ -226,8 +153,101 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
+    public double ZoomLevel
+    {
+        get => _zoomLevel;
+        private set
+        {
+            if (Math.Abs(
+                    _zoomLevel - value) < 0.001)
+            {
+                return;
+            }
+
+            _zoomLevel = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasPreviousImage
+    {
+        get => _hasPreviousImage;
+        private set
+        {
+            if (_hasPreviousImage == value)
+            {
+                return;
+            }
+
+            _hasPreviousImage = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasNextImage
+    {
+        get => _hasNextImage;
+        private set
+        {
+            if (_hasNextImage == value)
+            {
+                return;
+            }
+
+            _hasNextImage = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public string ReviewMessage
+    {
+        get => _reviewMessage;
+        private set
+        {
+            if (_reviewMessage == value)
+            {
+                return;
+            }
+
+            _reviewMessage = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public int TotalImages =>
+        Images.Count;
+
+    public int PendingImages =>
+        Images.Count(image =>
+            string.Equals(
+                image.ReviewStatus,
+                "PENDING",
+                StringComparison.OrdinalIgnoreCase));
+
+    public int AcceptedImages =>
+        Images.Count(image =>
+            string.Equals(
+                image.ReviewStatus,
+                "ACCEPTED",
+                StringComparison.OrdinalIgnoreCase));
+
+    public int RejectedImages =>
+        Images.Count(image =>
+            string.Equals(
+                image.ReviewStatus,
+                "REJECTED",
+                StringComparison.OrdinalIgnoreCase));
+
     public ReviewViewModel()
     {
+        RefreshCommand =
+            new RelayCommand(
+                _ => LoadImages());
+
         ClearFilterCommand =
             new RelayCommand(
                 _ => ClearFilters());
@@ -252,17 +272,21 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             new RelayCommand(
                 _ => NextImage());
 
-        AcceptCommand =
+        ApproveCommand =
             new RelayCommand(
-                _ => SetReviewStatus("ACCEPT"));
+                _ => SetReviewStatus("ACCEPTED"));
 
         RejectCommand =
             new RelayCommand(
-                _ => SetReviewStatus("REJECT"));
+                _ => SetReviewStatus("REJECTED"));
 
-        HoldCommand =
+        PendingCommand =
             new RelayCommand(
-                _ => SetReviewStatus("HOLD"));
+                _ => SetReviewStatus("PENDING"));
+
+        OpenImageCommand =
+            new RelayCommand(
+                _ => OpenSelectedImage());
 
         LoadImages();
 
@@ -280,13 +304,399 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 nameof(SelectedImage));
 
             LoadDisplayImage();
-
             UpdateNavigationState();
+            UpdateReviewMessage();
         }
         else if (FilteredImages.Count > 0)
         {
             SelectedImage =
                 FilteredImages[0];
+        }
+    }
+
+    private void LoadImages()
+    {
+        try
+        {
+            Images.Clear();
+
+            var records =
+                _imageService
+                    .GetAll()
+                    .OrderByDescending(
+                        image => image.CapturedOn)
+                    .ToList();
+
+            foreach (var record in records)
+            {
+                Images.Add(record);
+            }
+
+            OnPropertyChanged(
+                nameof(TotalImages));
+
+            OnPropertyChanged(
+                nameof(PendingImages));
+
+            OnPropertyChanged(
+                nameof(AcceptedImages));
+
+            OnPropertyChanged(
+                nameof(RejectedImages));
+
+            ApplyFilter();
+
+            ReviewMessage =
+                $"Loaded {Images.Count} image(s)";
+        }
+        catch (Exception ex)
+        {
+            Images.Clear();
+            FilteredImages.Clear();
+
+            ReviewMessage =
+                $"Review load failed: {ex.Message}";
+
+            OnPropertyChanged(
+                nameof(TotalImages));
+
+            OnPropertyChanged(
+                nameof(PendingImages));
+
+            OnPropertyChanged(
+                nameof(AcceptedImages));
+
+            OnPropertyChanged(
+                nameof(RejectedImages));
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        string search =
+            SearchText.Trim();
+
+        string status =
+            ReviewStatusFilter.Trim();
+
+        var filtered =
+            Images
+                .Where(image =>
+                {
+                    if (!string.Equals(
+                            status,
+                            "ALL",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(
+                                status,
+                                "ACCEPTED",
+                                StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!string.Equals(
+                                    image.ReviewStatus,
+                                    "ACCEPTED",
+                                    StringComparison.OrdinalIgnoreCase))
+                            {
+                                return false;
+                            }
+                        }
+                        else if (string.Equals(
+                                     status,
+                                     "REJECTED",
+                                     StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!string.Equals(
+                                    image.ReviewStatus,
+                                    "REJECTED",
+                                    StringComparison.OrdinalIgnoreCase))
+                            {
+                                return false;
+                            }
+                        }
+                        else if (string.Equals(
+                                     status,
+                                     "PENDING",
+                                     StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!string.Equals(
+                                    image.ReviewStatus,
+                                    "PENDING",
+                                    StringComparison.OrdinalIgnoreCase))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(search))
+                    {
+                        return true;
+                    }
+
+                    return
+                        Contains(
+                            image.JobNumber,
+                            search)
+                        ||
+                        Contains(
+                            image.FileName,
+                            search)
+                        ||
+                        Contains(
+                            image.Operator,
+                            search)
+                        ||
+                        Contains(
+                            image.DetectorName,
+                            search)
+                        ||
+                        Contains(
+                            image.Remarks,
+                            search)
+                        ||
+                        image.FrameNumber
+                            .ToString()
+                            .Contains(
+                                search,
+                                StringComparison.OrdinalIgnoreCase)
+                        ||
+                        image.ShotNumber
+                            .ToString()
+                            .Contains(
+                                search,
+                                StringComparison.OrdinalIgnoreCase)
+                        ||
+                        image.ShotPosition
+                            .Contains(
+                                search,
+                                StringComparison.OrdinalIgnoreCase);
+                })
+                .OrderBy(
+                    image => image.ShotNumber)
+                .ThenBy(
+                    image => image.CapturedOn)
+                .ToList();
+
+        FilteredImages.Clear();
+
+        foreach (var image in filtered)
+        {
+            FilteredImages.Add(image);
+        }
+
+        if (_selectedImage != null &&
+            !FilteredImages.Contains(
+                _selectedImage))
+        {
+            SelectedImage = null;
+        }
+
+        if (_selectedImage == null &&
+            FilteredImages.Count > 0)
+        {
+            SelectedImage =
+                FilteredImages[0];
+        }
+
+        UpdateNavigationState();
+
+        if (FilteredImages.Count == 0)
+        {
+            ReviewMessage =
+                "No images match the current filter.";
+        }
+        else
+        {
+            ReviewMessage =
+                $"{FilteredImages.Count} image(s) shown";
+        }
+    }
+
+    private static bool Contains(
+        string? value,
+        string search)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+               value.Contains(
+                   search,
+                   StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ClearFilters()
+    {
+        SearchText = string.Empty;
+        ReviewStatusFilter = "ALL";
+
+        ApplyFilter();
+    }
+
+    private void ZoomIn()
+    {
+        ZoomLevel =
+            Math.Min(
+                5.0,
+                ZoomLevel + 0.25);
+    }
+
+    private void ZoomOut()
+    {
+        ZoomLevel =
+            Math.Max(
+                0.25,
+                ZoomLevel - 0.25);
+    }
+
+    private void ResetZoom()
+    {
+        ZoomLevel = 1.0;
+    }
+
+    private void PreviousImage()
+    {
+        if (_selectedImage == null)
+        {
+            return;
+        }
+
+        int currentIndex =
+            FilteredImages.IndexOf(
+                _selectedImage);
+
+        if (currentIndex <= 0)
+        {
+            return;
+        }
+
+        SelectedImage =
+            FilteredImages[
+                currentIndex - 1];
+    }
+
+    private void NextImage()
+    {
+        if (_selectedImage == null)
+        {
+            return;
+        }
+
+        int currentIndex =
+            FilteredImages.IndexOf(
+                _selectedImage);
+
+        if (currentIndex < 0 ||
+            currentIndex >=
+            FilteredImages.Count - 1)
+        {
+            return;
+        }
+
+        SelectedImage =
+            FilteredImages[
+                currentIndex + 1];
+    }
+
+    private void UpdateNavigationState()
+    {
+        if (_selectedImage == null)
+        {
+            HasPreviousImage = false;
+            HasNextImage = false;
+
+            return;
+        }
+
+        int currentIndex =
+            FilteredImages.IndexOf(
+                _selectedImage);
+
+        if (currentIndex < 0)
+        {
+            HasPreviousImage = false;
+            HasNextImage = false;
+
+            return;
+        }
+
+        HasPreviousImage =
+            currentIndex > 0;
+
+        HasNextImage =
+            currentIndex <
+            FilteredImages.Count - 1;
+    }
+
+    private void SetReviewStatus(
+        string status)
+    {
+        if (_selectedImage == null)
+        {
+            ReviewMessage =
+                "Select an image first.";
+
+            return;
+        }
+
+        try
+        {
+            _selectedImage.ReviewStatus =
+                status;
+
+            _selectedImage.ReviewedBy =
+                Environment.UserName;
+
+            _selectedImage.ReviewedOn =
+                DateTime.Now;
+
+            _imageService.Save(
+                _selectedImage);
+
+            OnPropertyChanged(
+                nameof(SelectedImage));
+
+            OnPropertyChanged(
+                nameof(PendingImages));
+
+            OnPropertyChanged(
+                nameof(AcceptedImages));
+
+            OnPropertyChanged(
+                nameof(RejectedImages));
+
+            ReviewMessage =
+                $"Shot {_selectedImage.ShotNumber} marked {status}";
+
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            ReviewMessage =
+                $"Review update failed: {ex.Message}";
+        }
+    }
+
+    private void OpenSelectedImage()
+    {
+        if (_selectedImage == null)
+        {
+            ReviewMessage =
+                "Select an image first.";
+
+            return;
+        }
+
+        try
+        {
+            ImageViewerService.Instance.OpenImage(
+                _selectedImage);
+
+            ReviewMessage =
+                $"Opened Shot {_selectedImage.ShotNumber}";
+        }
+        catch (Exception ex)
+        {
+            ReviewMessage =
+                $"Unable to open image: {ex.Message}";
         }
     }
 
@@ -315,6 +725,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         ResetZoom();
 
         UpdateNavigationState();
+
+        UpdateReviewMessage();
     }
 
     private void LoadDisplayImage()
@@ -322,16 +734,24 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         DisplayImage = null;
 
         if (_selectedImage == null)
+        {
             return;
+        }
 
         string filePath =
             _selectedImage.FilePath;
 
-        if (string.IsNullOrWhiteSpace(filePath))
+        if (string.IsNullOrWhiteSpace(
+                filePath))
+        {
             return;
+        }
 
-        if (!File.Exists(filePath))
+        if (!File.Exists(
+                filePath))
+        {
             return;
+        }
 
         try
         {
@@ -366,209 +786,18 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
-    private void LoadImages()
-    {
-        Images.Clear();
-
-        var records =
-            _imageService.GetAll();
-
-        foreach (var record in records)
-        {
-            Images.Add(record);
-        }
-
-        ApplyFilter();
-    }
-
-    private void ApplyFilter()
-    {
-        var filtered =
-            Images
-                .Where(image =>
-                    string.IsNullOrWhiteSpace(
-                        JobNumberFilter)
-                    ||
-                    image.JobNumber.Contains(
-                        JobNumberFilter,
-                        StringComparison.OrdinalIgnoreCase))
-
-                .Where(image =>
-                    string.IsNullOrWhiteSpace(
-                        OperatorFilter)
-                    ||
-                    image.Operator.Contains(
-                        OperatorFilter,
-                        StringComparison.OrdinalIgnoreCase))
-
-                .Where(image =>
-                    string.IsNullOrWhiteSpace(
-                        DetectorFilter)
-                    ||
-                    image.DetectorName.Contains(
-                        DetectorFilter,
-                        StringComparison.OrdinalIgnoreCase))
-
-                .Where(image =>
-                    string.IsNullOrWhiteSpace(
-                        FrameFilter)
-                    ||
-                    image.FrameNumber
-                        .ToString()
-                        .Contains(
-                            FrameFilter,
-                            StringComparison.OrdinalIgnoreCase))
-
-                .Where(image =>
-                    StatusFilter == "ALL"
-                    ||
-                    string.Equals(
-                        image.ReviewStatus,
-                        StatusFilter,
-                        StringComparison.OrdinalIgnoreCase))
-
-                .ToList();
-
-        FilteredImages.Clear();
-
-        foreach (var image in filtered)
-        {
-            FilteredImages.Add(image);
-        }
-
-        if (_selectedImage != null &&
-            !FilteredImages.Contains(_selectedImage))
-        {
-            SelectedImage = null;
-        }
-
-        if (_selectedImage == null &&
-            FilteredImages.Count > 0)
-        {
-            SelectedImage =
-                FilteredImages[0];
-        }
-
-        UpdateNavigationState();
-    }
-
-    private void ClearFilters()
-    {
-        JobNumberFilter = string.Empty;
-        OperatorFilter = string.Empty;
-        DetectorFilter = string.Empty;
-        FrameFilter = string.Empty;
-        StatusFilter = "ALL";
-    }
-
-    private void ZoomIn()
-    {
-        ZoomLevel =
-            Math.Min(
-                5.0,
-                ZoomLevel + 0.25);
-    }
-
-    private void ZoomOut()
-    {
-        ZoomLevel =
-            Math.Max(
-                0.25,
-                ZoomLevel - 0.25);
-    }
-
-    private void ResetZoom()
-    {
-        ZoomLevel = 1.0;
-    }
-
-    private void PreviousImage()
-    {
-        if (_selectedImage == null)
-            return;
-
-        var currentIndex =
-            FilteredImages.IndexOf(_selectedImage);
-
-        if (currentIndex <= 0)
-            return;
-
-        SelectedImage =
-            FilteredImages[currentIndex - 1];
-    }
-
-    private void NextImage()
-    {
-        if (_selectedImage == null)
-            return;
-
-        var currentIndex =
-            FilteredImages.IndexOf(_selectedImage);
-
-        if (currentIndex < 0)
-            return;
-
-        if (currentIndex >=
-            FilteredImages.Count - 1)
-        {
-            return;
-        }
-
-        SelectedImage =
-            FilteredImages[currentIndex + 1];
-    }
-
-    private void UpdateNavigationState()
+    private void UpdateReviewMessage()
     {
         if (_selectedImage == null)
         {
-            HasPreviousImage = false;
-            HasNextImage = false;
-
             return;
         }
 
-        var currentIndex =
-            FilteredImages.IndexOf(_selectedImage);
-
-        if (currentIndex < 0)
-        {
-            HasPreviousImage = false;
-            HasNextImage = false;
-
-            return;
-        }
-
-        HasPreviousImage =
-            currentIndex > 0;
-
-        HasNextImage =
-            currentIndex <
-            FilteredImages.Count - 1;
-    }
-
-    private void SetReviewStatus(
-        string status)
-    {
-        if (_selectedImage == null)
-            return;
-
-        _selectedImage.ReviewStatus =
-            status;
-
-        _selectedImage.ReviewedBy =
-            Environment.UserName;
-
-        _selectedImage.ReviewedOn =
-            DateTime.Now;
-
-        _imageService.Save(
-            _selectedImage);
-
-        OnPropertyChanged(
-            nameof(SelectedImage));
-
-        ApplyFilter();
+        ReviewMessage =
+            $"Shot {_selectedImage.ShotNumber}/" +
+            $"{_selectedImage.TotalShots}  |  " +
+            $"{_selectedImage.ShotStartPosition:0}-" +
+            $"{_selectedImage.ShotEndPosition:0} mm";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

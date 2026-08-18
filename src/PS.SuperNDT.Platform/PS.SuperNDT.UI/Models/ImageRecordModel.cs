@@ -10,6 +10,8 @@ public sealed class ImageRecordModel
 
     public string JobNumber { get; set; } = "";
 
+    public string PipeId { get; set; } = "";
+
     public string Operator { get; set; } = "";
 
     public string Remarks { get; set; } = "";

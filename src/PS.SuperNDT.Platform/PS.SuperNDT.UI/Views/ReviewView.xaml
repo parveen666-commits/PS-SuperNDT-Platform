@@ -5,53 +5,57 @@
 
     <UserControl.Resources>
 
-        <Style x:Key="ReviewStatusCellStyle"
-               TargetType="TextBlock">
+        <Style x:Key="ActionButton"
+               TargetType="Button">
+
+            <Setter Property="Height"
+                    Value="34"/>
+
+            <Setter Property="Margin"
+                    Value="4"/>
+
+            <Setter Property="Padding"
+                    Value="12,0"/>
+
+            <Setter Property="Background"
+                    Value="#343B46"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#515B68"/>
 
             <Setter Property="FontWeight"
-                    Value="Bold"/>
+                    Value="SemiBold"/>
 
-            <Setter Property="HorizontalAlignment"
-                    Value="Center"/>
+            <Setter Property="Cursor"
+                    Value="Hand"/>
 
-            <Setter Property="VerticalAlignment"
-                    Value="Center"/>
+        </Style>
 
-            <Style.Triggers>
+        <Style x:Key="InfoLabel"
+               TargetType="TextBlock">
 
-                <DataTrigger Binding="{Binding ReviewStatus}"
-                             Value="ACCEPT">
+            <Setter Property="Foreground"
+                    Value="#8F9AAA"/>
 
-                    <Setter Property="Foreground"
-                            Value="#55D66A"/>
+            <Setter Property="FontSize"
+                    Value="11"/>
 
-                </DataTrigger>
+        </Style>
 
-                <DataTrigger Binding="{Binding ReviewStatus}"
-                             Value="REJECT">
+        <Style x:Key="InfoValue"
+               TargetType="TextBlock">
 
-                    <Setter Property="Foreground"
-                            Value="#FF6666"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
 
-                </DataTrigger>
+            <Setter Property="FontSize"
+                    Value="14"/>
 
-                <DataTrigger Binding="{Binding ReviewStatus}"
-                             Value="HOLD">
-
-                    <Setter Property="Foreground"
-                            Value="#FFD45A"/>
-
-                </DataTrigger>
-
-                <DataTrigger Binding="{Binding ReviewStatus}"
-                             Value="PENDING">
-
-                    <Setter Property="Foreground"
-                            Value="#B8C0CC"/>
-
-                </DataTrigger>
-
-            </Style.Triggers>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
 
         </Style>
 
@@ -60,7 +64,7 @@
     <Grid Margin="15">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"/>
+            <RowDefinition Height="62"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -69,213 +73,279 @@
 
         <Border Grid.Row="0"
                 Background="#252B33"
-                CornerRadius="8">
+                CornerRadius="8"
+                Padding="18,0">
 
-            <TextBlock Text="Review"
-                       Margin="20,0"
-                       VerticalAlignment="Center"
-                       Foreground="White"
-                       FontSize="28"
-                       FontWeight="Bold"/>
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="IMAGE REVIEW"
+                               Foreground="White"
+                               FontSize="22"
+                               FontWeight="Bold"/>
+
+                    <TextBlock Text="{Binding ReviewMessage}"
+                               Foreground="#8F9AAA"
+                               FontSize="11"
+                               Margin="0,3,0,0"/>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="1"
+                            Margin="15,0"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="TOTAL"
+                               Style="{StaticResource InfoLabel}"
+                               HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="{Binding TotalImages}"
+                               Foreground="White"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="2"
+                            Margin="15,0"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="PENDING"
+                               Style="{StaticResource InfoLabel}"
+                               HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="{Binding PendingImages}"
+                               Foreground="#FFD45A"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="3"
+                            Margin="15,0,0,0"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="ACCEPTED"
+                               Style="{StaticResource InfoLabel}"
+                               HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="{Binding AcceptedImages}"
+                               Foreground="#55D66A"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+
+                </StackPanel>
+
+            </Grid>
 
         </Border>
 
-        <!-- FILTER PANEL -->
+        <!-- FILTER -->
 
         <Border Grid.Row="1"
                 Background="#252B33"
                 CornerRadius="8"
-                Margin="0,12,0,0"
+                Margin="0,10,0,0"
                 Padding="12">
 
             <Grid>
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="110"/>
+                    <ColumnDefinition Width="110"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0"
-                            Margin="0,0,10,0">
+                <TextBox Grid.Column="0"
+                         Text="{Binding SearchText,
+                                        UpdateSourceTrigger=PropertyChanged}"
+                         Height="36"
+                         Padding="10,6"
+                         Margin="0,0,10,0"
+                         VerticalContentAlignment="Center"
+                         Background="#1F232A"
+                         Foreground="White"
+                         BorderBrush="#4A5360"
+                         FontSize="13">
 
-                    <TextBlock Text="Job Number"
-                               Foreground="#B8C0CC"
-                               FontSize="12"
-                               Margin="2,0,0,5"/>
+                    <TextBox.ToolTip>
+                        Search Job / File / Operator / Detector / Shot No.
+                    </TextBox.ToolTip>
 
-                    <TextBox Text="{Binding JobNumberFilter,
-                                            UpdateSourceTrigger=PropertyChanged}"
-                             Height="34"
-                             Padding="8,4"
-                             Foreground="White"
-                             Background="#1F232A"
-                             BorderBrush="#4A5360"/>
+                </TextBox>
 
-                </StackPanel>
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding
+                              RelativeSource={RelativeSource AncestorType=UserControl},
+                              Path=DataContext.StatusFilterItems}"
+                          SelectedItem="{Binding ReviewStatusFilter,
+                                                 UpdateSourceTrigger=PropertyChanged}"
+                          Height="36"
+                          Margin="0,0,10,0"
+                          Background="#1F232A"
+                          Foreground="White"
+                          BorderBrush="#4A5360"
+                          Padding="8,4"/>
 
-                <StackPanel Grid.Column="1"
-                            Margin="0,0,10,0">
+                <Button Grid.Column="2"
+                        Content="REFRESH"
+                        Command="{Binding RefreshCommand}"
+                        Style="{StaticResource ActionButton}"/>
 
-                    <TextBlock Text="Operator"
-                               Foreground="#B8C0CC"
-                               FontSize="12"
-                               Margin="2,0,0,5"/>
-
-                    <TextBox Text="{Binding OperatorFilter,
-                                            UpdateSourceTrigger=PropertyChanged}"
-                             Height="34"
-                             Padding="8,4"
-                             Foreground="White"
-                             Background="#1F232A"
-                             BorderBrush="#4A5360"/>
-
-                </StackPanel>
-
-                <StackPanel Grid.Column="2"
-                            Margin="0,0,10,0">
-
-                    <TextBlock Text="Detector"
-                               Foreground="#B8C0CC"
-                               FontSize="12"
-                               Margin="2,0,0,5"/>
-
-                    <TextBox Text="{Binding DetectorFilter,
-                                            UpdateSourceTrigger=PropertyChanged}"
-                             Height="34"
-                             Padding="8,4"
-                             Foreground="White"
-                             Background="#1F232A"
-                             BorderBrush="#4A5360"/>
-
-                </StackPanel>
-
-                <StackPanel Grid.Column="3"
-                            Margin="0,0,10,0">
-
-                    <TextBlock Text="Frame"
-                               Foreground="#B8C0CC"
-                               FontSize="12"
-                               Margin="2,0,0,5"/>
-
-                    <TextBox Text="{Binding FrameFilter,
-                                            UpdateSourceTrigger=PropertyChanged}"
-                             Height="34"
-                             Padding="8,4"
-                             Foreground="White"
-                             Background="#1F232A"
-                             BorderBrush="#4A5360"/>
-
-                </StackPanel>
-
-                <StackPanel Grid.Column="4"
-                            Margin="0,0,10,0">
-
-                    <TextBlock Text="Review Status"
-                               Foreground="#B8C0CC"
-                               FontSize="12"
-                               Margin="2,0,0,5"/>
-
-                    <ComboBox ItemsSource="{Binding ReviewStatuses}"
-                              SelectedItem="{Binding StatusFilter,
-                                                      UpdateSourceTrigger=PropertyChanged}"
-                              Height="34"
-                              Background="#1F232A"
-                              Foreground="White"
-                              BorderBrush="#4A5360"
-                              Padding="6,2"/>
-
-                </StackPanel>
-
-                <Button Grid.Column="5"
-                        Content="CLEAR FILTERS"
+                <Button Grid.Column="3"
+                        Content="CLEAR"
                         Command="{Binding ClearFilterCommand}"
-                        Height="34"
-                        Margin="5,20,0,0"
-                        Background="#3A424D"
-                        Foreground="White"
-                        BorderBrush="#5A6470"
-                        FontWeight="SemiBold"
-                        Cursor="Hand"/>
+                        Style="{StaticResource ActionButton}"/>
+
+                <Button Grid.Column="4"
+                        Content="OPEN"
+                        Command="{Binding OpenImageCommand}"
+                        Style="{StaticResource ActionButton}"/>
 
             </Grid>
 
         </Border>
 
-        <!-- MAIN CONTENT -->
+        <!-- MAIN -->
 
         <Grid Grid.Row="2"
-              Margin="0,12,0,0">
+              Margin="0,10,0,0">
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="420"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="390"/>
             </Grid.ColumnDefinitions>
 
-            <!-- PREVIEW -->
+            <!-- IMAGE LIST -->
 
             <Border Grid.Column="0"
                     Background="#252B33"
                     CornerRadius="8"
                     Margin="0,0,10,0">
 
-                <Grid Margin="10">
+                <DataGrid ItemsSource="{Binding FilteredImages}"
+                          SelectedItem="{Binding SelectedImage}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          Margin="10"
+                          Background="#252B33"
+                          Foreground="White"
+                          BorderBrush="#404752"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column">
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="SHOT"
+                                            Binding="{Binding ShotNumber}"
+                                            Width="60"/>
+
+                        <DataGridTextColumn Header="TOTAL"
+                                            Binding="{Binding TotalShots}"
+                                            Width="55"/>
+
+                        <DataGridTextColumn Header="POSITION"
+                                            Binding="{Binding ShotPosition}"
+                                            Width="125"/>
+
+                        <DataGridTextColumn Header="FRAME"
+                                            Binding="{Binding FrameNumber}"
+                                            Width="65"/>
+
+                        <DataGridTextColumn Header="JOB"
+                                            Binding="{Binding JobNumber}"
+                                            Width="130"/>
+
+                        <DataGridTextColumn Header="OPERATOR"
+                                            Binding="{Binding Operator}"
+                                            Width="110"/>
+
+                        <DataGridTextColumn Header="DETECTOR"
+                                            Binding="{Binding DetectorName}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="kV"
+                                            Binding="{Binding KV}"
+                                            Width="55"/>
+
+                        <DataGridTextColumn Header="mA"
+                                            Binding="{Binding MA}"
+                                            Width="55"/>
+
+                        <DataGridTextColumn Header="STATUS"
+                                            Binding="{Binding ReviewStatus}"
+                                            Width="90"/>
+
+                        <DataGridTextColumn Header="CAPTURED"
+                                            Binding="{Binding CapturedOn,
+                                                              StringFormat={}{0:dd-MM-yyyy HH:mm}}"
+                                            Width="135"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </Border>
+
+            <!-- DETAILS -->
+
+            <Border Grid.Column="1"
+                    Background="#252B33"
+                    CornerRadius="8"
+                    Padding="14">
+
+                <Grid>
 
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="260"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="125"/>
                     </Grid.RowDefinitions>
+
+                    <!-- TITLE -->
+
+                    <TextBlock Grid.Row="0"
+                               Text="SELECTED SHOT"
+                               Foreground="#B8C0CC"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               Margin="2,0,0,8"/>
 
                     <!-- IMAGE -->
 
-                    <Border Grid.Row="0"
+                    <Border Grid.Row="1"
                             Background="Black"
-                            BorderBrush="#404040"
+                            BorderBrush="#404752"
                             BorderThickness="1">
 
                         <Grid>
 
-                            <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                          VerticalScrollBarVisibility="Auto"
-                                          Background="Black"
-                                          CanContentScroll="False">
-
-                                <Grid HorizontalAlignment="Center"
-                                      VerticalAlignment="Center">
-
-                                    <!-- IMPORTANT:
-                                         Use prepared DisplayImage instead
-                                         of loading FilePath directly. -->
-
-                                    <Image Source="{Binding DisplayImage}"
-                                           Stretch="None"
-                                           RenderOptions.BitmapScalingMode="HighQuality"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center">
-
-                                        <Image.RenderTransform>
-
-                                            <ScaleTransform
-                                                ScaleX="{Binding ZoomLevel}"
-                                                ScaleY="{Binding ZoomLevel}"/>
-
-                                        </Image.RenderTransform>
-
-                                    </Image>
-
-                                </Grid>
-
-                            </ScrollViewer>
+                            <Image Source="{Binding SelectedImage.FilePath}"
+                                   Stretch="Uniform"
+                                   Margin="5"/>
 
                             <TextBlock Text="NO IMAGE SELECTED"
-                                       Foreground="Gray"
-                                       FontSize="22"
+                                       Foreground="#707783"
+                                       FontSize="18"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center">
@@ -309,314 +379,221 @@
 
                     </Border>
 
-                    <!-- ZOOM -->
-
-                    <Border Grid.Row="1"
-                            Background="#20252C"
-                            CornerRadius="6"
-                            Margin="0,8,0,0"
-                            Padding="8">
-
-                        <Grid>
-
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="45"/>
-                                <ColumnDefinition Width="70"/>
-                                <ColumnDefinition Width="45"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Button Grid.Column="0"
-                                    Content="FIT"
-                                    Command="{Binding ResetZoomCommand}"
-                                    Width="50"
-                                    Height="30"
-                                    HorizontalAlignment="Left"
-                                    Background="#3A424D"
-                                    Foreground="White"
-                                    BorderBrush="#5A6470"
-                                    FontSize="11"
-                                    FontWeight="SemiBold"
-                                    Cursor="Hand"/>
-
-                            <Button Grid.Column="1"
-                                    Content="−"
-                                    Command="{Binding ZoomOutCommand}"
-                                    Width="40"
-                                    Height="34"
-                                    Background="#3A424D"
-                                    Foreground="White"
-                                    BorderBrush="#5A6470"
-                                    FontSize="20"
-                                    FontWeight="Bold"
-                                    Cursor="Hand"/>
-
-                            <TextBlock Grid.Column="2"
-                                       Text="{Binding ZoomLevel,
-                                                      StringFormat={}{0:P0}}"
-                                       Foreground="White"
-                                       FontSize="14"
-                                       FontWeight="SemiBold"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-
-                            <Button Grid.Column="3"
-                                    Content="+"
-                                    Command="{Binding ZoomInCommand}"
-                                    Width="40"
-                                    Height="34"
-                                    Background="#3A424D"
-                                    Foreground="White"
-                                    BorderBrush="#5A6470"
-                                    FontSize="20"
-                                    FontWeight="Bold"
-                                    Cursor="Hand"/>
-
-                        </Grid>
-
-                    </Border>
-
-                    <!-- NAVIGATION -->
+                    <!-- SHOT INFO -->
 
                     <Border Grid.Row="2"
                             Background="#20252C"
                             CornerRadius="6"
-                            Margin="0,8,0,0"
-                            Padding="8">
+                            Padding="10"
+                            Margin="0,10,0,0">
 
                         <Grid>
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <Button Grid.Column="0"
-                                    Content="◀  PREVIOUS"
-                                    Command="{Binding PreviousImageCommand}"
-                                    IsEnabled="{Binding HasPreviousImage}"
-                                    Height="34"
-                                    Width="115"
-                                    HorizontalAlignment="Left"
-                                    Background="#3A424D"
-                                    Foreground="White"
-                                    BorderBrush="#5A6470"
-                                    FontWeight="SemiBold"
-                                    Cursor="Hand"/>
+                            <StackPanel Grid.Column="0">
 
-                            <TextBlock Grid.Column="1"
-                                       Text="{Binding SelectedImage.FrameNumber,
-                                                      StringFormat=FRAME {0},
-                                                      TargetNullValue=FRAME —}"
-                                       Foreground="White"
-                                       FontSize="14"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"/>
+                                <TextBlock Text="SHOT"
+                                           Style="{StaticResource InfoLabel}"/>
 
-                            <Button Grid.Column="2"
-                                    Content="NEXT  ▶"
-                                    Command="{Binding NextImageCommand}"
-                                    IsEnabled="{Binding HasNextImage}"
-                                    Height="34"
-                                    Width="115"
-                                    HorizontalAlignment="Right"
-                                    Background="#3A424D"
-                                    Foreground="White"
-                                    BorderBrush="#5A6470"
-                                    FontWeight="SemiBold"
-                                    Cursor="Hand"/>
+                                <TextBlock Text="{Binding SelectedImage.ShotNumber,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+
+                                <TextBlock Text="POSITION"
+                                           Style="{StaticResource InfoLabel}"
+                                           Margin="0,8,0,0"/>
+
+                                <TextBlock Text="{Binding SelectedImage.ShotPosition,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+
+                                <TextBlock Text="PIPE LENGTH"
+                                           Style="{StaticResource InfoLabel}"
+                                           Margin="0,8,0,0"/>
+
+                                <TextBlock Text="{Binding SelectedImage.PipeLength,
+                                                          StringFormat={}{0:0} mm,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+
+                                <TextBlock Text="SHOT SIZE"
+                                           Style="{StaticResource InfoLabel}"/>
+
+                                <TextBlock Text="{Binding SelectedImage.ShotSize,
+                                                          StringFormat={}{0:0} mm,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+
+                                <TextBlock Text="OVERLAP"
+                                           Style="{StaticResource InfoLabel}"
+                                           Margin="0,8,0,0"/>
+
+                                <TextBlock Text="{Binding SelectedImage.Overlap,
+                                                          StringFormat={}{0:0} mm,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+
+                                <TextBlock Text="FILE"
+                                           Style="{StaticResource InfoLabel}"
+                                           Margin="0,8,0,0"/>
+
+                                <TextBlock Text="{Binding SelectedImage.FileName,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"
+                                           TextTrimming="CharacterEllipsis"/>
+
+                            </StackPanel>
 
                         </Grid>
 
                     </Border>
 
-                    <!-- REVIEW DECISION -->
+                    <!-- EXPOSURE -->
 
                     <Border Grid.Row="3"
                             Background="#20252C"
                             CornerRadius="6"
-                            Margin="0,8,0,0"
-                            Padding="8">
+                            Padding="10"
+                            Margin="0,8,0,0">
 
                         <Grid>
 
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Row="0"
-                                       Text="REVIEW DECISION"
-                                       Foreground="#B8C0CC"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Margin="2,0,0,7"/>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="kV"
+                                           Style="{StaticResource InfoLabel}"/>
+                                <TextBlock Text="{Binding SelectedImage.KV,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+                            </StackPanel>
 
-                            <Grid Grid.Row="1">
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="mA"
+                                           Style="{StaticResource InfoLabel}"/>
+                                <TextBlock Text="{Binding SelectedImage.MA,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+                            </StackPanel>
 
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="EXPOSURE"
+                                           Style="{StaticResource InfoLabel}"/>
+                                <TextBlock Text="{Binding SelectedImage.ExposureTime,
+                                                          StringFormat={}{0:0.##} s,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+                            </StackPanel>
 
-                                <Button Grid.Column="0"
-                                        Content="ACCEPT"
-                                        Command="{Binding AcceptCommand}"
-                                        Height="34"
-                                        Margin="0,0,4,0"
-                                        Background="#315B3A"
-                                        Foreground="White"
-                                        BorderBrush="#4C8A59"
-                                        FontWeight="Bold"
-                                        Cursor="Hand"/>
-
-                                <Button Grid.Column="1"
-                                        Content="HOLD"
-                                        Command="{Binding HoldCommand}"
-                                        Height="34"
-                                        Margin="4,0"
-                                        Background="#66552B"
-                                        Foreground="White"
-                                        BorderBrush="#9B803D"
-                                        FontWeight="Bold"
-                                        Cursor="Hand"/>
-
-                                <Button Grid.Column="2"
-                                        Content="REJECT"
-                                        Command="{Binding RejectCommand}"
-                                        Height="34"
-                                        Margin="4,0,0,0"
-                                        Background="#633535"
-                                        Foreground="White"
-                                        BorderBrush="#A65353"
-                                        FontWeight="Bold"
-                                        Cursor="Hand"/>
-
-                            </Grid>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="FRAME"
+                                           Style="{StaticResource InfoLabel}"/>
+                                <TextBlock Text="{Binding SelectedImage.FrameNumber,
+                                                          TargetNullValue=—}"
+                                           Style="{StaticResource InfoValue}"/>
+                            </StackPanel>
 
                         </Grid>
 
                     </Border>
 
-                    <!-- IMAGE INFORMATION -->
+                    <!-- REVIEW -->
 
-                    <StackPanel Grid.Row="4"
-                                Margin="0,10,0,0">
+                    <Border Grid.Row="4"
+                            Background="#20252C"
+                            CornerRadius="6"
+                            Padding="10"
+                            Margin="0,8,0,0">
 
-                        <TextBlock Text="{Binding SelectedImage.JobNumber,
-                                                  TargetNullValue=No Image Selected}"
-                                   Foreground="White"
-                                   FontSize="18"
-                                   FontWeight="Bold"/>
+                        <StackPanel>
 
-                        <TextBlock Text="{Binding SelectedImage.Operator}"
-                                   Foreground="White"
-                                   Margin="0,5,0,0"/>
+                            <TextBlock Text="REVIEW STATUS"
+                                       Style="{StaticResource InfoLabel}"/>
 
-                        <TextBlock Text="{Binding SelectedImage.DetectorName}"
-                                   Foreground="White"
-                                   Margin="0,3,0,0"/>
+                            <TextBlock Text="{Binding SelectedImage.ReviewStatus,
+                                                      TargetNullValue=PENDING}"
+                                       Foreground="White"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Margin="0,4,0,10"/>
 
-                        <TextBlock Text="{Binding SelectedImage.ReviewStatus,
-                                                  TargetNullValue=PENDING}"
-                                   Foreground="White"
-                                   FontSize="14"
-                                   FontWeight="Bold"
-                                   Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding SelectedImage.ReviewedBy,
+                                                      TargetNullValue=Not reviewed}"
+                                       Foreground="#B8C0CC"
+                                       FontSize="12"/>
 
-                        <TextBlock Text="{Binding SelectedImage.ReviewedBy}"
-                                   Foreground="#B8C0CC"
-                                   FontSize="11"
-                                   Margin="0,3,0,0"/>
+                            <TextBlock Text="{Binding SelectedImage.ReviewedOn,
+                                                      StringFormat={}{0:dd-MM-yyyy HH:mm},
+                                                      TargetNullValue=—}"
+                                       Foreground="#B8C0CC"
+                                       FontSize="12"
+                                       Margin="0,3,0,0"/>
 
-                        <TextBlock Text="{Binding SelectedImage.ReviewedOn}"
-                                   Foreground="#B8C0CC"
-                                   FontSize="11"
-                                   Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding SelectedImage.Remarks,
+                                                      TargetNullValue=No remarks}"
+                                       Foreground="#8F9AAA"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Margin="0,10,0,0"/>
 
-                    </StackPanel>
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- ACTIONS -->
+
+                    <Grid Grid.Row="5"
+                          Margin="0,10,0,0">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Content="OPEN"
+                                Command="{Binding OpenImageCommand}"
+                                Style="{StaticResource ActionButton}"/>
+
+                        <Button Grid.Column="1"
+                                Content="ACCEPT"
+                                Command="{Binding ApproveCommand}"
+                                Style="{StaticResource ActionButton}"
+                                Background="#315B3A"
+                                BorderBrush="#4C8A59"/>
+
+                        <Button Grid.Column="2"
+                                Content="PENDING"
+                                Command="{Binding PendingCommand}"
+                                Style="{StaticResource ActionButton}"
+                                Background="#66552B"
+                                BorderBrush="#9B803D"/>
+
+                        <Button Grid.Column="3"
+                                Content="REJECT"
+                                Command="{Binding RejectCommand}"
+                                Style="{StaticResource ActionButton}"
+                                Background="#633535"
+                                BorderBrush="#A65353"/>
+
+                    </Grid>
 
                 </Grid>
-
-            </Border>
-
-            <!-- RECORDS GRID -->
-
-            <Border Grid.Column="1"
-                    Background="#252B33"
-                    CornerRadius="8">
-
-                <DataGrid ItemsSource="{Binding FilteredImages}"
-                          SelectedItem="{Binding SelectedImage}"
-                          Margin="10"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          SelectionMode="Single"
-                          SelectionUnit="FullRow"
-                          Background="#252B33"
-                          Foreground="White"
-                          BorderBrush="#404752"
-                          BorderThickness="1"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal">
-
-                    <DataGrid.Columns>
-
-                        <DataGridTextColumn Header="Frame"
-                                            Binding="{Binding FrameNumber}"
-                                            Width="70"/>
-
-                        <DataGridTextColumn Header="Job Number"
-                                            Binding="{Binding JobNumber}"
-                                            Width="140"/>
-
-                        <DataGridTextColumn Header="Operator"
-                                            Binding="{Binding Operator}"
-                                            Width="120"/>
-
-                        <DataGridTextColumn Header="Detector"
-                                            Binding="{Binding DetectorName}"
-                                            Width="130"/>
-
-                        <DataGridTextColumn Header="kV"
-                                            Binding="{Binding KV}"
-                                            Width="65"/>
-
-                        <DataGridTextColumn Header="mA"
-                                            Binding="{Binding MA}"
-                                            Width="65"/>
-
-                        <DataGridTextColumn Header="Exposure"
-                                            Binding="{Binding ExposureTime}"
-                                            Width="90"/>
-
-                        <DataGridTextColumn Header="Captured"
-                                            Binding="{Binding CapturedOn}"
-                                            Width="150"/>
-
-                        <DataGridTemplateColumn Header="Review"
-                                                Width="100">
-
-                            <DataGridTemplateColumn.CellTemplate>
-
-                                <DataTemplate>
-
-                                    <TextBlock Text="{Binding ReviewStatus}"
-                                               Style="{StaticResource ReviewStatusCellStyle}"/>
-
-                                </DataTemplate>
-
-                            </DataGridTemplateColumn.CellTemplate>
-
-                        </DataGridTemplateColumn>
-
-                    </DataGrid.Columns>
-
-                </DataGrid>
 
             </Border>
 

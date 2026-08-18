@@ -1,4 +1,6 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using PS.SuperNDT.UI.Models;
 
@@ -64,6 +66,9 @@ public sealed class SuperNDTDbContext : DbContext
             entity.Property(e => e.JobNumber)
                   .HasMaxLength(100);
 
+            entity.Property(e => e.PipeId)
+                  .HasMaxLength(100);
+
             entity.Property(e => e.Operator)
                   .HasMaxLength(100);
 
@@ -78,33 +83,6 @@ public sealed class SuperNDTDbContext : DbContext
 
             entity.Property(e => e.Remarks)
                   .HasMaxLength(1000);
-
-            entity.Property(e => e.ReviewStatus)
-                  .HasMaxLength(50);
-
-            entity.Property(e => e.ReviewedBy)
-                  .HasMaxLength(100);
-
-            entity.Property(e => e.ShotNumber)
-                  .HasDefaultValue(0);
-
-            entity.Property(e => e.TotalShots)
-                  .HasDefaultValue(0);
-
-            entity.Property(e => e.PipeLength)
-                  .HasDefaultValue(0);
-
-            entity.Property(e => e.ShotSize)
-                  .HasDefaultValue(0);
-
-            entity.Property(e => e.Overlap)
-                  .HasDefaultValue(0);
-
-            entity.Property(e => e.ShotStartPosition)
-                  .HasDefaultValue(0);
-
-            entity.Property(e => e.ShotEndPosition)
-                  .HasDefaultValue(0);
         });
 
         base.OnModelCreating(modelBuilder);
@@ -114,28 +92,22 @@ public sealed class SuperNDTDbContext : DbContext
     {
         Database.EnsureCreated();
 
-        EnsureImageShotColumns();
+        EnsureImagePipeIdColumn();
     }
 
-    private void EnsureImageShotColumns()
+    private void EnsureImagePipeIdColumn()
     {
-        using var connection =
-            Database.GetDbConnection();
-
-        var wasClosed =
-            connection.State !=
-            System.Data.ConnectionState.Open;
-
-        if (wasClosed)
-        {
-            connection.Open();
-        }
-
         try
         {
+            using var connection =
+                new SqliteConnection(
+                    "Data Source=PS_SuperNDT.db");
+
+            connection.Open();
+
             var existingColumns =
                 new HashSet<string>(
-                    System.StringComparer.OrdinalIgnoreCase);
+                    StringComparer.OrdinalIgnoreCase);
 
             using (
                 var command =
@@ -154,95 +126,23 @@ public sealed class SuperNDTDbContext : DbContext
                 }
             }
 
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "ShotNumber",
-                "INTEGER NOT NULL DEFAULT 0");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "TotalShots",
-                "INTEGER NOT NULL DEFAULT 0");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "PipeLength",
-                "REAL NOT NULL DEFAULT 0");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "ShotSize",
-                "REAL NOT NULL DEFAULT 0");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "Overlap",
-                "REAL NOT NULL DEFAULT 0");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "ShotStartPosition",
-                "REAL NOT NULL DEFAULT 0");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "ShotEndPosition",
-                "REAL NOT NULL DEFAULT 0");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "ReviewStatus",
-                "TEXT NOT NULL DEFAULT 'PENDING'");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "ReviewedBy",
-                "TEXT NOT NULL DEFAULT ''");
-
-            AddColumnIfMissing(
-                connection,
-                existingColumns,
-                "ReviewedOn",
-                "TEXT NULL");
-        }
-        finally
-        {
-            if (wasClosed)
+            if (!existingColumns.Contains(
+                    "PipeId"))
             {
-                connection.Close();
+                using var command =
+                    connection.CreateCommand();
+
+                command.CommandText =
+                    "ALTER TABLE Images " +
+                    "ADD COLUMN PipeId TEXT NOT NULL DEFAULT '';";
+
+                command.ExecuteNonQuery();
             }
         }
-    }
-
-    private static void AddColumnIfMissing(
-        System.Data.Common.DbConnection connection,
-        HashSet<string> existingColumns,
-        string columnName,
-        string columnDefinition)
-    {
-        if (existingColumns.Contains(columnName))
+        catch
         {
-            return;
+            // Existing database compatibility should
+            // never prevent application startup.
         }
-
-        using var command =
-            connection.CreateCommand();
-
-        command.CommandText =
-            $"ALTER TABLE Images " +
-            $"ADD COLUMN {columnName} {columnDefinition};";
-
-        command.ExecuteNonQuery();
-
-        existingColumns.Add(columnName);
     }
 }

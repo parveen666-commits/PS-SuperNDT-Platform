@@ -19,6 +19,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
     private string _connectionStatus = "Disconnected";
     private string _currentJob = "No Active Job";
     private string _acquisitionStatus = "Ready";
+    private string _pipeId = "";
 
     private int _frameNumber;
     private double _kv = 120;
@@ -73,6 +74,16 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         set
         {
             _currentJob = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string PipeId
+    {
+        get => _pipeId;
+        set
+        {
+            _pipeId = value ?? "";
             OnPropertyChanged();
         }
     }
@@ -400,9 +411,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         ConnectionStatus = "Connecting...";
         AcquisitionStatus = "Connecting to detector...";
 
-        // Virtual detector connection.
-        // Real detector communication can be connected
-        // here later without changing the UI workflow.
         ConnectionStatus = "Connected";
         DetectorStatus = "Ready";
         AcquisitionStatus = "Detector connected";
@@ -419,6 +427,14 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         {
             AcquisitionStatus =
                 "No active job. Open or create a job first.";
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(PipeId))
+        {
+            AcquisitionStatus =
+                "Enter Pipe ID before capture.";
 
             return;
         }
@@ -477,6 +493,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 FrameNumber);
 
             string shotRemarks =
+                $"Pipe ID {PipeId}; " +
                 $"Shot {CurrentShotNumber}/{TotalShots}; " +
                 $"Position {CurrentShotStart:0}-{CurrentShotEnd:0} mm; " +
                 $"Pipe Length {PipeLength:0} mm; " +
@@ -488,6 +505,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 {
                     JobId = job.Id,
                     JobNumber = job.JobNumber,
+                    PipeId = PipeId,
                     Operator = job.Operator,
 
                     FrameNumber = FrameNumber,
@@ -507,13 +525,21 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                     ImageHeight = 768,
                     BitDepth = 8,
 
+                    ShotNumber = CurrentShotNumber,
+                    TotalShots = TotalShots,
+                    PipeLength = PipeLength,
+                    ShotSize = ShotSize,
+                    Overlap = Overlap,
+                    ShotStartPosition = CurrentShotStart,
+                    ShotEndPosition = CurrentShotEnd,
+
                     Remarks = shotRemarks,
 
                     CapturedOn = DateTime.Now
                 };
 
             AcquisitionStatus =
-                $"Shot {CurrentShotNumber}/{TotalShots} captured " +
+                $"Pipe {PipeId} | Shot {CurrentShotNumber}/{TotalShots} captured " +
                 $"({CurrentShotStart:0}-{CurrentShotEnd:0} mm)";
 
             OnPropertyChanged(
@@ -592,8 +618,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
                 double distance =
                     Math.Sqrt(
-                        (dx * dx) +
-                        (dy * dy));
+                        (dx * dx) + (dy * dy));
 
                 byte intensity;
 
@@ -621,10 +646,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                             220);
                 }
 
-                /*
-                 * Simulated weld indication.
-                 */
-
                 double weldY =
                     centerY +
                     Math.Sin(
@@ -638,10 +659,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 {
                     intensity = 235;
                 }
-
-                /*
-                 * Simulated defect indications.
-                 */
 
                 double defect1 =
                     Math.Sqrt(
@@ -666,11 +683,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 {
                     intensity = 245;
                 }
-
-                /*
-                 * Small frame variation so every
-                 * captured virtual image is unique.
-                 */
 
                 int variation =
                     frameNumber % 12;
@@ -754,6 +766,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             if (CurrentShotNumber < TotalShots)
             {
                 MoveToNextShot();
+
                 AcquisitionStatus =
                     $"{savedStatus}. Ready for {ShotPosition}";
             }
