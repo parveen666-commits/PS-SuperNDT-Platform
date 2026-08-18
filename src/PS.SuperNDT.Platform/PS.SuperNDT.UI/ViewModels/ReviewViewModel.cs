@@ -23,6 +23,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     private string _operatorFilter = string.Empty;
     private string _detectorFilter = string.Empty;
     private string _frameFilter = string.Empty;
+    private string _statusFilter = "ALL";
 
     private double _zoomLevel = 1.0;
 
@@ -46,6 +47,15 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public RelayCommand RejectCommand { get; }
 
     public RelayCommand HoldCommand { get; }
+
+    public string[] ReviewStatuses { get; } =
+    {
+        "ALL",
+        "PENDING",
+        "ACCEPT",
+        "REJECT",
+        "HOLD"
+    };
 
     public double ZoomLevel
     {
@@ -146,6 +156,22 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 return;
 
             _frameFilter = value;
+
+            OnPropertyChanged();
+
+            ApplyFilter();
+        }
+    }
+
+    public string StatusFilter
+    {
+        get => _statusFilter;
+        set
+        {
+            if (_statusFilter == value)
+                return;
+
+            _statusFilter = value;
 
             OnPropertyChanged();
 
@@ -320,6 +346,14 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                             FrameFilter,
                             StringComparison.OrdinalIgnoreCase))
 
+                .Where(image =>
+                    StatusFilter == "ALL"
+                    ||
+                    string.Equals(
+                        image.ReviewStatus,
+                        StatusFilter,
+                        StringComparison.OrdinalIgnoreCase))
+
                 .ToList();
 
         FilteredImages.Clear();
@@ -351,6 +385,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         OperatorFilter = string.Empty;
         DetectorFilter = string.Empty;
         FrameFilter = string.Empty;
+        StatusFilter = "ALL";
     }
 
     private void ZoomIn()
@@ -454,14 +489,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         OnPropertyChanged(
             nameof(SelectedImage));
 
-        FilteredImages.Clear();
-
-        foreach (var image in Images)
-        {
-            FilteredImages.Add(image);
-        }
-
-        UpdateNavigationState();
+        ApplyFilter();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
