@@ -7,6 +7,11 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -35,24 +40,614 @@
 
         </Border>
 
-        <!-- VIEW AREA -->
+        <!-- VIEW TOOLBAR -->
 
         <Border Grid.Row="1"
-                Margin="0,10,0,0"
+                Margin="0,5,0,0"
+                Background="#252B33"
+                CornerRadius="6">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <Button Content="Zoom +"
+                        Command="{Binding ZoomInCommand}"
+                        Width="80"
+                        Height="32"
+                        Margin="3"/>
+
+                <Button Content="Zoom −"
+                        Command="{Binding ZoomOutCommand}"
+                        Width="80"
+                        Height="32"
+                        Margin="3"/>
+
+                <Button Content="Fit"
+                        Command="{Binding FitToWindowCommand}"
+                        Width="65"
+                        Height="32"
+                        Margin="3"/>
+
+                <Button Content="1:1"
+                        Command="{Binding ActualSizeCommand}"
+                        Width="65"
+                        Height="32"
+                        Margin="3"/>
+
+                <Button Content="↺"
+                        Command="{Binding RotateLeftCommand}"
+                        Width="55"
+                        Height="32"
+                        Margin="3"
+                        FontSize="18"/>
+
+                <Button Content="↻"
+                        Command="{Binding RotateRightCommand}"
+                        Width="55"
+                        Height="32"
+                        Margin="3"
+                        FontSize="18"/>
+
+                <Button Content="Reset"
+                        Command="{Binding ResetCommand}"
+                        Width="70"
+                        Height="32"
+                        Margin="3"/>
+
+                <Border Background="#1F232A"
+                        CornerRadius="4"
+                        Margin="10,4,3,4"
+                        Padding="10,4">
+
+                    <TextBlock Text="{Binding ZoomText}"
+                               Foreground="White"
+                               FontSize="13"
+                               FontWeight="Bold"/>
+
+                </Border>
+
+                <Border Background="#1F232A"
+                        CornerRadius="4"
+                        Margin="3,4,3,4"
+                        Padding="10,4">
+
+                    <TextBlock Text="{Binding RotationText}"
+                               Foreground="White"
+                               FontSize="13"
+                               FontWeight="Bold"/>
+
+                </Border>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- IMAGE ADJUSTMENT TOOLBAR -->
+
+        <Border Grid.Row="2"
+                Margin="0,5,0,0"
+                Background="#252B33"
+                CornerRadius="6">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <TextBlock Text="Brightness"
+                           Foreground="#D0D7DE"
+                           VerticalAlignment="Center"
+                           Margin="8,0,4,0"/>
+
+                <Button Content="−"
+                        Command="{Binding DecreaseBrightnessCommand}"
+                        Width="32"
+                        Height="30"
+                        Margin="2"/>
+
+                <Slider Minimum="-100"
+                        Maximum="100"
+                        Value="{Binding Brightness, Mode=TwoWay}"
+                        Width="150"
+                        Margin="4,0"/>
+
+                <Button Content="+"
+                        Command="{Binding IncreaseBrightnessCommand}"
+                        Width="32"
+                        Height="30"
+                        Margin="2"/>
+
+                <TextBlock Text="Contrast"
+                           Foreground="#D0D7DE"
+                           VerticalAlignment="Center"
+                           Margin="15,0,4,0"/>
+
+                <Button Content="−"
+                        Command="{Binding DecreaseContrastCommand}"
+                        Width="32"
+                        Height="30"
+                        Margin="2"/>
+
+                <Slider Minimum="0"
+                        Maximum="2"
+                        Value="{Binding Contrast, Mode=TwoWay}"
+                        Width="150"
+                        Margin="4,0"/>
+
+                <Button Content="+"
+                        Command="{Binding IncreaseContrastCommand}"
+                        Width="32"
+                        Height="30"
+                        Margin="2"/>
+
+                <Button Content="Invert"
+                        Command="{Binding ToggleInvertCommand}"
+                        Width="70"
+                        Height="30"
+                        Margin="12,0,3,0"/>
+
+                <Button Content="Reset Adjust"
+                        Command="{Binding ResetImageAdjustmentsCommand}"
+                        Width="100"
+                        Height="30"
+                        Margin="3,0,8,0"/>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- MEASUREMENT TOOLBAR -->
+
+        <Border Grid.Row="3"
+                Margin="0,5,0,0"
+                Background="#252B33"
+                CornerRadius="6">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <Button Content="Measure"
+                        Command="{Binding ToggleMeasurementCommand}"
+                        Width="100"
+                        Height="32"
+                        Margin="4"/>
+
+                <Button Content="Clear Measure"
+                        Command="{Binding ClearMeasurementCommand}"
+                        Width="105"
+                        Height="32"
+                        Margin="4"/>
+
+                <Border Background="#1F232A"
+                        CornerRadius="4"
+                        Margin="10,4,4,4"
+                        Padding="12,5">
+
+                    <TextBlock Text="{Binding MeasurementStatus}"
+                               Foreground="#D0D7DE"
+                               FontSize="13"/>
+
+                </Border>
+
+                <Border Background="#1F232A"
+                        CornerRadius="4"
+                        Margin="4"
+                        Padding="12,5">
+
+                    <TextBlock Text="{Binding MeasurementText}"
+                               Foreground="White"
+                               FontSize="13"
+                               FontWeight="Bold"/>
+
+                </Border>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- CALIBRATION TOOLBAR -->
+
+        <Border Grid.Row="4"
+                Margin="0,5,0,0"
+                Background="#252B33"
+                CornerRadius="6">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <TextBlock Text="Calibration"
+                           Foreground="White"
+                           FontSize="13"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="8,0,8,0"/>
+
+                <Button Content="Calibrate"
+                        Command="{Binding ToggleCalibrationCommand}"
+                        Width="90"
+                        Height="32"
+                        Margin="3"/>
+
+                <TextBlock Text="Reference (mm)"
+                           Foreground="#B0BEC5"
+                           VerticalAlignment="Center"
+                           Margin="12,0,5,0"/>
+
+                <TextBox Text="{Binding CalibrationReferenceLengthMm,
+                                         Mode=TwoWay,
+                                         UpdateSourceTrigger=LostFocus}"
+                         Width="90"
+                         Height="30"
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Center"
+                         Margin="3"/>
+
+                <Button Content="Apply"
+                        Command="{Binding ApplyCalibrationCommand}"
+                        Width="70"
+                        Height="32"
+                        Margin="5,3,3,3"/>
+
+                <Button Content="Clear"
+                        Command="{Binding ClearCalibrationCommand}"
+                        Width="65"
+                        Height="32"
+                        Margin="3"/>
+
+                <Border Background="#1F232A"
+                        CornerRadius="4"
+                        Margin="10,4,4,4"
+                        Padding="10,5">
+
+                    <TextBlock Text="{Binding CalibrationStatus}"
+                               Foreground="#D0D7DE"
+                               FontSize="12"/>
+
+                </Border>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- CALIBRATION VALUE -->
+
+        <Border Grid.Row="5"
+                Margin="0,5,0,0"
+                Background="#252B33"
+                CornerRadius="6">
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <TextBlock Text="Current Calibration:"
+                           Foreground="#B0BEC5"
+                           VerticalAlignment="Center"
+                           Margin="5"/>
+
+                <TextBlock Text="{Binding CalibrationMmPerPixel,
+                                           StringFormat={}{0:0.000000} mm/px}"
+                           Foreground="White"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="5,0,20,0"/>
+
+                <TextBlock Text="Measurement:"
+                           Foreground="#B0BEC5"
+                           VerticalAlignment="Center"
+                           Margin="5"/>
+
+                <TextBlock Text="{Binding MeasurementDistanceMm,
+                                           StringFormat={}{0:0.00} mm}"
+                           Foreground="White"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Margin="5"/>
+
+            </StackPanel>
+
+        </Border>
+
+        <!-- IMAGE AREA -->
+
+        <Border Grid.Row="6"
+                Margin="0,5,0,0"
                 Background="Black"
                 BorderBrush="#404040"
                 BorderThickness="1"
                 CornerRadius="6">
 
-            <Grid>
+            <Grid ClipToBounds="True">
 
-                <!-- IMAGE -->
+                <ScrollViewer x:Name="ImageScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
+                              Background="Black">
 
-                <Image Source="{Binding CurrentImage.FilePath}"
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Margin="20"/>
+                    <Grid HorizontalAlignment="Center"
+                          VerticalAlignment="Center">
+
+                        <Grid>
+
+                            <!-- IMAGE -->
+
+                            <Image Source="{Binding DisplayImage}"
+                                   Stretch="None"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="20">
+
+                                <Image.LayoutTransform>
+
+                                    <TransformGroup>
+
+                                        <ScaleTransform
+                                            ScaleX="{Binding ZoomScale}"
+                                            ScaleY="{Binding ZoomScale}"/>
+
+                                        <RotateTransform
+                                            Angle="{Binding RotationAngle}"/>
+
+                                    </TransformGroup>
+
+                                </Image.LayoutTransform>
+
+                            </Image>
+
+                            <!-- MEASUREMENT LINE -->
+
+                            <Line X1="{Binding MeasurementStartPoint.X}"
+                                  Y1="{Binding MeasurementStartPoint.Y}"
+                                  X2="{Binding MeasurementEndPoint.X}"
+                                  Y2="{Binding MeasurementEndPoint.Y}"
+                                  Stroke="Red"
+                                  StrokeThickness="3"
+                                  IsHitTestVisible="False">
+
+                                <Line.Style>
+
+                                    <Style TargetType="Line">
+
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding HasMeasurement}"
+                                                         Value="True">
+
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+
+                                </Line.Style>
+
+                            </Line>
+
+                            <!-- MEASUREMENT START -->
+
+                            <Ellipse Width="12"
+                                     Height="12"
+                                     Fill="Red"
+                                     Stroke="White"
+                                     StrokeThickness="2"
+                                     IsHitTestVisible="False"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top">
+
+                                <Ellipse.RenderTransform>
+
+                                    <TranslateTransform
+                                        X="{Binding MeasurementStartPoint.X}"
+                                        Y="{Binding MeasurementStartPoint.Y}"/>
+
+                                </Ellipse.RenderTransform>
+
+                                <Ellipse.Style>
+
+                                    <Style TargetType="Ellipse">
+
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding IsMeasurementMode}"
+                                                         Value="True">
+
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+
+                                </Ellipse.Style>
+
+                            </Ellipse>
+
+                            <!-- MEASUREMENT END -->
+
+                            <Ellipse Width="12"
+                                     Height="12"
+                                     Fill="Red"
+                                     Stroke="White"
+                                     StrokeThickness="2"
+                                     IsHitTestVisible="False"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top">
+
+                                <Ellipse.RenderTransform>
+
+                                    <TranslateTransform
+                                        X="{Binding MeasurementEndPoint.X}"
+                                        Y="{Binding MeasurementEndPoint.Y}"/>
+
+                                </Ellipse.RenderTransform>
+
+                                <Ellipse.Style>
+
+                                    <Style TargetType="Ellipse">
+
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding HasMeasurement}"
+                                                         Value="True">
+
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+
+                                </Ellipse.Style>
+
+                            </Ellipse>
+
+                            <!-- CALIBRATION START -->
+
+                            <Ellipse Width="14"
+                                     Height="14"
+                                     Fill="Yellow"
+                                     Stroke="Black"
+                                     StrokeThickness="2"
+                                     IsHitTestVisible="False"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top">
+
+                                <Ellipse.RenderTransform>
+
+                                    <TranslateTransform
+                                        X="{Binding CalibrationStartPoint.X}"
+                                        Y="{Binding CalibrationStartPoint.Y}"/>
+
+                                </Ellipse.RenderTransform>
+
+                                <Ellipse.Style>
+
+                                    <Style TargetType="Ellipse">
+
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding IsCalibrationMode}"
+                                                         Value="True">
+
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+
+                                </Ellipse.Style>
+
+                            </Ellipse>
+
+                            <!-- CALIBRATION END -->
+
+                            <Ellipse Width="14"
+                                     Height="14"
+                                     Fill="Yellow"
+                                     Stroke="Black"
+                                     StrokeThickness="2"
+                                     IsHitTestVisible="False"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Top">
+
+                                <Ellipse.RenderTransform>
+
+                                    <TranslateTransform
+                                        X="{Binding CalibrationEndPoint.X}"
+                                        Y="{Binding CalibrationEndPoint.Y}"/>
+
+                                </Ellipse.RenderTransform>
+
+                                <Ellipse.Style>
+
+                                    <Style TargetType="Ellipse">
+
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding HasCalibrationPoints}"
+                                                         Value="True">
+
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+
+                                </Ellipse.Style>
+
+                            </Ellipse>
+
+                            <!-- CALIBRATION LINE -->
+
+                            <Line X1="{Binding CalibrationStartPoint.X}"
+                                  Y1="{Binding CalibrationStartPoint.Y}"
+                                  X2="{Binding CalibrationEndPoint.X}"
+                                  Y2="{Binding CalibrationEndPoint.Y}"
+                                  Stroke="Yellow"
+                                  StrokeThickness="3"
+                                  StrokeDashArray="6,3"
+                                  IsHitTestVisible="False">
+
+                                <Line.Style>
+
+                                    <Style TargetType="Line">
+
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed"/>
+
+                                        <Style.Triggers>
+
+                                            <DataTrigger Binding="{Binding HasCalibrationPoints}"
+                                                         Value="True">
+
+                                                <Setter Property="Visibility"
+                                                        Value="Visible"/>
+
+                                            </DataTrigger>
+
+                                        </Style.Triggers>
+
+                                    </Style>
+
+                                </Line.Style>
+
+                            </Line>
+
+                        </Grid>
+
+                    </Grid>
+
+                </ScrollViewer>
 
                 <!-- NO IMAGE -->
 
@@ -64,18 +659,26 @@
                            VerticalAlignment="Center">
 
                     <TextBlock.Style>
+
                         <Style TargetType="TextBlock">
+
                             <Setter Property="Visibility"
                                     Value="Collapsed"/>
 
                             <Style.Triggers>
+
                                 <DataTrigger Binding="{Binding CurrentImage}"
                                              Value="{x:Null}">
+
                                     <Setter Property="Visibility"
                                             Value="Visible"/>
+
                                 </DataTrigger>
+
                             </Style.Triggers>
+
                         </Style>
+
                     </TextBlock.Style>
 
                 </TextBlock>
