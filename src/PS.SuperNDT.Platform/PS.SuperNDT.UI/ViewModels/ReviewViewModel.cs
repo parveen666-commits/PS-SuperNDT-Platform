@@ -32,6 +32,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     public ObservableCollection<ImageRecordModel> FilteredImages { get; } = new();
 
+    public ObservableCollection<RulerTick> RulerTicks { get; } = new();
+
     public ObservableCollection<string> StatusFilterItems { get; } =
         new()
         {
@@ -123,6 +125,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             LoadDisplayImage();
             UpdateNavigationState();
             UpdateReviewMessage();
+            UpdateRuler();
 
             if (value != null)
             {
@@ -288,6 +291,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             new RelayCommand(
                 _ => OpenSelectedImage());
 
+        CurrentJobService.Instance.CurrentJobChanged +=
+            CurrentJobService_CurrentJobChanged;
+
         LoadImages();
 
         ImageViewerService.Instance.CurrentImageChanged +=
@@ -296,7 +302,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         var currentImage =
             ImageViewerService.Instance.CurrentImage;
 
-        if (currentImage != null)
+        if (currentImage != null &&
+            Images.Contains(currentImage))
         {
             _selectedImage = currentImage;
 
@@ -306,11 +313,16 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             LoadDisplayImage();
             UpdateNavigationState();
             UpdateReviewMessage();
+            UpdateRuler();
         }
         else if (FilteredImages.Count > 0)
         {
             SelectedImage =
                 FilteredImages[0];
+        }
+        else
+        {
+            UpdateRuler();
         }
     }
 
@@ -319,11 +331,44 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         try
         {
             Images.Clear();
+            FilteredImages.Clear();
+
+            var currentJob =
+                CurrentJobService.Instance.CurrentJob;
+
+            if (currentJob == null)
+            {
+                SelectedImage = null;
+
+                RulerTicks.Clear();
+
+                OnPropertyChanged(
+                    nameof(TotalImages));
+
+                OnPropertyChanged(
+                    nameof(PendingImages));
+
+                OnPropertyChanged(
+                    nameof(AcceptedImages));
+
+                OnPropertyChanged(
+                    nameof(RejectedImages));
+
+                HasPreviousImage = false;
+                HasNextImage = false;
+
+                ReviewMessage =
+                    "No active job selected.";
+
+                return;
+            }
 
             var records =
                 _imageService
-                    .GetAll()
-                    .OrderByDescending(
+                    .GetByJob(currentJob.Id)
+                    .OrderBy(
+                        image => image.ShotNumber)
+                    .ThenBy(
                         image => image.CapturedOn)
                     .ToList();
 
@@ -346,13 +391,31 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             ApplyFilter();
 
-            ReviewMessage =
-                $"Loaded {Images.Count} image(s)";
+            if (Images.Count == 0)
+            {
+                ReviewMessage =
+                    $"No images found for Job {currentJob.JobNumber}.";
+
+                RulerTicks.Clear();
+            }
+            else
+            {
+                ReviewMessage =
+                    $"Loaded {Images.Count} image(s) for Job {currentJob.JobNumber}.";
+
+                UpdateRuler();
+            }
         }
         catch (Exception ex)
         {
             Images.Clear();
             FilteredImages.Clear();
+            RulerTicks.Clear();
+
+            SelectedImage = null;
+
+            HasPreviousImage = false;
+            HasNextImage = false;
 
             ReviewMessage =
                 $"Review load failed: {ex.Message}";
@@ -369,6 +432,13 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             OnPropertyChanged(
                 nameof(RejectedImages));
         }
+    }
+
+    private void CurrentJobService_CurrentJobChanged(
+        object? sender,
+        JobModel? job)
+    {
+        LoadImages();
     }
 
     private void ApplyFilter()
@@ -489,7 +559,16 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             !FilteredImages.Contains(
                 _selectedImage))
         {
-            SelectedImage = null;
+            _selectedImage = null;
+
+            OnPropertyChanged(
+                nameof(SelectedImage));
+
+            LoadDisplayImage();
+
+            ImageViewerService.Instance.Clear();
+
+            RulerTicks.Clear();
         }
 
         if (_selectedImage == null &&
@@ -500,11 +579,15 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
 
         UpdateNavigationState();
+        UpdateRuler();
 
         if (FilteredImages.Count == 0)
         {
-            ReviewMessage =
-                "No images match the current filter.";
+            if (Images.Count > 0)
+            {
+                ReviewMessage =
+                    "No images match the current filter.";
+            }
         }
         else
         {
@@ -707,6 +790,27 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         var currentImage =
             ImageViewerService.Instance.CurrentImage;
 
+        if (currentImage == null)
+        {
+            _selectedImage = null;
+
+            OnPropertyChanged(
+                nameof(SelectedImage));
+
+            LoadDisplayImage();
+
+            UpdateNavigationState();
+
+            RulerTicks.Clear();
+
+            return;
+        }
+
+        if (!Images.Contains(currentImage))
+        {
+            return;
+        }
+
         if (ReferenceEquals(
                 _selectedImage,
                 currentImage))
@@ -727,6 +831,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         UpdateNavigationState();
 
         UpdateReviewMessage();
+
+        UpdateRuler();
     }
 
     private void LoadDisplayImage()
@@ -800,6 +906,65 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             $"{_selectedImage.ShotEndPosition:0} mm";
     }
 
+    private void UpdateRuler()
+    {
+        RulerTicks.Clear();
+
+        if (_selectedImage == null)
+        {
+            return;
+        }
+
+        double start =
+            _selectedImage.ShotStartPosition;
+
+        double end =
+            _selectedImage.ShotEndPosition;
+
+        if (end <= start)
+        {
+            return;
+        }
+
+        double current =
+            start;
+
+        const double minorStep = 10.0;
+        const double majorStep = 50.0;
+
+        while (current < end)
+        {
+            double relative =
+                current - start;
+
+            bool isMajor =
+                Math.Abs(
+                    relative % majorStep) < 0.001;
+
+            RulerTicks.Add(
+                new RulerTick
+                {
+                    Position = current,
+                    RelativePosition = relative,
+                    IsMajor = isMajor,
+                    Label = isMajor
+                        ? $"{current:0}"
+                        : string.Empty
+                });
+
+            current += minorStep;
+        }
+
+        RulerTicks.Add(
+            new RulerTick
+            {
+                Position = end,
+                RelativePosition = end - start,
+                IsMajor = true,
+                Label = $"{end:0}"
+            });
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(
@@ -810,5 +975,16 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             this,
             new PropertyChangedEventArgs(
                 propertyName));
+    }
+
+    public sealed class RulerTick
+    {
+        public double Position { get; init; }
+
+        public double RelativePosition { get; init; }
+
+        public bool IsMajor { get; init; }
+
+        public string Label { get; init; } = string.Empty;
     }
 }

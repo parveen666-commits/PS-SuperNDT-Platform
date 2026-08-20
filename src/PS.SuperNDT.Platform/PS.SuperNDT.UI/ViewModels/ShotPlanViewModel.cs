@@ -59,6 +59,7 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
                 return;
 
             _jobId = value;
+
             OnPropertyChanged();
             RefreshCommands();
         }
@@ -73,6 +74,7 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
                 return;
 
             _pipeId = value;
+
             OnPropertyChanged();
             RefreshCommands();
         }
@@ -87,6 +89,7 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
                 return;
 
             _weldNumber = value;
+
             OnPropertyChanged();
         }
     }
@@ -164,6 +167,7 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
                 return;
 
             _rulerEnabled = value;
+
             OnPropertyChanged();
         }
     }
@@ -177,6 +181,7 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
                 return;
 
             _pipeIdOverlayEnabled = value;
+
             OnPropertyChanged();
         }
     }
@@ -222,6 +227,7 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
                 return;
 
             _planStatus = value;
+
             OnPropertyChanged();
         }
     }
@@ -237,7 +243,9 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
             _currentShotNumber = value;
 
             OnPropertyChanged();
-            OnPropertyChanged(nameof(CurrentPositionText));
+
+            // Intentionally no CurrentPositionText notification.
+            // Pipe position must not appear in the ruler area.
 
             RefreshCommands();
         }
@@ -274,8 +282,11 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
             if (ShotLengthMm <= 0)
                 return "Enter a valid shot length.";
 
-            if (OverlapMm < 0 || OverlapMm >= ShotLengthMm)
+            if (OverlapMm < 0 ||
+                OverlapMm >= ShotLengthMm)
+            {
                 return "Overlap must be smaller than shot length.";
+            }
 
             return $"{PipeLengthMm:0.###} mm pipe  •  " +
                    $"{ShotLengthMm:0.###} mm shot  •  " +
@@ -298,21 +309,9 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
         }
     }
 
-    public string CurrentPositionText
-    {
-        get
-        {
-            ShotPlanItemModel? shot =
-                Shots.FirstOrDefault(
-                    item => item.ShotNumber == CurrentShotNumber);
-
-            if (shot == null)
-                return "Position: -";
-
-            return $"Position: {shot.StartPositionMm:0.###} → " +
-                   $"{shot.EndPositionMm:0.###} mm";
-        }
-    }
+    // Kept for compatibility with existing XAML.
+    // It is intentionally blank so no Pipe Position box/text is shown.
+    public string CurrentPositionText => string.Empty;
 
     public ICommand GenerateShotPlanCommand { get; }
 
@@ -375,7 +374,8 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
                 Shots.Add(shot);
             }
 
-            CurrentShotNumber = plan.CurrentShotNumber;
+            CurrentShotNumber =
+                plan.CurrentShotNumber;
 
             SelectedShot =
                 Shots.FirstOrDefault();
@@ -410,7 +410,6 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
 
         OnPropertyChanged(nameof(SelectedShot));
         OnPropertyChanged(nameof(ProgressText));
-        OnPropertyChanged(nameof(CurrentPositionText));
 
         RefreshCommands();
     }
@@ -533,7 +532,6 @@ public sealed class ShotPlanViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(StepLengthMm));
         OnPropertyChanged(nameof(PlanSummary));
         OnPropertyChanged(nameof(ProgressText));
-        OnPropertyChanged(nameof(CurrentPositionText));
     }
 
     private void RefreshCommands()

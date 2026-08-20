@@ -78,22 +78,30 @@
 
     </UserControl.Resources>
 
+
     <Grid Margin="16">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
+
+        <!-- ========================================================= -->
+        <!-- HEADER -->
+        <!-- ========================================================= -->
+
+        <Grid Grid.Row="0"
+              Margin="0,0,0,16">
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
+
             <StackPanel>
+
                 <TextBlock Text="SHOT PLAN"
                            Foreground="White"
                            FontSize="22"
@@ -103,7 +111,9 @@
                            Foreground="#8F9AA8"
                            FontSize="12"
                            Margin="0,4,0,0"/>
+
             </StackPanel>
+
 
             <Border Grid.Column="1"
                     Background="#303640"
@@ -114,6 +124,7 @@
                     VerticalAlignment="Center">
 
                 <StackPanel Orientation="Horizontal">
+
                     <TextBlock Text="STATUS"
                                Foreground="#8F9AA8"
                                FontSize="11"
@@ -125,349 +136,940 @@
                                FontWeight="SemiBold"
                                Margin="10,0,0,0"
                                VerticalAlignment="Center"/>
+
                 </StackPanel>
 
             </Border>
+
         </Grid>
 
-        <!-- Setup -->
-        <Border Grid.Row="1"
-                Style="{StaticResource SectionCardStyle}">
 
-            <Grid>
+        <!-- ========================================================= -->
+        <!-- MAIN SCROLL -->
+        <!-- ========================================================= -->
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
 
-                <TextBlock Grid.Row="0"
-                           Text="PIPE / SHOT SETUP"
-                           Style="{StaticResource HeaderTextStyle}"
-                           Margin="0,0,0,14"/>
+            <StackPanel>
 
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                    </Grid.ColumnDefinitions>
 
-                    <!-- Pipe ID -->
-                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                        <TextBlock Text="Pipe ID"
-                                   Style="{StaticResource FieldLabelStyle}"/>
+                <!-- ================================================= -->
+                <!-- PIPE / SHOT SETUP -->
+                <!-- ================================================= -->
 
-                        <TextBox Text="{Binding PipeId, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource FieldTextBoxStyle}"/>
-                    </StackPanel>
+                <Border Style="{StaticResource SectionCardStyle}">
 
-                    <!-- Weld -->
-                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                        <TextBlock Text="Weld No."
-                                   Style="{StaticResource FieldLabelStyle}"/>
+                    <Grid>
 
-                        <TextBox Text="{Binding WeldNumber, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource FieldTextBoxStyle}"/>
-                    </StackPanel>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                    <!-- Pipe Length -->
-                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                        <TextBlock Text="Pipe Length (mm)"
-                                   Style="{StaticResource FieldLabelStyle}"/>
 
-                        <TextBox Text="{Binding PipeLengthMm, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource FieldTextBoxStyle}"/>
-                    </StackPanel>
+                        <TextBlock Grid.Row="0"
+                                   Text="PIPE / SHOT SETUP"
+                                   Style="{StaticResource HeaderTextStyle}"
+                                   Margin="0,0,0,14"/>
 
-                    <!-- Shot Length -->
-                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
-                        <TextBlock Text="Shot Length (mm)"
-                                   Style="{StaticResource FieldLabelStyle}"/>
 
-                        <TextBox Text="{Binding ShotLengthMm, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource FieldTextBoxStyle}"/>
-                    </StackPanel>
+                        <!-- SETUP ROW 1 -->
 
-                    <!-- Overlap -->
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="Overlap (mm)"
-                                   Style="{StaticResource FieldLabelStyle}"/>
+                        <Grid Grid.Row="1">
 
-                        <TextBox Text="{Binding OverlapMm, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource FieldTextBoxStyle}"/>
-                    </StackPanel>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                            </Grid.ColumnDefinitions>
 
-                </Grid>
 
-                <Grid Grid.Row="2"
-                      Margin="0,14,0,0">
+                            <StackPanel Grid.Column="0"
+                                        Margin="0,0,10,0">
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                        <ColumnDefinition Width="1.2*"/>
-                    </Grid.ColumnDefinitions>
+                                <TextBlock Text="Pipe ID"
+                                           Style="{StaticResource FieldLabelStyle}"/>
 
-                    <!-- Step -->
-                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                        <TextBlock Text="Step"
-                                   Style="{StaticResource FieldLabelStyle}"/>
+                                <TextBox Text="{Binding PipeId, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FieldTextBoxStyle}"/>
 
-                        <Border Height="34"
-                                Background="#171B20"
-                                BorderBrush="#39414C"
-                                BorderThickness="1"
-                                Padding="10,7">
+                            </StackPanel>
 
-                            <TextBlock Text="{Binding StepLengthMm, StringFormat={}{0:0.###} mm}"
+
+                            <StackPanel Grid.Column="1"
+                                        Margin="0,0,10,0">
+
+                                <TextBlock Text="Weld No."
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <TextBox Text="{Binding WeldNumber, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FieldTextBoxStyle}"/>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="2"
+                                        Margin="0,0,10,0">
+
+                                <TextBlock Text="Pipe Length (mm)"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <TextBox Text="{Binding PipeLengthMm, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FieldTextBoxStyle}"/>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="3"
+                                        Margin="0,0,10,0">
+
+                                <TextBlock Text="Shot Length (mm)"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <TextBox Text="{Binding ShotLengthMm, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FieldTextBoxStyle}"/>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="4">
+
+                                <TextBlock Text="Overlap (mm)"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <TextBox Text="{Binding OverlapMm, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FieldTextBoxStyle}"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+
+                        <!-- SETUP ROW 2 -->
+
+                        <Grid Grid.Row="2"
+                              Margin="0,14,0,0">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <StackPanel Grid.Column="0"
+                                        Margin="0,0,10,0">
+
+                                <TextBlock Text="Step"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <Border Height="34"
+                                        Background="#171B20"
+                                        BorderBrush="#39414C"
+                                        BorderThickness="1"
+                                        Padding="10,7">
+
+                                    <TextBlock Text="{Binding StepLengthMm, StringFormat={}{0:0.###} mm}"
+                                               Foreground="#65D391"
+                                               FontWeight="SemiBold"/>
+
+                                </Border>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="1"
+                                        Margin="0,0,10,0">
+
+                                <TextBlock Text="Total Shots"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <Border Height="34"
+                                        Background="#171B20"
+                                        BorderBrush="#39414C"
+                                        BorderThickness="1"
+                                        Padding="10,7">
+
+                                    <TextBlock Text="{Binding TotalShots}"
+                                               Foreground="White"
+                                               FontWeight="SemiBold"/>
+
+                                </Border>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="2"
+                                        Margin="0,0,10,0">
+
+                                <TextBlock Text="Acquisition Mode"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <ComboBox SelectedItem="{Binding AcquisitionMode}"
+                                          Style="{StaticResource FieldComboBoxStyle}">
+
+                                    <ComboBoxItem Content="Manual"/>
+                                    <ComboBoxItem Content="Auto"/>
+
+                                </ComboBox>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="3"
+                                        Margin="0,0,10,0">
+
+                                <TextBlock Text="Direction"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <ComboBox SelectedItem="{Binding Direction}"
+                                          Style="{StaticResource FieldComboBoxStyle}">
+
+                                    <ComboBoxItem Content="LeftToRight"/>
+                                    <ComboBoxItem Content="RightToLeft"/>
+
+                                </ComboBox>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="4">
+
+                                <TextBlock Text="Current Shot"
+                                           Style="{StaticResource FieldLabelStyle}"/>
+
+                                <Border Height="34"
+                                        Background="#171B20"
+                                        BorderBrush="#39414C"
+                                        BorderThickness="1"
+                                        Padding="10,7">
+
+                                    <TextBlock Text="{Binding CurrentShotNumber, StringFormat=Shot {0}}"
+                                               Foreground="#FFD166"
+                                               FontWeight="SemiBold"/>
+
+                                </Border>
+
+                            </StackPanel>
+
+                        </Grid>
+
+
+                        <!-- SETUP ROW 3 -->
+
+                        <Grid Grid.Row="3"
+                              Margin="0,14,0,0">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <CheckBox Grid.Column="0"
+                                      Content="Ruler on Image"
+                                      IsChecked="{Binding RulerEnabled}"
+                                      Foreground="#DCE3EB"
+                                      VerticalAlignment="Center"
+                                      Margin="0,0,24,0"/>
+
+
+                            <CheckBox Grid.Column="1"
+                                      Content="Pipe ID on Image"
+                                      IsChecked="{Binding PipeIdOverlayEnabled}"
+                                      Foreground="#DCE3EB"
+                                      VerticalAlignment="Center"/>
+
+
+                            <StackPanel Grid.Column="2"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right">
+
+                                <Button Content="GENERATE SHOT PLAN"
+                                        Command="{Binding GenerateShotPlanCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"/>
+
+                                <Button Content="CLEAR"
+                                        Command="{Binding ClearPlanCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                    </Grid>
+
+                </Border>
+
+
+
+                <!-- ================================================= -->
+                <!-- SHOT COVERAGE MAP -->
+                <!-- ================================================= -->
+
+                <Border Background="#252A32"
+                        BorderBrush="#39414C"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16"
+                        Margin="0,0,0,12">
+
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+
+                        <!-- TITLE -->
+
+                        <Grid Grid.Row="0"
+                              Margin="0,0,0,14">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <StackPanel>
+
+                                <TextBlock Text="SHOT COVERAGE MAP"
+                                           Style="{StaticResource HeaderTextStyle}"/>
+
+                                <TextBlock Text="Long seam and horizontal weld reference"
+                                           Foreground="#8F9AA8"
+                                           FontSize="11"
+                                           Margin="0,3,0,0"/>
+
+                            </StackPanel>
+
+
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding PlanSummary}"
                                        Foreground="#65D391"
-                                       FontWeight="SemiBold"/>
-                        </Border>
-                    </StackPanel>
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
 
-                    <!-- Total Shots -->
-                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                        <TextBlock Text="Total Shots"
-                                   Style="{StaticResource FieldLabelStyle}"/>
+                        </Grid>
 
-                        <Border Height="34"
-                                Background="#171B20"
-                                BorderBrush="#39414C"
+
+
+                        <!-- LEGEND -->
+
+                        <Grid Grid.Row="1"
+                              Margin="0,0,0,10">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <StackPanel Grid.Column="0"
+                                        Orientation="Horizontal">
+
+                                <Border Width="34"
+                                        Height="8"
+                                        Background="#D7B24A"
+                                        CornerRadius="4"
+                                        VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Long Seam Welding"
+                                           Foreground="#DCE3EB"
+                                           FontSize="12"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal">
+
+                                <Border Width="34"
+                                        Height="8"
+                                        Background="#5CA9E6"
+                                        CornerRadius="4"
+                                        VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Horizontal Welding"
+                                           Foreground="#DCE3EB"
+                                           FontSize="12"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+
+                            <StackPanel Grid.Column="2"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right">
+
+                                <Border Width="34"
+                                        Height="18"
+                                        Background="#1976D2"
+                                        BorderBrush="#65B6FF"
+                                        BorderThickness="1"
+                                        CornerRadius="3"
+                                        VerticalAlignment="Center"/>
+
+                                <TextBlock Text="Shot Coverage"
+                                           Foreground="#DCE3EB"
+                                           FontSize="12"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center"/>
+
+                            </StackPanel>
+
+                        </Grid>
+
+
+
+                        <!-- ================================================= -->
+                        <!-- PIPE FRAME -->
+                        <!-- ================================================= -->
+
+                        <Border Grid.Row="2"
+                                Background="#15191E"
+                                BorderBrush="#414A56"
                                 BorderThickness="1"
-                                Padding="10,7">
+                                CornerRadius="6"
+                                Padding="18">
 
-                            <TextBlock Text="{Binding TotalShots}"
-                                       Foreground="White"
-                                       FontWeight="SemiBold"/>
+                            <Grid>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="18"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="18"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+
+                                <!-- LONG SEAM -->
+
+                                <TextBlock Grid.Row="0"
+                                           Text="LONG SEAM WELDING"
+                                           Foreground="#D7B24A"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,6"/>
+
+
+                                <Border Grid.Row="1"
+                                        Height="7"
+                                        Background="#D7B24A"
+                                        CornerRadius="4"
+                                        Margin="20,0"/>
+
+
+                                <!-- MAIN PIPE / SHOT FRAME -->
+
+                                <Border Grid.Row="2"
+                                        Height="105"
+                                        Background="#20262E"
+                                        BorderBrush="#4B5563"
+                                        BorderThickness="1"
+                                        CornerRadius="5"
+                                        Padding="8">
+
+                                    <Grid>
+
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+
+                                        <!-- TOP HORIZONTAL WELD -->
+
+                                        <Border Grid.Row="0"
+                                                Height="5"
+                                                Background="#5CA9E6"
+                                                CornerRadius="3"
+                                                VerticalAlignment="Top"
+                                                Margin="8,2"/>
+
+
+                                        <!-- SHOT COVERAGE -->
+
+                                        <Grid Grid.Row="1"
+                                              Height="46"
+                                              Margin="0,5">
+
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+
+                                            <Border Grid.Column="0"
+                                                    Margin="2"
+                                                    Background="#1976D2"
+                                                    BorderBrush="#65B6FF"
+                                                    BorderThickness="1"
+                                                    CornerRadius="3"/>
+
+
+                                            <Border Grid.Column="1"
+                                                    Margin="2"
+                                                    Background="#1976D2"
+                                                    BorderBrush="#65B6FF"
+                                                    BorderThickness="1"
+                                                    CornerRadius="3"/>
+
+
+                                            <Border Grid.Column="2"
+                                                    Margin="2"
+                                                    Background="#1976D2"
+                                                    BorderBrush="#65B6FF"
+                                                    BorderThickness="1"
+                                                    CornerRadius="3"/>
+
+
+                                            <Border Grid.Column="3"
+                                                    Margin="2"
+                                                    Background="#1976D2"
+                                                    BorderBrush="#65B6FF"
+                                                    BorderThickness="1"
+                                                    CornerRadius="3"/>
+
+
+                                            <Border Grid.Column="4"
+                                                    Margin="2"
+                                                    Background="#1976D2"
+                                                    BorderBrush="#65B6FF"
+                                                    BorderThickness="1"
+                                                    CornerRadius="3"/>
+
+                                        </Grid>
+
+
+                                        <!-- BOTTOM HORIZONTAL WELD -->
+
+                                        <Border Grid.Row="2"
+                                                Height="5"
+                                                Background="#5CA9E6"
+                                                CornerRadius="3"
+                                                VerticalAlignment="Bottom"
+                                                Margin="8,2"/>
+
+                                    </Grid>
+
+                                </Border>
+
+
+                                <!-- HORIZONTAL WELD -->
+
+                                <TextBlock Grid.Row="3"
+                                           Text="HORIZONTAL WELDING"
+                                           Foreground="#5CA9E6"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,4,0,0"/>
+
+
+                                <!-- ================================================= -->
+                                <!-- FULL RULER -->
+                                <!-- ================================================= -->
+
+                                <Grid Grid.Row="4"
+                                      Margin="8,12,8,0">
+
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="10"/>
+                                        <RowDefinition Height="28"/>
+                                    </Grid.RowDefinitions>
+
+
+                                    <!-- RULER LINE -->
+
+                                    <Border Grid.Row="0"
+                                            Height="2"
+                                            Background="#AEB7C4"
+                                            VerticalAlignment="Center"/>
+
+
+                                    <!-- RULER TICKS -->
+
+                                    <Grid Grid.Row="0">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+
+                                        <Border Grid.Column="0"
+                                                Width="2"
+                                                Height="10"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Left"/>
+
+                                        <Border Grid.Column="1"
+                                                Width="1"
+                                                Height="6"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="2"
+                                                Width="2"
+                                                Height="10"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="3"
+                                                Width="1"
+                                                Height="6"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="4"
+                                                Width="2"
+                                                Height="10"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="5"
+                                                Width="1"
+                                                Height="6"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="6"
+                                                Width="2"
+                                                Height="10"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="7"
+                                                Width="1"
+                                                Height="6"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="8"
+                                                Width="2"
+                                                Height="10"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="9"
+                                                Width="1"
+                                                Height="6"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Center"/>
+
+                                        <Border Grid.Column="10"
+                                                Width="2"
+                                                Height="10"
+                                                Background="#AEB7C4"
+                                                HorizontalAlignment="Right"/>
+
+                                    </Grid>
+
+
+                                    <!-- ONLY RULER VALUES -->
+                                    <!-- NO PIPE POSITION -->
+                                    <!-- NO SHOT RANGE -->
+
+                                    <Grid Grid.Row="1">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="0 mm"
+                                                   Foreground="#DCE3EB"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Left"/>
+
+
+                                        <TextBlock Grid.Column="2"
+                                                   Text="100 mm"
+                                                   Foreground="#DCE3EB"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Center"/>
+
+
+                                        <TextBlock Grid.Column="4"
+                                                   Text="200 mm"
+                                                   Foreground="#DCE3EB"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Center"/>
+
+
+                                        <TextBlock Grid.Column="6"
+                                                   Text="300 mm"
+                                                   Foreground="#DCE3EB"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Center"/>
+
+
+                                        <TextBlock Grid.Column="8"
+                                                   Text="400 mm"
+                                                   Foreground="#DCE3EB"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Center"/>
+
+
+                                        <TextBlock Grid.Column="10"
+                                                   Text="500 mm"
+                                                   Foreground="#DCE3EB"
+                                                   FontSize="10"
+                                                   HorizontalAlignment="Right"/>
+
+                                    </Grid>
+
+                                </Grid>
+
+                            </Grid>
+
                         </Border>
-                    </StackPanel>
 
-                    <!-- Mode -->
-                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                        <TextBlock Text="Acquisition Mode"
-                                   Style="{StaticResource FieldLabelStyle}"/>
 
-                        <ComboBox SelectedItem="{Binding AcquisitionMode}"
-                                  Style="{StaticResource FieldComboBoxStyle}">
 
-                            <ComboBoxItem Content="Manual"/>
-                            <ComboBoxItem Content="Auto"/>
+                        <!-- ================================================= -->
+                        <!-- OVERLAP ONLY -->
+                        <!-- ================================================= -->
 
-                        </ComboBox>
-                    </StackPanel>
+                        <Grid Grid.Row="3"
+                              Margin="0,14,0,0">
 
-                    <!-- Direction -->
-                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
-                        <TextBlock Text="Direction"
-                                   Style="{StaticResource FieldLabelStyle}"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <ComboBox SelectedItem="{Binding Direction}"
-                                  Style="{StaticResource FieldComboBoxStyle}">
 
-                            <ComboBoxItem Content="LeftToRight"/>
-                            <ComboBoxItem Content="RightToLeft"/>
+                            <Border Grid.Column="1"
+                                    Background="#20262E"
+                                    BorderBrush="#D7B24A"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="18,8">
 
-                        </ComboBox>
-                    </StackPanel>
+                                <StackPanel Orientation="Horizontal">
 
-                    <!-- Current Shot -->
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="Current Shot"
-                                   Style="{StaticResource FieldLabelStyle}"/>
+                                    <TextBlock Text="OVERLAP"
+                                               Foreground="#FFD166"
+                                               FontWeight="SemiBold"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"/>
 
-                        <Border Height="34"
-                                Background="#171B20"
-                                BorderBrush="#39414C"
-                                BorderThickness="1"
-                                Padding="10,7">
+                                    <TextBlock Text="10 mm"
+                                               Foreground="White"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Margin="12,0,0,0"
+                                               VerticalAlignment="Center"/>
 
-                            <TextBlock Text="{Binding CurrentShotNumber, StringFormat=Shot {0}}"
-                                       Foreground="#FFD166"
-                                       FontWeight="SemiBold"/>
-                        </Border>
-                    </StackPanel>
+                                </StackPanel>
 
-                </Grid>
+                            </Border>
 
-                <Grid Grid.Row="3"
-                      Margin="0,14,0,0">
+                        </Grid>
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    </Grid>
 
-                    <!-- Ruler -->
-                    <CheckBox Grid.Column="0"
-                              Content="Ruler on Image"
-                              IsChecked="{Binding RulerEnabled}"
-                              Foreground="#DCE3EB"
-                              VerticalAlignment="Center"
-                              Margin="0,0,24,0"/>
+                </Border>
 
-                    <!-- Pipe ID -->
-                    <CheckBox Grid.Column="1"
-                              Content="Pipe ID on Image"
-                              IsChecked="{Binding PipeIdOverlayEnabled}"
-                              Foreground="#DCE3EB"
-                              VerticalAlignment="Center"/>
 
-                    <!-- Generate -->
-                    <StackPanel Grid.Column="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right">
 
-                        <Button Content="GENERATE SHOT PLAN"
-                                Command="{Binding GenerateShotPlanCommand}"
-                                Style="{StaticResource PrimaryButtonStyle}"/>
+                <!-- ================================================= -->
+                <!-- SHOT LIST -->
+                <!-- ================================================= -->
 
-                        <Button Content="CLEAR"
-                                Command="{Binding ClearPlanCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
+                <Border Background="#252A32"
+                        BorderBrush="#39414C"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12">
 
-                    </StackPanel>
+                    <Grid>
 
-                </Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="320"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-            </Grid>
 
-        </Border>
+                        <!-- SHOT LIST HEADER -->
 
-        <!-- Shot List -->
-        <Border Grid.Row="2"
-                Background="#252A32"
-                BorderBrush="#39414C"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="12">
+                        <Grid Grid.Row="0"
+                              Margin="4,0,4,10">
 
-            <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0"
-                      Margin="4,0,4,10">
+                            <StackPanel>
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                                <TextBlock Text="SHOT PLAN"
+                                           Style="{StaticResource HeaderTextStyle}"/>
 
-                    <StackPanel>
-                        <TextBlock Text="SHOT PLAN"
-                                   Style="{StaticResource HeaderTextStyle}"/>
+                                <TextBlock Text="{Binding PlanSummary}"
+                                           Foreground="#8F9AA8"
+                                           FontSize="11"
+                                           Margin="0,3,0,0"/>
 
-                        <TextBlock Text="{Binding PlanSummary}"
-                                   Foreground="#8F9AA8"
-                                   FontSize="11"
-                                   Margin="0,3,0,0"/>
-                    </StackPanel>
+                            </StackPanel>
 
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding ProgressText}"
-                               Foreground="#65D391"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
 
-                </Grid>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding ProgressText}"
+                                       Foreground="#65D391"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
 
-                <DataGrid Grid.Row="1"
-                          ItemsSource="{Binding Shots}"
-                          SelectedItem="{Binding SelectedShot}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          HeadersVisibility="Column"
-                          GridLinesVisibility="Horizontal"
-                          Background="#171B20"
-                          Foreground="#DCE3EB"
-                          BorderBrush="#39414C"
-                          BorderThickness="1"
-                          RowBackground="#20252C"
-                          AlternatingRowBackground="#1B2026"
-                          HorizontalGridLinesBrush="#303640"
-                          VerticalGridLinesBrush="#303640"
-                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}">
+                        </Grid>
 
-                    <DataGrid.Columns>
 
-                        <DataGridTextColumn Header="SHOT"
-                                            Binding="{Binding ShotNumber}"
-                                            Width="70"/>
+                        <!-- DATA GRID -->
 
-                        <DataGridTextColumn Header="START (mm)"
-                                            Binding="{Binding StartPositionMm, StringFormat={}{0:0.###}}"
-                                            Width="110"/>
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding Shots}"
+                                  SelectedItem="{Binding SelectedShot}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  HeadersVisibility="Column"
+                                  GridLinesVisibility="Horizontal"
+                                  Background="#171B20"
+                                  Foreground="#DCE3EB"
+                                  BorderBrush="#39414C"
+                                  BorderThickness="1"
+                                  RowBackground="#20252C"
+                                  AlternatingRowBackground="#1B2026"
+                                  HorizontalGridLinesBrush="#303640"
+                                  VerticalGridLinesBrush="#303640"
+                                  ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}">
 
-                        <DataGridTextColumn Header="END (mm)"
-                                            Binding="{Binding EndPositionMm, StringFormat={}{0:0.###}}"
-                                            Width="110"/>
 
-                        <DataGridTextColumn Header="COVERAGE (mm)"
-                                            Binding="{Binding ActualCoverageMm, StringFormat={}{0:0.###}}"
-                                            Width="120"/>
+                            <DataGrid.Columns>
 
-                        <DataGridTextColumn Header="OVERLAP (mm)"
-                                            Binding="{Binding OverlapMm, StringFormat={}{0:0.###}}"
-                                            Width="110"/>
+                                <DataGridTextColumn Header="SHOT"
+                                                    Binding="{Binding ShotNumber}"
+                                                    Width="70"/>
 
-                        <DataGridTextColumn Header="RULER"
-                                            Binding="{Binding RulerText}"
-                                            Width="150"/>
+                                <DataGridTextColumn Header="START (mm)"
+                                                    Binding="{Binding StartPositionMm, StringFormat={}{0:0.###}}"
+                                                    Width="110"/>
 
-                        <DataGridTextColumn Header="MODE"
-                                            Binding="{Binding AcquisitionMode}"
-                                            Width="100"/>
+                                <DataGridTextColumn Header="END (mm)"
+                                                    Binding="{Binding EndPositionMm, StringFormat={}{0:0.###}}"
+                                                    Width="110"/>
 
-                        <DataGridTextColumn Header="STATUS"
-                                            Binding="{Binding Status}"
-                                            Width="110"/>
+                                <DataGridTextColumn Header="COVERAGE (mm)"
+                                                    Binding="{Binding ActualCoverageMm, StringFormat={}{0:0.###}}"
+                                                    Width="120"/>
 
-                    </DataGrid.Columns>
+                                <DataGridTextColumn Header="OVERLAP (mm)"
+                                                    Binding="{Binding OverlapMm, StringFormat={}{0:0.###}}"
+                                                    Width="110"/>
 
-                </DataGrid>
+                                <DataGridTextColumn Header="RULER"
+                                                    Binding="{Binding RulerText}"
+                                                    Width="150"/>
 
-                <Grid Grid.Row="2"
-                      Margin="4,10,4,0">
+                                <DataGridTextColumn Header="MODE"
+                                                    Binding="{Binding AcquisitionMode}"
+                                                    Width="100"/>
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                                <DataGridTextColumn Header="STATUS"
+                                                    Binding="{Binding Status}"
+                                                    Width="110"/>
 
-                    <TextBlock Text="{Binding CurrentPositionText}"
-                               Foreground="#AEB7C4"
-                               VerticalAlignment="Center"/>
+                            </DataGrid.Columns>
 
-                    <Button Grid.Column="1"
-                            Content="PREVIOUS SHOT"
-                            Command="{Binding PreviousShotCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}"/>
+                        </DataGrid>
 
-                    <Button Grid.Column="2"
-                            Content="NEXT SHOT"
-                            Command="{Binding NextShotCommand}"
-                            Style="{StaticResource PrimaryButtonStyle}"/>
 
-                </Grid>
+                        <!-- NAVIGATION -->
 
-            </Grid>
+                        <Grid Grid.Row="2"
+                              Margin="4,10,4,0">
 
-        </Border>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <TextBlock Text="{Binding CurrentPositionText}"
+                                       Foreground="#AEB7C4"
+                                       VerticalAlignment="Center"/>
+
+
+                            <Button Grid.Column="1"
+                                    Content="PREVIOUS SHOT"
+                                    Command="{Binding PreviousShotCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"/>
+
+
+                            <Button Grid.Column="2"
+                                    Content="NEXT SHOT"
+                                    Command="{Binding NextShotCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"/>
+
+                        </Grid>
+
+                    </Grid>
+
+                </Border>
+
+            </StackPanel>
+
+        </ScrollViewer>
 
     </Grid>
 

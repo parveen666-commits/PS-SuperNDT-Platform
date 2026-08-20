@@ -956,29 +956,16 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 }
             }
 
-            DrawText(
-                dc,
-                "PIPE POSITION (mm)",
-                rulerLeft,
-                652,
-                13,
-                whiteBrush);
-
-            DrawText(
-                dc,
-                $"{rulerStart:0} mm",
-                rulerLeft,
-                716,
-                13,
-                whiteBrush);
-
-            DrawTextCentered(
-                dc,
-                $"{rulerEnd:0} mm",
-                rulerRight,
-                716,
-                13,
-                whiteBrush);
+            /*
+             * IMPORTANT:
+             *
+             * PIPE POSITION title and the
+             * rulerStart/rulerEnd text have
+             * intentionally been removed.
+             *
+             * The ruler itself remains.
+             * The 50 mm labels remain.
+             */
         }
 
         var rendered =
@@ -1141,9 +1128,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         /*
          * PIPE MATERIAL
-         *
-         * Long rectangular DR field representing
-         * the pipe wall in the current shot.
          */
 
         for (int y = materialTop;
@@ -1262,9 +1246,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         /*
          * LONGITUDINAL SEAM WELD
-         *
-         * Runs along the pipe length.
-         * The pipe length is represented horizontally.
          */
 
         const int seamCenterY = 355;
@@ -1359,9 +1340,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         /*
          * CIRCUMFERENTIAL / HORIZONTAL WELD
-         *
-         * Crosses the pipe wall vertically in this
-         * representation.
          */
 
         const int circumferentialCenterX = 735;
@@ -1456,9 +1434,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         /*
          * DEFECT 1
-         *
-         * Small rounded indication close to
-         * longitudinal seam.
          */
 
         DrawDefect(
@@ -1471,9 +1446,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         /*
          * DEFECT 2
-         *
-         * Smaller indication close to
-         * circumferential weld.
          */
 
         DrawDefect(
@@ -1486,8 +1458,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         /*
          * DEFECT 3
-         *
-         * Small linear indication inside pipe wall.
          */
 
         DrawLinearDefect(
