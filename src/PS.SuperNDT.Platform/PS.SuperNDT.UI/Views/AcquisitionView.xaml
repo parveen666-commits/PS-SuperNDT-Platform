@@ -475,7 +475,7 @@
                         Width="120"
                         Height="45"
                         Margin="5"
-                        Command="{Binding SaveCommand}"/>
+                        Click="SaveButton_Click"/>
 
                 <Button Content="Retake"
                         Width="120"

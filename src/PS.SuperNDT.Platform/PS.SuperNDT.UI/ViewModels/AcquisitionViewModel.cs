@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -399,7 +400,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             CalculateTotalShots();
 
         var shots =
-            new System.Collections.Generic.List<ShotPlanItemModel>();
+            new List<ShotPlanItemModel>();
 
         for (int shotNumber = 1;
              shotNumber <= totalShots;
@@ -774,15 +775,25 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                     width,
                     height));
 
-            var overlayBackground =
+            var topBackground =
                 new SolidColorBrush(
                     Color.FromArgb(
-                        190,
+                        205,
                         0,
                         0,
                         0));
 
-            overlayBackground.Freeze();
+            topBackground.Freeze();
+
+            var rulerBackground =
+                new SolidColorBrush(
+                    Color.FromArgb(
+                        220,
+                        0,
+                        0,
+                        0));
+
+            rulerBackground.Freeze();
 
             var whiteBrush =
                 Brushes.White;
@@ -814,14 +825,18 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
             majorTickPen.Freeze();
 
+            /*
+             * TOP INFORMATION
+             */
+
             dc.DrawRoundedRectangle(
-                overlayBackground,
+                topBackground,
                 null,
                 new Rect(
                     20,
                     18,
-                    430,
-                    58),
+                    500,
+                    68),
                 6,
                 6);
 
@@ -836,26 +851,31 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             DrawText(
                 dc,
                 $"SHOT {shot.ShotNumber} | " +
-                $"{shot.StartPositionMm:0} - {shot.EndPositionMm:0} mm",
+                $"{shot.StartPositionMm:0} - " +
+                $"{shot.EndPositionMm:0} mm",
                 35,
-                51,
-                15,
+                53,
+                16,
                 whiteBrush);
 
-            const double rulerLeft = 70;
-            const double rulerRight = 954;
-            const double rulerY = 690;
+            /*
+             * FULL FRAME RULER
+             */
+
+            const double rulerLeft = 32;
+            const double rulerRight = 992;
+            const double rulerY = 700;
 
             dc.DrawRoundedRectangle(
-                overlayBackground,
+                rulerBackground,
                 null,
                 new Rect(
-                    35,
-                    650,
-                    954,
-                    100),
-                6,
-                6);
+                    12,
+                    638,
+                    1000,
+                    116),
+                5,
+                5);
 
             dc.DrawLine(
                 rulerPen,
@@ -910,8 +930,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
                 double tickHeight =
                     isMajor
-                        ? 26
-                        : 13;
+                        ? 28
+                        : 14;
 
                 dc.DrawLine(
                     isMajor
@@ -940,7 +960,23 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 dc,
                 "PIPE POSITION (mm)",
                 rulerLeft,
-                658,
+                652,
+                13,
+                whiteBrush);
+
+            DrawText(
+                dc,
+                $"{rulerStart:0} mm",
+                rulerLeft,
+                716,
+                13,
+                whiteBrush);
+
+            DrawTextCentered(
+                dc,
+                $"{rulerEnd:0} mm",
+                rulerRight,
+                716,
                 13,
                 whiteBrush);
         }
@@ -1035,6 +1071,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         const int width = 1024;
         const int height = 768;
 
+        const int materialTop = 105;
+        const int materialBottom = 625;
+
         var bitmap =
             new WriteableBitmap(
                 width,
@@ -1052,20 +1091,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 stride *
                 height];
 
-        double centerX =
-            width / 2.0;
-
-        double centerY =
-            height / 2.0;
-
-        double pipeRadius =
-            Math.Min(
-                width,
-                height) *
-            0.31;
-
-        double pipeInnerRadius =
-            pipeRadius * 0.72;
+        /*
+         * BACKGROUND
+         */
 
         for (int y = 0;
              y < height;
@@ -1075,89 +1103,23 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                  x < width;
                  x++)
             {
-                double dx =
-                    x - centerX;
+                double gradient =
+                    20 +
+                    (105.0 *
+                     y /
+                     height);
 
-                double dy =
-                    y - centerY;
-
-                double distance =
-                    Math.Sqrt(
-                        (dx * dx) +
-                        (dy * dy));
-
-                byte intensity;
-
-                if (distance <= pipeRadius &&
-                    distance >= pipeInnerRadius)
-                {
-                    intensity = 150;
-                }
-                else if (distance < pipeInnerRadius)
-                {
-                    intensity = 52;
-                }
-                else
-                {
-                    double gradient =
-                        18 +
-                        (170.0 *
-                         (double)y /
-                         height);
-
-                    intensity =
-                        (byte)Math.Clamp(
-                            gradient,
-                            10,
-                            220);
-                }
-
-                double weldY =
-                    centerY +
+                double texture =
                     Math.Sin(
-                        x * 0.025) *
-                    18;
+                        x * 0.017) *
+                    2.5;
 
-                if (Math.Abs(
-                        y - weldY) < 5 &&
-                    distance < pipeRadius &&
-                    distance > pipeInnerRadius)
-                {
-                    intensity = 235;
-                }
-
-                double defect1 =
-                    Math.Sqrt(
-                        Math.Pow(
-                            x - 430,
-                            2) +
-                        Math.Pow(
-                            y - 355,
-                            2));
-
-                double defect2 =
-                    Math.Sqrt(
-                        Math.Pow(
-                            x - 610,
-                            2) +
-                        Math.Pow(
-                            y - 405,
-                            2));
-
-                if (defect1 < 13 ||
-                    defect2 < 9)
-                {
-                    intensity = 245;
-                }
-
-                int variation =
-                    frameNumber % 12;
-
-                intensity =
+                byte intensity =
                     (byte)Math.Clamp(
-                        intensity + variation,
-                        0,
-                        255);
+                        gradient +
+                        texture,
+                        8,
+                        170);
 
                 int index =
                     (y * stride) +
@@ -1174,6 +1136,410 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
                 pixels[index + 3] =
                     255;
+            }
+        }
+
+        /*
+         * PIPE MATERIAL
+         *
+         * Long rectangular DR field representing
+         * the pipe wall in the current shot.
+         */
+
+        for (int y = materialTop;
+             y < materialBottom;
+             y++)
+        {
+            for (int x = 25;
+                 x < width - 25;
+                 x++)
+            {
+                double baseIntensity =
+                    108 +
+                    (38.0 *
+                     (double)y /
+                     (materialBottom -
+                      materialTop));
+
+                double texture =
+                    Math.Sin(
+                        x * 0.029) *
+                    3.0;
+
+                double fineTexture =
+                    Math.Sin(
+                        y * 0.047) *
+                    2.0;
+
+                byte intensity =
+                    (byte)Math.Clamp(
+                        baseIntensity +
+                        texture +
+                        fineTexture,
+                        65,
+                        185);
+
+                int index =
+                    (y * stride) +
+                    (x * 4);
+
+                pixels[index] =
+                    intensity;
+
+                pixels[index + 1] =
+                    intensity;
+
+                pixels[index + 2] =
+                    intensity;
+
+                pixels[index + 3] =
+                    255;
+            }
+        }
+
+        /*
+         * TOP AND BOTTOM PIPE BOUNDARIES
+         */
+
+        for (int x = 25;
+             x < width - 25;
+             x++)
+        {
+            for (int thickness = 0;
+                 thickness < 5;
+                 thickness++)
+            {
+                int topY =
+                    materialTop +
+                    thickness;
+
+                int bottomY =
+                    materialBottom -
+                    thickness -
+                    1;
+
+                int topIndex =
+                    (topY * stride) +
+                    (x * 4);
+
+                int bottomIndex =
+                    (bottomY * stride) +
+                    (x * 4);
+
+                byte edge =
+                    (byte)
+                    Math.Clamp(
+                        170 -
+                        (thickness * 20),
+                        80,
+                        200);
+
+                pixels[topIndex] =
+                    edge;
+
+                pixels[topIndex + 1] =
+                    edge;
+
+                pixels[topIndex + 2] =
+                    edge;
+
+                pixels[topIndex + 3] =
+                    255;
+
+                pixels[bottomIndex] =
+                    edge;
+
+                pixels[bottomIndex + 1] =
+                    edge;
+
+                pixels[bottomIndex + 2] =
+                    edge;
+
+                pixels[bottomIndex + 3] =
+                    255;
+            }
+        }
+
+        /*
+         * LONGITUDINAL SEAM WELD
+         *
+         * Runs along the pipe length.
+         * The pipe length is represented horizontally.
+         */
+
+        const int seamCenterY = 355;
+
+        for (int x = 30;
+             x < width - 30;
+             x++)
+        {
+            double wave =
+                Math.Sin(
+                    x * 0.026) *
+                3.0;
+
+            int centerY =
+                seamCenterY +
+                (int)wave;
+
+            for (int dy = -9;
+                 dy <= 9;
+                 dy++)
+            {
+                int y =
+                    centerY + dy;
+
+                if (y < materialTop ||
+                    y >= materialBottom)
+                {
+                    continue;
+                }
+
+                double distance =
+                    Math.Abs(dy);
+
+                byte weldIntensity =
+                    (byte)Math.Clamp(
+                        218 -
+                        (distance * 12),
+                        85,
+                        240);
+
+                int index =
+                    (y * stride) +
+                    (x * 4);
+
+                pixels[index] =
+                    weldIntensity;
+
+                pixels[index + 1] =
+                    weldIntensity;
+
+                pixels[index + 2] =
+                    weldIntensity;
+
+                pixels[index + 3] =
+                    255;
+            }
+        }
+
+        /*
+         * SEAM ROOT / FUSION LINE
+         */
+
+        for (int x = 30;
+             x < width - 30;
+             x++)
+        {
+            double wave =
+                Math.Sin(
+                    x * 0.026) *
+                3.0;
+
+            int y =
+                seamCenterY +
+                (int)wave;
+
+            int index =
+                (y * stride) +
+                (x * 4);
+
+            pixels[index] =
+                250;
+
+            pixels[index + 1] =
+                250;
+
+            pixels[index + 2] =
+                250;
+
+            pixels[index + 3] =
+                255;
+        }
+
+        /*
+         * CIRCUMFERENTIAL / HORIZONTAL WELD
+         *
+         * Crosses the pipe wall vertically in this
+         * representation.
+         */
+
+        const int circumferentialCenterX = 735;
+
+        for (int y = materialTop;
+             y < materialBottom;
+             y++)
+        {
+            double wave =
+                Math.Sin(
+                    y * 0.035) *
+                4.0;
+
+            int centerX =
+                circumferentialCenterX +
+                (int)wave;
+
+            for (int dx = -10;
+                 dx <= 10;
+                 dx++)
+            {
+                int x =
+                    centerX + dx;
+
+                if (x < 25 ||
+                    x >= width - 25)
+                {
+                    continue;
+                }
+
+                double distance =
+                    Math.Abs(dx);
+
+                byte weldIntensity =
+                    (byte)Math.Clamp(
+                        220 -
+                        (distance * 11),
+                        90,
+                        245);
+
+                int index =
+                    (y * stride) +
+                    (x * 4);
+
+                pixels[index] =
+                    weldIntensity;
+
+                pixels[index + 1] =
+                    weldIntensity;
+
+                pixels[index + 2] =
+                    weldIntensity;
+
+                pixels[index + 3] =
+                    255;
+            }
+        }
+
+        /*
+         * CIRCUMFERENTIAL WELD ROOT
+         */
+
+        for (int y = materialTop;
+             y < materialBottom;
+             y++)
+        {
+            double wave =
+                Math.Sin(
+                    y * 0.035) *
+                4.0;
+
+            int x =
+                circumferentialCenterX +
+                (int)wave;
+
+            int index =
+                (y * stride) +
+                (x * 4);
+
+            pixels[index] =
+                250;
+
+            pixels[index + 1] =
+                250;
+
+            pixels[index + 2] =
+                250;
+
+            pixels[index + 3] =
+                255;
+        }
+
+        /*
+         * DEFECT 1
+         *
+         * Small rounded indication close to
+         * longitudinal seam.
+         */
+
+        DrawDefect(
+            pixels,
+            stride,
+            430,
+            355,
+            14,
+            248);
+
+        /*
+         * DEFECT 2
+         *
+         * Smaller indication close to
+         * circumferential weld.
+         */
+
+        DrawDefect(
+            pixels,
+            stride,
+            735,
+            475,
+            10,
+            252);
+
+        /*
+         * DEFECT 3
+         *
+         * Small linear indication inside pipe wall.
+         */
+
+        DrawLinearDefect(
+            pixels,
+            stride,
+            545,
+            465,
+            580,
+            485,
+            6,
+            242);
+
+        /*
+         * FRAME VARIATION
+         */
+
+        int variation =
+            frameNumber % 8;
+
+        if (variation != 0)
+        {
+            for (int y = materialTop;
+                 y < materialBottom;
+                 y++)
+            {
+                for (int x = 25;
+                     x < width - 25;
+                     x++)
+                {
+                    int index =
+                        (y * stride) +
+                        (x * 4);
+
+                    int value =
+                        pixels[index] +
+                        variation;
+
+                    byte adjusted =
+                        (byte)Math.Clamp(
+                            value,
+                            0,
+                            255);
+
+                    pixels[index] =
+                        adjusted;
+
+                    pixels[index + 1] =
+                        adjusted;
+
+                    pixels[index + 2] =
+                        adjusted;
+                }
             }
         }
 
@@ -1204,6 +1570,142 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 FileShare.None);
 
         encoder.Save(stream);
+    }
+
+    private static void DrawDefect(
+        byte[] pixels,
+        int stride,
+        double centerX,
+        double centerY,
+        double radius,
+        byte intensity)
+    {
+        int minX =
+            Math.Max(
+                0,
+                (int)(centerX - radius - 1));
+
+        int maxX =
+            Math.Min(
+                1023,
+                (int)(centerX + radius + 1));
+
+        int minY =
+            Math.Max(
+                0,
+                (int)(centerY - radius - 1));
+
+        int maxY =
+            Math.Min(
+                767,
+                (int)(centerY + radius + 1));
+
+        for (int y = minY;
+             y <= maxY;
+             y++)
+        {
+            for (int x = minX;
+                 x <= maxX;
+                 x++)
+            {
+                double dx =
+                    x - centerX;
+
+                double dy =
+                    y - centerY;
+
+                double distance =
+                    Math.Sqrt(
+                        (dx * dx) +
+                        (dy * dy));
+
+                if (distance > radius)
+                {
+                    continue;
+                }
+
+                int index =
+                    (y * stride) +
+                    (x * 4);
+
+                byte value =
+                    distance <
+                    radius * 0.55
+                        ? intensity
+                        : (byte)Math.Max(
+                            150,
+                            intensity - 45);
+
+                pixels[index] =
+                    value;
+
+                pixels[index + 1] =
+                    value;
+
+                pixels[index + 2] =
+                    value;
+
+                pixels[index + 3] =
+                    255;
+            }
+        }
+    }
+
+    private static void DrawLinearDefect(
+        byte[] pixels,
+        int stride,
+        double startX,
+        double startY,
+        double endX,
+        double endY,
+        double thickness,
+        byte intensity)
+    {
+        double length =
+            Math.Sqrt(
+                Math.Pow(
+                    endX - startX,
+                    2) +
+                Math.Pow(
+                    endY - startY,
+                    2));
+
+        if (length <= 0)
+        {
+            return;
+        }
+
+        int steps =
+            Math.Max(
+                1,
+                (int)length);
+
+        for (int i = 0;
+             i <= steps;
+             i++)
+        {
+            double ratio =
+                (double)i /
+                steps;
+
+            double x =
+                startX +
+                ((endX - startX) *
+                 ratio);
+
+            double y =
+                startY +
+                ((endY - startY) *
+                 ratio);
+
+            DrawDefect(
+                pixels,
+                stride,
+                x,
+                y,
+                thickness,
+                intensity);
+        }
     }
 
     private void SaveImage()

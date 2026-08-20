@@ -97,7 +97,9 @@ public sealed class ImageService
             db.Images.FirstOrDefault(x => x.Id == id);
 
         if (image == null)
+        {
             return;
+        }
 
         db.Images.Remove(image);
 
@@ -111,6 +113,11 @@ public sealed class ImageService
                 "Data Source=PS_SuperNDT.db");
 
         connection.Open();
+
+        AddColumnIfMissing(
+            connection,
+            "PipeId",
+            "TEXT NOT NULL DEFAULT ''");
 
         AddColumnIfMissing(
             connection,
@@ -185,7 +192,9 @@ public sealed class ImageService
                 checkCommand.ExecuteScalar()) > 0;
 
         if (exists)
+        {
             return;
+        }
 
         using var alterCommand =
             connection.CreateCommand();
