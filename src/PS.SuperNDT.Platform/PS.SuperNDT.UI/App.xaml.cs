@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Data.Sqlite;
@@ -121,69 +123,103 @@ public partial class App : Application
         using var db =
             new SuperNDTDbContext();
 
-        db.Database.EnsureCreated();
+        db.Initialize();
 
-        EnsureReviewColumns();
+        ShowDatabaseDiagnostics();
     }
 
-    private static void EnsureReviewColumns()
+    private static void ShowDatabaseDiagnostics()
     {
-        const string connectionString =
-            "Data Source=PS_SuperNDT.db";
+        var databasePath =
+            System.IO.Path.GetFullPath(
+                "PS_SuperNDT.db");
+
+        var builder =
+            new StringBuilder();
+
+        builder.AppendLine(
+            "PS SuperNDT Database Diagnostic");
+
+        builder.AppendLine();
+
+        builder.AppendLine(
+            "Actual DB Path:");
+
+        builder.AppendLine(
+            databasePath);
+
+        builder.AppendLine();
+
+        builder.AppendLine(
+            "DB Exists:");
+
+        builder.AppendLine(
+            System.IO.File.Exists(databasePath)
+                ? "YES"
+                : "NO");
+
+        builder.AppendLine();
+
+        builder.AppendLine(
+            "Images Columns:");
+
+        var columns =
+            new List<string>();
 
         using var connection =
-            new SqliteConnection(connectionString);
+            new SqliteConnection(
+                "Data Source=PS_SuperNDT.db");
 
         connection.Open();
 
-        AddColumnIfMissing(
-            connection,
-            "ReviewStatus",
-            "TEXT NOT NULL DEFAULT 'PENDING'");
-
-        AddColumnIfMissing(
-            connection,
-            "ReviewedBy",
-            "TEXT NOT NULL DEFAULT ''");
-
-        AddColumnIfMissing(
-            connection,
-            "ReviewedOn",
-            "TEXT NULL");
-    }
-
-    private static void AddColumnIfMissing(
-        SqliteConnection connection,
-        string columnName,
-        string columnDefinition)
-    {
-        using var checkCommand =
+        using var command =
             connection.CreateCommand();
 
-        checkCommand.CommandText =
-            "SELECT COUNT(*) " +
-            "FROM pragma_table_info('Images') " +
-            "WHERE name = $columnName;";
+        command.CommandText =
+            "PRAGMA table_info(Images);";
 
-        checkCommand.Parameters.AddWithValue(
-            "$columnName",
-            columnName);
+        using var reader =
+            command.ExecuteReader();
 
-        var exists =
-            Convert.ToInt32(
-                checkCommand.ExecuteScalar()) > 0;
+        while (reader.Read())
+        {
+            columns.Add(
+                reader.GetString(1));
+        }
 
-        if (exists)
-            return;
+        if (columns.Count == 0)
+        {
+            builder.AppendLine(
+                "Images table NOT FOUND.");
+        }
+        else
+        {
+            foreach (var column in columns)
+            {
+                builder.AppendLine(
+                    " - " + column);
+            }
+        }
 
-        using var alterCommand =
-            connection.CreateCommand();
+        builder.AppendLine();
 
-        alterCommand.CommandText =
-            $"ALTER TABLE Images " +
-            $"ADD COLUMN {columnName} {columnDefinition};";
+        builder.AppendLine(
+            "Overlap Column:");
 
-        alterCommand.ExecuteNonQuery();
+        builder.AppendLine(
+            columns.Any(
+                x => string.Equals(
+                    x,
+                    "Overlap",
+                    StringComparison.OrdinalIgnoreCase))
+                ? "FOUND"
+                : "MISSING");
+
+        MessageBox.Show(
+            builder.ToString(),
+            "PS SuperNDT DB Diagnostic",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 
     private static void RestoreLastOpenJob()
