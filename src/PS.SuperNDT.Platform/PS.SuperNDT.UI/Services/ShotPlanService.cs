@@ -36,7 +36,8 @@ public sealed class ShotPlanService
         var plan =
             new ShotPlanModel
             {
-                JobId = jobId,
+                JobId =
+                    jobId,
 
                 PipeId =
                     pipeId.Trim(),
@@ -66,9 +67,11 @@ public sealed class ShotPlanService
                 Direction =
                     direction,
 
-                Status = "Ready",
+                Status =
+                    "Ready",
 
-                IsCompleted = false
+                IsCompleted =
+                    false
             };
 
         var shots =
@@ -91,7 +94,8 @@ public sealed class ShotPlanService
                 "Pending";
         }
 
-        plan.SetShots(shots);
+        plan.SetShots(
+            shots);
 
         return plan;
     }
@@ -100,18 +104,23 @@ public sealed class ShotPlanService
         ShotPlanModel plan,
         out string error)
     {
-        error = string.Empty;
+        error =
+            string.Empty;
 
         if (plan == null)
         {
-            error = "Shot plan is required.";
+            error =
+                "Shot plan is required.";
+
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(
                 plan.PipeId))
         {
-            error = "Pipe ID is required.";
+            error =
+                "Pipe ID is required.";
+
             return false;
         }
 
@@ -119,6 +128,7 @@ public sealed class ShotPlanService
         {
             error =
                 "Pipe length must be greater than zero.";
+
             return false;
         }
 
@@ -126,6 +136,7 @@ public sealed class ShotPlanService
         {
             error =
                 "Shot length must be greater than zero.";
+
             return false;
         }
 
@@ -133,6 +144,7 @@ public sealed class ShotPlanService
         {
             error =
                 "Overlap cannot be negative.";
+
             return false;
         }
 
@@ -141,6 +153,7 @@ public sealed class ShotPlanService
         {
             error =
                 "Overlap must be smaller than shot length.";
+
             return false;
         }
 
@@ -149,6 +162,7 @@ public sealed class ShotPlanService
         {
             error =
                 "Shot plan does not contain any shots.";
+
             return false;
         }
 
@@ -159,14 +173,16 @@ public sealed class ShotPlanService
         ShotPlanModel plan,
         out ShotPlanItemModel? shot)
     {
-        shot = null;
+        shot =
+            null;
 
         if (plan == null)
         {
             return false;
         }
 
-        shot = plan.CurrentShot;
+        shot =
+            plan.CurrentShot;
 
         return shot != null;
     }

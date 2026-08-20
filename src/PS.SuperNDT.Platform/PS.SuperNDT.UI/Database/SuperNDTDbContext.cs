@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Database;
@@ -90,5 +92,83 @@ public sealed class SuperNDTDbContext : DbContext
     public void Initialize()
     {
         Database.EnsureCreated();
+
+        EnsureImageTableSchema();
+    }
+
+
+    private void EnsureImageTableSchema()
+    {
+        var requiredColumns =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["ShotNumber"] = "INTEGER NOT NULL DEFAULT 0",
+                ["TotalShots"] = "INTEGER NOT NULL DEFAULT 0",
+                ["PipeLength"] = "REAL NOT NULL DEFAULT 0",
+                ["ShotSize"] = "REAL NOT NULL DEFAULT 0",
+                ["Overlap"] = "REAL NOT NULL DEFAULT 0",
+                ["ShotStartPosition"] = "REAL NOT NULL DEFAULT 0",
+                ["ShotEndPosition"] = "REAL NOT NULL DEFAULT 0",
+                ["ReviewStatus"] = "TEXT NOT NULL DEFAULT 'PENDING'",
+                ["ReviewedBy"] = "TEXT NOT NULL DEFAULT ''",
+                ["ReviewedOn"] = "TEXT NULL"
+            };
+
+        var connection =
+            Database.GetDbConnection();
+
+        bool shouldClose =
+            connection.State !=
+            System.Data.ConnectionState.Open;
+
+        if (shouldClose)
+        {
+            connection.Open();
+        }
+
+        try
+        {
+            var existingColumns =
+                new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase);
+
+            using var pragmaCommand =
+                connection.CreateCommand();
+
+            pragmaCommand.CommandText =
+                "PRAGMA table_info(Images);";
+
+            using var reader =
+                pragmaCommand.ExecuteReader();
+
+            while (reader.Read())
+            {
+                existingColumns.Add(
+                    reader.GetString(1));
+            }
+
+            foreach (var column in requiredColumns)
+            {
+                if (existingColumns.Contains(column.Key))
+                {
+                    continue;
+                }
+
+                using var alterCommand =
+                    connection.CreateCommand();
+
+                alterCommand.CommandText =
+                    $"ALTER TABLE Images ADD COLUMN [{column.Key}] {column.Value};";
+
+                alterCommand.ExecuteNonQuery();
+            }
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                connection.Close();
+            }
+        }
     }
 }

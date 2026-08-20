@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -34,6 +35,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
     private ImageRecordModel? _capturedImage;
     private ShotPlanModel? _shotPlan;
+    private ImageSource? _capturedImageSource;
 
     public RelayCommand ConnectCommand { get; }
 
@@ -251,6 +253,16 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
     public bool HasCapturedImage =>
         _capturedImage != null;
+
+    public ImageSource? CapturedImageSource
+    {
+        get => _capturedImageSource;
+        private set
+        {
+            _capturedImageSource = value;
+            OnPropertyChanged();
+        }
+    }
 
     public bool HasShotPlan =>
         _shotPlan?.HasShots == true;
@@ -587,12 +599,17 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
         try
         {
+            ShotPlanItemModel shot =
+                _shotPlan.CurrentShot!;
+
             CreateVirtualRadiographyImage(
                 filePath,
                 FrameNumber);
 
-            ShotPlanItemModel shot =
-                _shotPlan.CurrentShot!;
+            AddPermanentShotOverlay(
+                filePath,
+                PipeId,
+                shot);
 
             string shotRemarks =
                 $"Pipe ID {PipeId}; " +
@@ -655,6 +672,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                         DateTime.Now
                 };
 
+            CapturedImageSource =
+                CreateImageSource(filePath);
+
             AcquisitionStatus =
                 $"Pipe {PipeId} | " +
                 $"Shot {shot.ShotNumber}/{TotalShots} captured " +
@@ -671,6 +691,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             FrameNumber--;
 
             _capturedImage = null;
+            CapturedImageSource = null;
 
             AcquisitionStatus =
                 $"Capture failed: {ex.Message}";
@@ -678,6 +699,333 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             OnPropertyChanged(
                 nameof(HasCapturedImage));
         }
+    }
+
+    private static ImageSource? CreateImageSource(
+        string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath) ||
+            !File.Exists(filePath))
+        {
+            return null;
+        }
+
+        var bitmap =
+            new BitmapImage();
+
+        bitmap.BeginInit();
+
+        bitmap.UriSource =
+            new Uri(
+                filePath,
+                UriKind.Absolute);
+
+        bitmap.CacheOption =
+            BitmapCacheOption.OnLoad;
+
+        bitmap.CreateOptions =
+            BitmapCreateOptions.PreservePixelFormat;
+
+        bitmap.EndInit();
+
+        bitmap.Freeze();
+
+        return bitmap;
+    }
+
+    private static void AddPermanentShotOverlay(
+        string filePath,
+        string pipeId,
+        ShotPlanItemModel shot)
+    {
+        const int width = 1024;
+        const int height = 768;
+
+        BitmapFrame sourceFrame;
+
+        using (FileStream input =
+               new(
+                   filePath,
+                   FileMode.Open,
+                   FileAccess.Read,
+                   FileShare.Read))
+        {
+            var decoder =
+                new PngBitmapDecoder(
+                    input,
+                    BitmapCreateOptions.PreservePixelFormat,
+                    BitmapCacheOption.OnLoad);
+
+            sourceFrame =
+                decoder.Frames[0];
+        }
+
+        var visual =
+            new DrawingVisual();
+
+        using (DrawingContext dc =
+               visual.RenderOpen())
+        {
+            dc.DrawImage(
+                sourceFrame,
+                new Rect(
+                    0,
+                    0,
+                    width,
+                    height));
+
+            var overlayBackground =
+                new SolidColorBrush(
+                    Color.FromArgb(
+                        190,
+                        0,
+                        0,
+                        0));
+
+            overlayBackground.Freeze();
+
+            var whiteBrush =
+                Brushes.White;
+
+            var cyanBrush =
+                Brushes.Cyan;
+
+            var yellowBrush =
+                Brushes.Yellow;
+
+            var rulerPen =
+                new Pen(
+                    whiteBrush,
+                    2);
+
+            rulerPen.Freeze();
+
+            var tickPen =
+                new Pen(
+                    whiteBrush,
+                    1);
+
+            tickPen.Freeze();
+
+            var majorTickPen =
+                new Pen(
+                    yellowBrush,
+                    2);
+
+            majorTickPen.Freeze();
+
+            dc.DrawRoundedRectangle(
+                overlayBackground,
+                null,
+                new Rect(
+                    20,
+                    18,
+                    430,
+                    58),
+                6,
+                6);
+
+            DrawText(
+                dc,
+                $"PIPE ID: {pipeId}",
+                35,
+                25,
+                22,
+                cyanBrush);
+
+            DrawText(
+                dc,
+                $"SHOT {shot.ShotNumber} | " +
+                $"{shot.StartPositionMm:0} - {shot.EndPositionMm:0} mm",
+                35,
+                51,
+                15,
+                whiteBrush);
+
+            const double rulerLeft = 70;
+            const double rulerRight = 954;
+            const double rulerY = 690;
+
+            dc.DrawRoundedRectangle(
+                overlayBackground,
+                null,
+                new Rect(
+                    35,
+                    650,
+                    954,
+                    100),
+                6,
+                6);
+
+            dc.DrawLine(
+                rulerPen,
+                new Point(
+                    rulerLeft,
+                    rulerY),
+                new Point(
+                    rulerRight,
+                    rulerY));
+
+            double rulerStart =
+                shot.RulerStartMm;
+
+            double rulerEnd =
+                shot.RulerEndMm;
+
+            double span =
+                rulerEnd - rulerStart;
+
+            if (span <= 0)
+            {
+                span = 1;
+            }
+
+            int firstTick =
+                (int)Math.Ceiling(
+                    rulerStart / 10.0) * 10;
+
+            for (double position = firstTick;
+                 position <= rulerEnd + 0.001;
+                 position += 10)
+            {
+                double ratio =
+                    (position - rulerStart) /
+                    span;
+
+                ratio =
+                    Math.Clamp(
+                        ratio,
+                        0,
+                        1);
+
+                double x =
+                    rulerLeft +
+                    ((rulerRight - rulerLeft) *
+                     ratio);
+
+                bool isMajor =
+                    Math.Abs(
+                        position % 50) <
+                    0.001;
+
+                double tickHeight =
+                    isMajor
+                        ? 26
+                        : 13;
+
+                dc.DrawLine(
+                    isMajor
+                        ? majorTickPen
+                        : tickPen,
+                    new Point(
+                        x,
+                        rulerY),
+                    new Point(
+                        x,
+                        rulerY - tickHeight));
+
+                if (isMajor)
+                {
+                    DrawTextCentered(
+                        dc,
+                        $"{position:0}",
+                        x,
+                        rulerY + 8,
+                        13,
+                        yellowBrush);
+                }
+            }
+
+            DrawText(
+                dc,
+                "PIPE POSITION (mm)",
+                rulerLeft,
+                658,
+                13,
+                whiteBrush);
+        }
+
+        var rendered =
+            new RenderTargetBitmap(
+                width,
+                height,
+                96,
+                96,
+                PixelFormats.Pbgra32);
+
+        rendered.Render(
+            visual);
+
+        rendered.Freeze();
+
+        var encoder =
+            new PngBitmapEncoder();
+
+        encoder.Frames.Add(
+            BitmapFrame.Create(
+                rendered));
+
+        using FileStream output =
+            new(
+                filePath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None);
+
+        encoder.Save(output);
+    }
+
+    private static void DrawText(
+        DrawingContext dc,
+        string text,
+        double x,
+        double y,
+        double fontSize,
+        Brush brush)
+    {
+        var formattedText =
+            new FormattedText(
+                text,
+                CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(
+                    "Segoe UI"),
+                fontSize,
+                brush,
+                1.0);
+
+        dc.DrawText(
+            formattedText,
+            new Point(
+                x,
+                y));
+    }
+
+    private static void DrawTextCentered(
+        DrawingContext dc,
+        string text,
+        double centerX,
+        double y,
+        double fontSize,
+        Brush brush)
+    {
+        var formattedText =
+            new FormattedText(
+                text,
+                CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(
+                    "Segoe UI"),
+                fontSize,
+                brush,
+                1.0);
+
+        dc.DrawText(
+            formattedText,
+            new Point(
+                centerX -
+                (formattedText.Width / 2),
+                y));
     }
 
     private static void CreateVirtualRadiographyImage(
@@ -884,6 +1232,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 $"Image {_capturedImage.FileName} saved";
 
             _capturedImage = null;
+            CapturedImageSource = null;
 
             OnPropertyChanged(
                 nameof(HasCapturedImage));
@@ -923,6 +1272,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
 
         _capturedImage = null;
+        CapturedImageSource = null;
 
         if (FrameNumber > 0)
         {

@@ -174,12 +174,48 @@
 
                 <Grid>
 
+                    <!-- ACTUAL CAPTURED IMAGE -->
+
+                    <Image Source="{Binding CapturedImageSource}"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Stretch"
+                           Margin="8"/>
+
+                    <!-- EMPTY IMAGE PLACEHOLDER -->
+
                     <TextBlock Text="LIVE DETECTOR IMAGE"
                                Foreground="Gray"
                                FontSize="32"
                                FontWeight="Bold"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False">
+
+                        <TextBlock.Style>
+
+                            <Style TargetType="TextBlock">
+
+                                <Setter Property="Visibility"
+                                        Value="Collapsed"/>
+
+                                <Style.Triggers>
+
+                                    <DataTrigger Binding="{Binding CapturedImageSource}"
+                                                 Value="{x:Null}">
+
+                                        <Setter Property="Visibility"
+                                                Value="Visible"/>
+
+                                    </DataTrigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </TextBlock.Style>
+
+                    </TextBlock>
 
                     <!-- PIPE ID -->
 
