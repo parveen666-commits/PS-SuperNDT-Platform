@@ -67,6 +67,9 @@ public sealed class SuperNDTDbContext : DbContext
             entity.Property(e => e.JobNumber)
                 .HasMaxLength(100);
 
+            entity.Property(e => e.PipeId)
+                .HasMaxLength(100);
+
             entity.Property(e => e.Operator)
                 .HasMaxLength(100);
 
@@ -77,6 +80,39 @@ public sealed class SuperNDTDbContext : DbContext
                 .HasMaxLength(500);
 
             entity.Property(e => e.DetectorName)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.IQIType)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.IQISensitivity)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Filter)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Grain)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.WeldNumber)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.JointNumber)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.WeldType)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.WeldingProcess)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.WeldOrientation)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.ReviewStatus)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.ReviewedBy)
                 .HasMaxLength(100);
 
             entity.Property(e => e.Remarks)
@@ -152,7 +188,61 @@ public sealed class SuperNDTDbContext : DbContext
                     "TEXT NOT NULL DEFAULT ''",
 
                 ["ReviewedOn"] =
-                    "TEXT NULL"
+                    "TEXT NULL",
+
+                ["SNR"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["IQI"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["IQIType"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["IQISensitivity"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["Filter"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["Grain"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["SFD"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["ODD"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["GeometricUnsharpness"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["Density"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["Contrast"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["BasicSpatialResolution"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["WeldNumber"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["JointNumber"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["WeldType"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["WeldingProcess"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["WeldOrientation"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["MaterialThickness"] =
+                    "REAL NOT NULL DEFAULT 0"
             };
 
         var connection =

@@ -24,11 +24,53 @@ public sealed class ImageRecordModel
 
     public string DetectorName { get; set; } = "";
 
+    // Exposure / RTR Parameters
+
     public double KV { get; set; }
 
     public double MA { get; set; }
 
     public double ExposureTime { get; set; }
+
+    public double SNR { get; set; }
+
+    public double IQI { get; set; }
+
+    public string IQIType { get; set; } = "";
+
+    public string IQISensitivity { get; set; } = "";
+
+    public string Filter { get; set; } = "";
+
+    public string Grain { get; set; } = "";
+
+    public double SFD { get; set; }
+
+    public double ODD { get; set; }
+
+    public double GeometricUnsharpness { get; set; }
+
+    public double Density { get; set; }
+
+    public double Contrast { get; set; }
+
+    public double BasicSpatialResolution { get; set; }
+
+    // Weld Information
+
+    public string WeldNumber { get; set; } = "";
+
+    public string JointNumber { get; set; } = "";
+
+    public string WeldType { get; set; } = "";
+
+    public string WeldingProcess { get; set; } = "";
+
+    public string WeldOrientation { get; set; } = "";
+
+    public double MaterialThickness { get; set; }
+
+    // Image Information
 
     public int ImageWidth { get; set; }
 
