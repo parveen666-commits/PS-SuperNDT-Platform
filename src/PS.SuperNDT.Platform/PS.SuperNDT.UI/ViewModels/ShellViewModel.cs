@@ -67,6 +67,11 @@ public class ShellViewModel : INotifyPropertyChanged
 
                 new NavigationItem
                 {
+                    Title = "Job / Work Order History"
+                },
+
+                new NavigationItem
+                {
                     Title = "Review"
                 },
 
@@ -149,6 +154,16 @@ public class ShellViewModel : INotifyPropertyChanged
                 {
                     CurrentPage =
                         new AcquisitionView();
+                }
+
+                break;
+
+            case "Job / Work Order History":
+
+                if (_authorizationService.CanReview())
+                {
+                    CurrentPage =
+                        new JobHistoryView();
                 }
 
                 break;
