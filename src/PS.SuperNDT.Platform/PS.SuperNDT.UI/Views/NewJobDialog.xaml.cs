@@ -10,6 +10,8 @@ public partial class NewJobDialog : Window
 {
     private readonly JobDialogViewModel _viewModel;
 
+    private readonly JobService _jobService = new();
+
     public JobModel? Job { get; private set; }
 
     public NewJobDialog()
@@ -41,34 +43,71 @@ public partial class NewJobDialog : Window
         DataContext = _viewModel;
     }
 
-    private void CreateJob_Click(object sender, RoutedEventArgs e)
+    private void CreateJob_Click(
+        object sender,
+        RoutedEventArgs e)
     {
-        var job = Job ?? new JobModel
+        try
         {
-            Id = Guid.NewGuid(),
-            CreatedOn = DateTime.Now,
-            IsClosed = false
-        };
+            var job = Job ?? new JobModel
+            {
+                Id = Guid.NewGuid(),
+                CreatedOn = DateTime.Now,
+                IsClosed = false
+            };
 
-        job.JobNumber = _viewModel.JobNumber;
-        job.Customer = _viewModel.Customer;
-        job.Project = _viewModel.Project;
-        job.Component = _viewModel.Component;
-        job.WeldNumber = _viewModel.WeldNumber;
-        job.Operator = _viewModel.Operator;
-        job.Procedure = _viewModel.Procedure;
-        job.Material = _viewModel.Material;
-        job.Remark = _viewModel.Remarks;
+            job.JobNumber =
+                _viewModel.JobNumber?.Trim() ?? string.Empty;
 
-        CurrentJobService.Instance.SetCurrentJob(job);
+            job.Customer =
+                _viewModel.Customer?.Trim() ?? string.Empty;
 
-        Job = job;
+            job.Project =
+                _viewModel.Project?.Trim() ?? string.Empty;
 
-        DialogResult = true;
-        Close();
+            job.Component =
+                _viewModel.Component?.Trim() ?? string.Empty;
+
+            job.WeldNumber =
+                _viewModel.WeldNumber?.Trim() ?? string.Empty;
+
+            job.Operator =
+                _viewModel.Operator?.Trim() ?? string.Empty;
+
+            job.Procedure =
+                _viewModel.Procedure?.Trim() ?? string.Empty;
+
+            job.Material =
+                _viewModel.Material?.Trim() ?? string.Empty;
+
+            job.Remark =
+                _viewModel.Remarks?.Trim() ?? string.Empty;
+
+            // IMPORTANT:
+            // Persist the job before making it the current job.
+            _jobService.Save(job);
+
+            CurrentJobService.Instance.SetCurrentJob(job);
+
+            Job = job;
+
+            DialogResult = true;
+            Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                this,
+                $"Unable to save job.\n\n{ex.Message}",
+                "New Job",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
-    private void Cancel_Click(object sender, RoutedEventArgs e)
+    private void Cancel_Click(
+        object sender,
+        RoutedEventArgs e)
     {
         DialogResult = false;
         Close();

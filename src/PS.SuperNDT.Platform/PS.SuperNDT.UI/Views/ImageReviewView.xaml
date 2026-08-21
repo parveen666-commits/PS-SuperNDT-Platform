@@ -791,7 +791,7 @@
 
         </Border>
 
-        <!-- REVIEW MANAGEMENT -->
+        <!-- REVIEW MANAGEMENT + HISTORY -->
 
         <Border Grid.Row="4"
                 Margin="10,0,10,10"
@@ -804,9 +804,13 @@
             <Grid>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="38"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="42"/>
+                    <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
+
+                <!-- REVIEW MANAGEMENT HEADER -->
 
                 <Grid Grid.Row="0">
 
@@ -830,8 +834,10 @@
 
                 </Grid>
 
+                <!-- REVIEW MANAGEMENT -->
+
                 <DataGrid Grid.Row="1"
-                          Margin="0,4,0,0"
+                          Margin="0,4,0,8"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
                           ItemsSource="{Binding Reviews}"
@@ -890,6 +896,83 @@
                         <DataGridTextColumn Header="Review Date"
                                             Binding="{Binding ReviewDate}"
                                             Width="150"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+                <!-- REVIEW HISTORY HEADER -->
+
+                <Border Grid.Row="2"
+                        Margin="0,4,0,0"
+                        Padding="8,0"
+                        Background="#20262D"
+                        BorderBrush="#39434F"
+                        BorderThickness="1">
+
+                    <Grid>
+
+                        <TextBlock Text="REVIEW HISTORY"
+                                   Foreground="White"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center">
+
+                            <TextBlock Foreground="#8F9AA8"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding ReviewHistory.Count,
+                                              StringFormat='History: {0}'}"/>
+
+                            <Button Content="REFRESH"
+                                    Command="{Binding RefreshHistoryCommand}"
+                                    Style="{StaticResource ActionButton}"
+                                    Height="28"
+                                    Margin="12,0,0,0"/>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                </Border>
+
+                <!-- REVIEW HISTORY -->
+
+                <DataGrid Grid.Row="3"
+                          Margin="0,4,0,0"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          ItemsSource="{Binding ReviewHistory}">
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Date / Time"
+                                            Binding="{Binding Timestamp,
+                                                      StringFormat={}{0:dd-MMM-yyyy HH:mm:ss}}"
+                                            Width="155"/>
+
+                        <DataGridTextColumn Header="User"
+                                            Binding="{Binding Username}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Action"
+                                            Binding="{Binding Action}"
+                                            Width="135"/>
+
+                        <DataGridTextColumn Header="Module"
+                                            Binding="{Binding Module}"
+                                            Width="110"/>
+
+                        <DataGridTextColumn Header="Description"
+                                            Binding="{Binding Description}"
+                                            Width="*"/>
+
+                        <DataGridTextColumn Header="Machine"
+                                            Binding="{Binding MachineName}"
+                                            Width="140"/>
 
                     </DataGrid.Columns>
 
