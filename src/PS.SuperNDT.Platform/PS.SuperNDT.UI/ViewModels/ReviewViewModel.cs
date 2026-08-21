@@ -333,43 +333,21 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             Images.Clear();
             FilteredImages.Clear();
 
-            var currentJob =
-                CurrentJobService.Instance.CurrentJob;
-
-            if (currentJob == null)
-            {
-                SelectedImage = null;
-
-                RulerTicks.Clear();
-
-                OnPropertyChanged(
-                    nameof(TotalImages));
-
-                OnPropertyChanged(
-                    nameof(PendingImages));
-
-                OnPropertyChanged(
-                    nameof(AcceptedImages));
-
-                OnPropertyChanged(
-                    nameof(RejectedImages));
-
-                HasPreviousImage = false;
-                HasNextImage = false;
-
-                ReviewMessage =
-                    "No active job selected.";
-
-                return;
-            }
-
+            /*
+             * IMPORTANT:
+             * Review must not depend only on CurrentJob.
+             * All captured shots are persisted in the Images table
+             * with their JobId, so Review loads the complete history.
+             */
             var records =
                 _imageService
-                    .GetByJob(currentJob.Id)
+                    .GetAll()
                     .OrderBy(
-                        image => image.ShotNumber)
-                    .ThenBy(
                         image => image.CapturedOn)
+                    .ThenBy(
+                        image => image.JobNumber)
+                    .ThenBy(
+                        image => image.ShotNumber)
                     .ToList();
 
             foreach (var record in records)
@@ -393,15 +371,20 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             if (Images.Count == 0)
             {
-                ReviewMessage =
-                    $"No images found for Job {currentJob.JobNumber}.";
+                SelectedImage = null;
 
                 RulerTicks.Clear();
+
+                HasPreviousImage = false;
+                HasNextImage = false;
+
+                ReviewMessage =
+                    "No saved images found.";
             }
             else
             {
                 ReviewMessage =
-                    $"Loaded {Images.Count} image(s) for Job {currentJob.JobNumber}.";
+                    $"Loaded {Images.Count} saved image(s) from all jobs.";
 
                 UpdateRuler();
             }
@@ -438,6 +421,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         object? sender,
         JobModel? job)
     {
+        /*
+         * Current job changes should refresh the review history,
+         * but Review itself is not restricted to that job.
+         */
         LoadImages();
     }
 
@@ -543,9 +530,11 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                                 StringComparison.OrdinalIgnoreCase);
                 })
                 .OrderBy(
-                    image => image.ShotNumber)
-                .ThenBy(
                     image => image.CapturedOn)
+                .ThenBy(
+                    image => image.JobNumber)
+                .ThenBy(
+                    image => image.ShotNumber)
                 .ToList();
 
         FilteredImages.Clear();
@@ -900,6 +889,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
 
         ReviewMessage =
+            $"Job {_selectedImage.JobNumber}  |  " +
             $"Shot {_selectedImage.ShotNumber}/" +
             $"{_selectedImage.TotalShots}  |  " +
             $"{_selectedImage.ShotStartPosition:0}-" +

@@ -10,14 +10,24 @@ namespace PS.SuperNDT.UI.Services;
 
 public sealed class ImageService
 {
+    public static event EventHandler<ImageRecordModel>? ImageSaved;
+
+    public ImageService()
+    {
+    }
+
     public void Save(ImageRecordModel image)
     {
+        ArgumentNullException.ThrowIfNull(image);
+
         EnsureImageSchema();
 
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
         var existing =
-            db.Images.FirstOrDefault(x => x.Id == image.Id);
+            db.Images.FirstOrDefault(
+                x => x.Id == image.Id);
 
         if (existing == null)
         {
@@ -26,75 +36,95 @@ public sealed class ImageService
         else
         {
             db.Entry(existing)
-              .CurrentValues
-              .SetValues(image);
+                .CurrentValues
+                .SetValues(image);
         }
 
         db.SaveChanges();
+
+        ImageSaved?.Invoke(
+            this,
+            image);
     }
 
     public List<ImageRecordModel> GetAll()
     {
         EnsureImageSchema();
 
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
         return db.Images
-                 .AsNoTracking()
-                 .OrderByDescending(x => x.CapturedOn)
-                 .ToList();
+            .AsNoTracking()
+            .OrderByDescending(
+                x => x.CapturedOn)
+            .ToList();
     }
 
-    public List<ImageRecordModel> GetByJob(Guid jobId)
+    public List<ImageRecordModel> GetByJob(
+        Guid jobId)
     {
         EnsureImageSchema();
 
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
         return db.Images
-                 .AsNoTracking()
-                 .Where(x => x.JobId == jobId)
-                 .OrderByDescending(x => x.CapturedOn)
-                 .ToList();
+            .AsNoTracking()
+            .Where(
+                x => x.JobId == jobId)
+            .OrderByDescending(
+                x => x.CapturedOn)
+            .ToList();
     }
 
-    public int GetImageCount(Guid jobId)
+    public int GetImageCount(
+        Guid jobId)
     {
         EnsureImageSchema();
 
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
-        return db.Images.Count(x => x.JobId == jobId);
+        return db.Images.Count(
+            x => x.JobId == jobId);
     }
 
     public int GetTotalImageCount()
     {
         EnsureImageSchema();
 
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
         return db.Images.Count();
     }
 
-    public ImageRecordModel? Get(Guid id)
+    public ImageRecordModel? Get(
+        Guid id)
     {
         EnsureImageSchema();
 
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
         return db.Images
-                 .AsNoTracking()
-                 .FirstOrDefault(x => x.Id == id);
+            .AsNoTracking()
+            .FirstOrDefault(
+                x => x.Id == id);
     }
 
-    public void Delete(Guid id)
+    public void Delete(
+        Guid id)
     {
         EnsureImageSchema();
 
-        using var db = new SuperNDTDbContext();
+        using var db =
+            new SuperNDTDbContext();
 
         var image =
-            db.Images.FirstOrDefault(x => x.Id == id);
+            db.Images.FirstOrDefault(
+                x => x.Id == id);
 
         if (image == null)
         {
@@ -201,7 +231,8 @@ public sealed class ImageService
 
         alterCommand.CommandText =
             $"ALTER TABLE Images " +
-            $"ADD COLUMN \"{columnName}\" {columnDefinition};";
+            $"ADD COLUMN \"{columnName}\" " +
+            $"{columnDefinition};";
 
         alterCommand.ExecuteNonQuery();
     }
