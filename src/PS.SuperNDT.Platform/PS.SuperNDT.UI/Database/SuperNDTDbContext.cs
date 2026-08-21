@@ -13,6 +13,7 @@ public sealed class SuperNDTDbContext : DbContext
 
     public DbSet<CustomerModel> Customers => Set<CustomerModel>();
 
+    public DbSet<DefectModel> Defects => Set<DefectModel>();
 
     protected override void OnConfiguring(
         DbContextOptionsBuilder optionsBuilder)
@@ -24,7 +25,6 @@ public sealed class SuperNDTDbContext : DbContext
         }
     }
 
-
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
@@ -33,85 +33,126 @@ public sealed class SuperNDTDbContext : DbContext
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.JobNumber)
-                  .HasMaxLength(100);
+                .HasMaxLength(100);
 
             entity.Property(e => e.Customer)
-                  .HasMaxLength(200);
+                .HasMaxLength(200);
 
             entity.Property(e => e.Project)
-                  .HasMaxLength(200);
+                .HasMaxLength(200);
 
             entity.Property(e => e.Component)
-                  .HasMaxLength(200);
+                .HasMaxLength(200);
 
             entity.Property(e => e.WeldNumber)
-                  .HasMaxLength(100);
+                .HasMaxLength(100);
 
             entity.Property(e => e.Operator)
-                  .HasMaxLength(100);
+                .HasMaxLength(100);
 
             entity.Property(e => e.Procedure)
-                  .HasMaxLength(200);
+                .HasMaxLength(200);
 
             entity.Property(e => e.Material)
-                  .HasMaxLength(100);
+                .HasMaxLength(100);
 
             entity.Property(e => e.Remark)
-                  .HasMaxLength(1000);
+                .HasMaxLength(1000);
         });
-
 
         modelBuilder.Entity<ImageRecordModel>(entity =>
         {
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.JobNumber)
-                  .HasMaxLength(100);
+                .HasMaxLength(100);
 
             entity.Property(e => e.Operator)
-                  .HasMaxLength(100);
+                .HasMaxLength(100);
 
             entity.Property(e => e.FileName)
-                  .HasMaxLength(300);
+                .HasMaxLength(300);
 
             entity.Property(e => e.FilePath)
-                  .HasMaxLength(500);
+                .HasMaxLength(500);
 
             entity.Property(e => e.DetectorName)
-                  .HasMaxLength(100);
+                .HasMaxLength(100);
 
             entity.Property(e => e.Remarks)
-                  .HasMaxLength(1000);
+                .HasMaxLength(1000);
         });
 
+        modelBuilder.Entity<DefectModel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.DefectType)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(2000);
+
+            entity.Property(e => e.Severity)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Status)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.UpdatedBy)
+                .HasMaxLength(100);
+        });
 
         base.OnModelCreating(modelBuilder);
     }
-
 
     public void Initialize()
     {
         Database.EnsureCreated();
 
         EnsureImageTableSchema();
-    }
 
+        EnsureDefectTableSchema();
+    }
 
     private void EnsureImageTableSchema()
     {
         var requiredColumns =
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            new Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase)
             {
-                ["ShotNumber"] = "INTEGER NOT NULL DEFAULT 0",
-                ["TotalShots"] = "INTEGER NOT NULL DEFAULT 0",
-                ["PipeLength"] = "REAL NOT NULL DEFAULT 0",
-                ["ShotSize"] = "REAL NOT NULL DEFAULT 0",
-                ["Overlap"] = "REAL NOT NULL DEFAULT 0",
-                ["ShotStartPosition"] = "REAL NOT NULL DEFAULT 0",
-                ["ShotEndPosition"] = "REAL NOT NULL DEFAULT 0",
-                ["ReviewStatus"] = "TEXT NOT NULL DEFAULT 'PENDING'",
-                ["ReviewedBy"] = "TEXT NOT NULL DEFAULT ''",
-                ["ReviewedOn"] = "TEXT NULL"
+                ["ShotNumber"] =
+                    "INTEGER NOT NULL DEFAULT 0",
+
+                ["TotalShots"] =
+                    "INTEGER NOT NULL DEFAULT 0",
+
+                ["PipeLength"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["ShotSize"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["Overlap"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["ShotStartPosition"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["ShotEndPosition"] =
+                    "REAL NOT NULL DEFAULT 0",
+
+                ["ReviewStatus"] =
+                    "TEXT NOT NULL DEFAULT 'PENDING'",
+
+                ["ReviewedBy"] =
+                    "TEXT NOT NULL DEFAULT ''",
+
+                ["ReviewedOn"] =
+                    "TEXT NULL"
             };
 
         var connection =
@@ -149,7 +190,8 @@ public sealed class SuperNDTDbContext : DbContext
 
             foreach (var column in requiredColumns)
             {
-                if (existingColumns.Contains(column.Key))
+                if (existingColumns.Contains(
+                    column.Key))
                 {
                     continue;
                 }
@@ -158,10 +200,69 @@ public sealed class SuperNDTDbContext : DbContext
                     connection.CreateCommand();
 
                 alterCommand.CommandText =
-                    $"ALTER TABLE Images ADD COLUMN [{column.Key}] {column.Value};";
+                    $"ALTER TABLE Images " +
+                    $"ADD COLUMN [{column.Key}] " +
+                    $"{column.Value};";
 
                 alterCommand.ExecuteNonQuery();
             }
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                connection.Close();
+            }
+        }
+    }
+
+    private void EnsureDefectTableSchema()
+    {
+        var connection =
+            Database.GetDbConnection();
+
+        bool shouldClose =
+            connection.State !=
+            System.Data.ConnectionState.Open;
+
+        if (shouldClose)
+        {
+            connection.Open();
+        }
+
+        try
+        {
+            using var command =
+                connection.CreateCommand();
+
+            command.CommandText =
+                """
+                CREATE TABLE IF NOT EXISTS Defects
+                (
+                    Id TEXT NOT NULL PRIMARY KEY,
+                    ImageId TEXT NOT NULL,
+                    JobId TEXT NOT NULL,
+                    ShotNumber INTEGER NOT NULL DEFAULT 0,
+                    DefectType TEXT NOT NULL DEFAULT '',
+                    Description TEXT NOT NULL DEFAULT '',
+                    X REAL NOT NULL DEFAULT 0,
+                    Y REAL NOT NULL DEFAULT 0,
+                    Width REAL NOT NULL DEFAULT 0,
+                    Height REAL NOT NULL DEFAULT 0,
+                    PipePosition REAL NOT NULL DEFAULT 0,
+                    PipeLength REAL NOT NULL DEFAULT 0,
+                    ShotStartPosition REAL NOT NULL DEFAULT 0,
+                    ShotEndPosition REAL NOT NULL DEFAULT 0,
+                    Severity TEXT NOT NULL DEFAULT 'UNCLASSIFIED',
+                    Status TEXT NOT NULL DEFAULT 'OPEN',
+                    CreatedBy TEXT NOT NULL DEFAULT '',
+                    CreatedOn TEXT NOT NULL,
+                    UpdatedBy TEXT NOT NULL DEFAULT '',
+                    UpdatedOn TEXT NULL
+                );
+                """;
+
+            command.ExecuteNonQuery();
         }
         finally
         {
