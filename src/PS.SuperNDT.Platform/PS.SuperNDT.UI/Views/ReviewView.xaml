@@ -8,15 +8,32 @@
         <Style x:Key="ActionButton"
                TargetType="Button">
 
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Margin" Value="3"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="Background" Value="#343B46"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#566170"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height"
+                    Value="34"/>
+
+            <Setter Property="Margin"
+                    Value="3"/>
+
+            <Setter Property="Padding"
+                    Value="10,0"/>
+
+            <Setter Property="Background"
+                    Value="#343B46"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#566170"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="FontSize"
+                    Value="11"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
 
         </Style>
 
@@ -24,8 +41,11 @@
         <Style x:Key="InfoLabel"
                TargetType="TextBlock">
 
-            <Setter Property="Foreground" Value="#8F9AAA"/>
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground"
+                    Value="#8F9AAA"/>
+
+            <Setter Property="FontSize"
+                    Value="9"/>
 
         </Style>
 
@@ -33,9 +53,14 @@
         <Style x:Key="InfoValue"
                TargetType="TextBlock">
 
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="FontSize"
+                    Value="13"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
 
         </Style>
 
@@ -43,54 +68,106 @@
         <Style x:Key="ReviewDataGrid"
                TargetType="DataGrid">
 
-            <Setter Property="Background" Value="#171B20"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#46505C"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="RowBackground" Value="#20252C"/>
-            <Setter Property="AlternatingRowBackground" Value="#272D35"/>
-            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#3A424D"/>
-            <Setter Property="VerticalGridLinesBrush" Value="#3A424D"/>
-            <Setter Property="RowHeight" Value="34"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Background"
+                    Value="#171B20"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#46505C"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="RowBackground"
+                    Value="#20252C"/>
+
+            <Setter Property="AlternatingRowBackground"
+                    Value="#272D35"/>
+
+            <Setter Property="GridLinesVisibility"
+                    Value="Horizontal"/>
+
+            <Setter Property="HorizontalGridLinesBrush"
+                    Value="#3A424D"/>
+
+            <Setter Property="VerticalGridLinesBrush"
+                    Value="#3A424D"/>
+
+            <Setter Property="RowHeight"
+                    Value="32"/>
+
+            <Setter Property="FontSize"
+                    Value="11"/>
+
+            <Setter Property="HeadersVisibility"
+                    Value="Column"/>
 
         </Style>
 
 
         <Style TargetType="DataGridColumnHeader">
 
-            <Setter Property="Background" Value="#343B46"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#4B5563"/>
-            <Setter Property="BorderThickness" Value="0,0,1,1"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Padding" Value="8,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background"
+                    Value="#343B46"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#4B5563"/>
+
+            <Setter Property="BorderThickness"
+                    Value="0,0,1,1"/>
+
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+
+            <Setter Property="FontSize"
+                    Value="10"/>
+
+            <Setter Property="Padding"
+                    Value="6,0"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Center"/>
+
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
 
         </Style>
 
 
         <Style TargetType="DataGridRow">
 
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#20252C"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="Background"
+                    Value="#20252C"/>
 
             <Style.Triggers>
 
-                <Trigger Property="IsSelected" Value="True">
+                <Trigger Property="IsSelected"
+                         Value="True">
 
-                    <Setter Property="Background" Value="#3D5872"/>
-                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Background"
+                            Value="#3D5872"/>
+
+                    <Setter Property="Foreground"
+                            Value="White"/>
 
                 </Trigger>
 
-                <Trigger Property="IsMouseOver" Value="True">
+                <Trigger Property="IsMouseOver"
+                         Value="True">
 
-                    <Setter Property="Background" Value="#344252"/>
-                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Background"
+                            Value="#344252"/>
+
+                    <Setter Property="Foreground"
+                            Value="White"/>
 
                 </Trigger>
 
@@ -101,32 +178,92 @@
 
         <Style TargetType="DataGridCell">
 
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="6,0"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="Background"
+                    Value="Transparent"/>
+
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+
+            <Setter Property="Padding"
+                    Value="5,0"/>
+
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
 
         </Style>
 
 
-        <Style TargetType="ComboBoxItem">
+        <!-- DARK COMBOBOX ITEM -->
 
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#252B33"/>
-            <Setter Property="Padding" Value="8,6"/>
+        <Style x:Key="StatusComboBoxItemStyle"
+               TargetType="ComboBoxItem">
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="Background"
+                    Value="#252B33"/>
+
+            <Setter Property="Padding"
+                    Value="10,8"/>
+
+            <Setter Property="Margin"
+                    Value="1"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Stretch"/>
+
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+
+            <Setter Property="FontSize"
+                    Value="11"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="#3D5872"/>
+
+                    <Setter Property="Foreground"
+                            Value="White"/>
+
+                </Trigger>
+
+                <Trigger Property="IsSelected"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="#4A6A8A"/>
+
+                    <Setter Property="Foreground"
+                            Value="White"/>
+
+                </Trigger>
+
+            </Style.Triggers>
 
         </Style>
 
     </UserControl.Resources>
 
 
-    <Grid Margin="14">
+    <Grid Margin="12">
 
         <Grid.RowDefinitions>
 
-            <RowDefinition Height="64"/>
-            <RowDefinition Height="58"/>
+            <RowDefinition Height="60"/>
+
+            <RowDefinition Height="54"/>
+
             <RowDefinition Height="*"/>
 
         </Grid.RowDefinitions>
@@ -137,17 +274,17 @@
         <Border Grid.Row="0"
                 Background="#252B33"
                 CornerRadius="8"
-                Padding="18,0">
+                Padding="16,0">
 
             <Grid>
 
                 <Grid.ColumnDefinitions>
 
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="80"/>
 
                 </Grid.ColumnDefinitions>
 
@@ -157,19 +294,18 @@
 
                     <TextBlock Text="PIPE IMAGE REVIEW"
                                Foreground="White"
-                               FontSize="22"
+                               FontSize="21"
                                FontWeight="Bold"/>
 
                     <TextBlock Text="{Binding ReviewMessage}"
                                Foreground="#9AA5B3"
-                               FontSize="11"
-                               Margin="0,3,0,0"/>
+                               FontSize="10"
+                               Margin="0,2,0,0"/>
 
                 </StackPanel>
 
 
                 <StackPanel Grid.Column="1"
-                            Margin="20,0"
                             VerticalAlignment="Center">
 
                     <TextBlock Text="TOTAL"
@@ -178,7 +314,7 @@
 
                     <TextBlock Text="{Binding TotalImages}"
                                Foreground="White"
-                               FontSize="18"
+                               FontSize="17"
                                FontWeight="Bold"
                                HorizontalAlignment="Center"/>
 
@@ -186,7 +322,6 @@
 
 
                 <StackPanel Grid.Column="2"
-                            Margin="20,0"
                             VerticalAlignment="Center">
 
                     <TextBlock Text="PENDING"
@@ -195,7 +330,7 @@
 
                     <TextBlock Text="{Binding PendingImages}"
                                Foreground="#FFD45A"
-                               FontSize="18"
+                               FontSize="17"
                                FontWeight="Bold"
                                HorizontalAlignment="Center"/>
 
@@ -203,7 +338,6 @@
 
 
                 <StackPanel Grid.Column="3"
-                            Margin="20,0"
                             VerticalAlignment="Center">
 
                     <TextBlock Text="ACCEPTED"
@@ -212,7 +346,7 @@
 
                     <TextBlock Text="{Binding AcceptedImages}"
                                Foreground="#55D66A"
-                               FontSize="18"
+                               FontSize="17"
                                FontWeight="Bold"
                                HorizontalAlignment="Center"/>
 
@@ -220,7 +354,6 @@
 
 
                 <StackPanel Grid.Column="4"
-                            Margin="20,0,0,0"
                             VerticalAlignment="Center">
 
                     <TextBlock Text="REJECTED"
@@ -229,7 +362,7 @@
 
                     <TextBlock Text="{Binding RejectedImages}"
                                Foreground="#FF6B6B"
-                               FontSize="18"
+                               FontSize="17"
                                FontWeight="Bold"
                                HorizontalAlignment="Center"/>
 
@@ -240,51 +373,142 @@
         </Border>
 
 
-        <!-- FILTER -->
+        <!-- FILTER / ACTION -->
 
         <Border Grid.Row="1"
                 Background="#252B33"
                 CornerRadius="8"
-                Margin="0,8,0,0"
-                Padding="10">
+                Margin="0,7,0,0"
+                Padding="8">
 
             <Grid>
 
                 <Grid.ColumnDefinitions>
 
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="170"/>
-                    <ColumnDefinition Width="105"/>
-                    <ColumnDefinition Width="105"/>
-                    <ColumnDefinition Width="105"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="82"/>
+                    <ColumnDefinition Width="82"/>
+                    <ColumnDefinition Width="82"/>
                     <ColumnDefinition Width="Auto"/>
 
                 </Grid.ColumnDefinitions>
 
 
+                <!-- SEARCH -->
+
                 <TextBox Grid.Column="0"
-                         Height="36"
-                         Margin="0,0,8,0"
-                         Padding="10,5"
+                         Height="34"
+                         Margin="0,0,6,0"
+                         Padding="9,4"
                          VerticalContentAlignment="Center"
                          Background="#171B20"
                          Foreground="White"
                          BorderBrush="#4A5563"
-                         FontSize="13"
+                         FontSize="12"
                          Text="{Binding SearchText,
-                                        UpdateSourceTrigger=PropertyChanged}"/>
+                                UpdateSourceTrigger=PropertyChanged}"/>
 
+
+                <!-- STATUS FILTER -->
 
                 <ComboBox Grid.Column="1"
-                          Height="36"
-                          Margin="0,0,8,0"
-                          Padding="8,4"
+                          Height="34"
+                          Margin="0,0,6,0"
+                          Padding="6,3"
                           Background="#171B20"
                           Foreground="White"
                           BorderBrush="#4A5563"
+                          BorderThickness="1"
                           ItemsSource="{Binding StatusFilterItems}"
-                          SelectedItem="{Binding ReviewStatusFilter}"/>
+                          SelectedItem="{Binding ReviewStatusFilter,
+                                               Mode=TwoWay}"
+                          SelectionChanged="ComboBox_SelectionChanged">
 
+                    <ComboBox.Resources>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}"
+                                         Color="#252B33"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
+                                         Color="#252B33"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
+                                         Color="White"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                         Color="#3D5872"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                         Color="White"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                                         Color="#3D5872"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                 Color="White"/>
+
+
+                        <Style TargetType="ComboBoxItem">
+
+                            <Setter Property="Foreground"
+                                    Value="White"/>
+
+                            <Setter Property="Background"
+                                    Value="#252B33"/>
+
+                            <Setter Property="Padding"
+                                    Value="10,8"/>
+
+                            <Setter Property="Margin"
+                                    Value="1"/>
+
+                            <Setter Property="HorizontalContentAlignment"
+                                    Value="Stretch"/>
+
+                            <Setter Property="VerticalContentAlignment"
+                                    Value="Center"/>
+
+                            <Setter Property="FontSize"
+                                    Value="11"/>
+
+                            <Setter Property="FontWeight"
+                                    Value="SemiBold"/>
+
+                            <Style.Triggers>
+
+                                <Trigger Property="IsMouseOver"
+                                         Value="True">
+
+                                    <Setter Property="Background"
+                                            Value="#3D5872"/>
+
+                                    <Setter Property="Foreground"
+                                            Value="White"/>
+
+                                </Trigger>
+
+                                <Trigger Property="IsSelected"
+                                         Value="True">
+
+                                    <Setter Property="Background"
+                                            Value="#4A6A8A"/>
+
+                                    <Setter Property="Foreground"
+                                            Value="White"/>
+
+                                </Trigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </ComboBox.Resources>
+
+                </ComboBox>
+
+
+                <!-- REFRESH -->
 
                 <Button Grid.Column="2"
                         Content="REFRESH"
@@ -292,11 +516,15 @@
                         Style="{StaticResource ActionButton}"/>
 
 
+                <!-- CLEAR -->
+
                 <Button Grid.Column="3"
                         Content="CLEAR"
                         Command="{Binding ClearFilterCommand}"
                         Style="{StaticResource ActionButton}"/>
 
+
+                <!-- OPEN -->
 
                 <Button Grid.Column="4"
                         Content="OPEN"
@@ -309,28 +537,28 @@
                 <StackPanel Grid.Column="5"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
-                            Margin="8,0,0,0">
+                            Margin="6,0,0,0">
 
                     <Button Content="−"
-                            Width="36"
+                            Width="34"
                             Command="{Binding ZoomOutCommand}"
                             Style="{StaticResource ActionButton}"/>
 
                     <TextBlock Text="{Binding ZoomLevel,
-                                              StringFormat={}{0:0.00}x}"
+                                      StringFormat={}{0:0.00}x}"
                                Foreground="White"
                                FontWeight="Bold"
-                               Width="55"
+                               Width="50"
                                TextAlignment="Center"
                                VerticalAlignment="Center"/>
 
                     <Button Content="+"
-                            Width="36"
+                            Width="34"
                             Command="{Binding ZoomInCommand}"
                             Style="{StaticResource ActionButton}"/>
 
                     <Button Content="RESET"
-                            Width="65"
+                            Width="58"
                             Command="{Binding ResetZoomCommand}"
                             Style="{StaticResource ActionButton}"/>
 
@@ -344,13 +572,13 @@
         <!-- MAIN -->
 
         <Grid Grid.Row="2"
-              Margin="0,10,0,0">
+              Margin="0,8,0,0">
 
             <Grid.ColumnDefinitions>
 
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="280"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="310"/>
+                <ColumnDefinition Width="290"/>
 
             </Grid.ColumnDefinitions>
 
@@ -360,16 +588,16 @@
             <Border Grid.Column="0"
                     Background="#252B33"
                     CornerRadius="8"
-                    Margin="0,0,10,0"
-                    Padding="8">
+                    Margin="0,0,8,0"
+                    Padding="7">
 
                 <Grid>
 
                     <Grid.RowDefinitions>
 
-                        <RowDefinition Height="34"/>
+                        <RowDefinition Height="32"/>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="48"/>
+                        <RowDefinition Height="44"/>
 
                     </Grid.RowDefinitions>
 
@@ -386,16 +614,15 @@
 
                         <TextBlock Text="SHOT LIST"
                                    Foreground="#C5CDD8"
-                                   FontSize="12"
+                                   FontSize="11"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"/>
 
-
                         <TextBlock Grid.Column="1"
                                    Text="{Binding TotalImages,
-                                                 StringFormat={}Shots: {0}}"
+                                          StringFormat={}Shots: {0}}"
                                    Foreground="#7F8B99"
-                                   FontSize="11"
+                                   FontSize="10"
                                    VerticalAlignment="Center"/>
 
                     </Grid>
@@ -409,21 +636,23 @@
                               SelectionMode="Single"
                               SelectionUnit="FullRow"
                               AlternationCount="2"
+                              CanUserResizeRows="False"
+                              CanUserSortColumns="False"
                               Style="{StaticResource ReviewDataGrid}">
 
                         <DataGrid.Columns>
 
                             <DataGridTextColumn Header="#"
                                                 Binding="{Binding ShotNumber}"
-                                                Width="45"/>
+                                                Width="42"/>
 
                             <DataGridTextColumn Header="POSITION"
                                                 Binding="{Binding ShotPosition}"
-                                                Width="110"/>
+                                                Width="*"/>
 
                             <DataGridTextColumn Header="STATUS"
                                                 Binding="{Binding ReviewStatus}"
-                                                Width="90"/>
+                                                Width="82"/>
 
                         </DataGrid.Columns>
 
@@ -460,26 +689,27 @@
             </Border>
 
 
-            <!-- PIPE IMAGE VIEWER -->
+            <!-- CENTER PIPE VIEWER -->
 
             <Border Grid.Column="1"
                     Background="#080A0D"
                     BorderBrush="#3F4854"
                     BorderThickness="1"
                     CornerRadius="8"
-                    Margin="0,0,10,0"
+                    Margin="0,0,8,0"
                     ClipToBounds="True">
 
                 <Grid ClipToBounds="True">
 
 
-                    <!-- IMAGE HEADER -->
+                    <!-- TOP BAR -->
 
                     <Border VerticalAlignment="Top"
                             Background="#252B33"
                             CornerRadius="8,8,0,0"
-                            Padding="12,8"
-                            Panel.ZIndex="10">
+                            Padding="10,6"
+                            Height="46"
+                            Panel.ZIndex="20">
 
                         <Grid>
 
@@ -495,22 +725,22 @@
                             <StackPanel>
 
                                 <TextBlock Text="{Binding SelectedImage.FileName,
-                                                          TargetNullValue=NO SHOT SELECTED}"
+                                    TargetNullValue=NO SHOT SELECTED}"
                                            Foreground="White"
-                                           FontSize="13"
+                                           FontSize="12"
                                            FontWeight="Bold"/>
 
                                 <TextBlock Text="{Binding SelectedImage.ShotPosition,
-                                                          TargetNullValue=—}"
+                                    TargetNullValue=—}"
                                            Foreground="#8F9AAA"
-                                           FontSize="11"/>
+                                           FontSize="10"/>
 
                             </StackPanel>
 
 
                             <Button Grid.Column="1"
                                     Content="◀"
-                                    Width="38"
+                                    Width="34"
                                     Command="{Binding PreviousImageCommand}"
                                     IsEnabled="{Binding HasPreviousImage}"
                                     Style="{StaticResource ActionButton}"/>
@@ -518,7 +748,7 @@
 
                             <Button Grid.Column="2"
                                     Content="▶"
-                                    Width="38"
+                                    Width="34"
                                     Command="{Binding NextImageCommand}"
                                     IsEnabled="{Binding HasNextImage}"
                                     Style="{StaticResource ActionButton}"/>
@@ -528,350 +758,209 @@
                     </Border>
 
 
-                    <!-- IMAGE + RULER VIEWPORT -->
+                    <!-- VIEWPORT -->
 
-                    <Grid Margin="0,48,0,44"
+                    <Grid x:Name="ImageViewport"
+                          Margin="0,46,0,62"
                           Background="#080A0D"
                           ClipToBounds="True">
 
-                        <Grid HorizontalAlignment="Center"
+
+                        <!-- PAN + ZOOM CONTAINER -->
+
+                        <Grid x:Name="ImagePanCanvas"
+                              HorizontalAlignment="Center"
                               VerticalAlignment="Center"
-                              ClipToBounds="True">
+                              Background="Transparent"
+                              ClipToBounds="False"
+                              RenderTransformOrigin="0.5,0.5">
+
+                            <Grid.RenderTransform>
+
+                                <TransformGroup>
+
+                                    <ScaleTransform
+                                        ScaleX="{Binding ZoomLevel}"
+                                        ScaleY="{Binding ZoomLevel}"/>
+
+                                    <TranslateTransform
+                                        x:Name="PanTransform"/>
+
+                                </TransformGroup>
+
+                            </Grid.RenderTransform>
+
 
                             <!-- IMAGE -->
 
                             <Image Source="{Binding DisplayImage}"
                                    Stretch="None"
                                    HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   RenderTransformOrigin="0.5,0.5">
-
-                                <Image.RenderTransform>
-
-                                    <ScaleTransform ScaleX="{Binding ZoomLevel}"
-                                                    ScaleY="{Binding ZoomLevel}"/>
-
-                                </Image.RenderTransform>
-
-                            </Image>
+                                   VerticalAlignment="Center"/>
 
 
-                            <!-- RULER OVERLAY -->
+                            <!-- DEFECT MARKING OVERLAY -->
+
+                            <Canvas x:Name="DefectOverlayCanvas"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Background="Transparent"
+                                    IsHitTestVisible="False"
+                                    Panel.ZIndex="10">
+
+                                <Rectangle x:Name="DefectRectangle"
+                                           Visibility="Collapsed"
+                                           Stroke="#FF4D4D"
+                                           StrokeThickness="2"
+                                           Fill="#33FF4D4D"
+                                           RadiusX="1"
+                                           RadiusY="1"/>
+
+                            </Canvas>
+
+
+                            <!-- RULER -->
 
                             <Border VerticalAlignment="Bottom"
-                                    Height="64"
-                                    Background="#D90B0D10"
+                                    Height="58"
+                                    MinWidth="300"
+                                    Background="#E60B0D10"
                                     BorderBrush="#65707D"
                                     BorderThickness="0,1,0,0"
-                                    Padding="10,5"
-                                    IsHitTestVisible="False">
+                                    Padding="8,4"
+                                    IsHitTestVisible="False"
+                                    Panel.ZIndex="5">
 
                                 <Grid>
 
                                     <Grid.RowDefinitions>
 
-                                        <RowDefinition Height="22"/>
-                                        <RowDefinition Height="25"/>
+                                        <RowDefinition Height="18"/>
+                                        <RowDefinition Height="30"/>
 
                                     </Grid.RowDefinitions>
 
-
-                                    <!-- RULER LINE -->
-
-                                    <Border Grid.Row="1"
-                                            Height="2"
-                                            Background="#D8DEE7"
-                                            VerticalAlignment="Top"
-                                            Margin="0,8,0,0"/>
-
-
-                                    <!-- 10 MM TICKS -->
-
-                                    <UniformGrid Grid.Row="1"
-                                                 Rows="1"
-                                                 Columns="31"
-                                                 VerticalAlignment="Top"
-                                                 Margin="0,0,0,0">
-
-                                        <Rectangle Width="1"
-                                                   Height="8"
-                                                   Fill="#D8DEE7"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="11"
-                                                   Fill="#FFFFFF"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="11"
-                                                   Fill="#FFFFFF"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="11"
-                                                   Fill="#FFFFFF"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="11"
-                                                   Fill="#FFFFFF"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="11"
-                                                   Fill="#FFFFFF"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="5"
-                                                   Fill="#9CA7B5"
-                                                   HorizontalAlignment="Left"/>
-
-                                        <Rectangle Width="1"
-                                                   Height="11"
-                                                   Fill="#FFFFFF"
-                                                   HorizontalAlignment="Left"/>
-
-                                    </UniformGrid>
-
-
-                                    <!-- LABELS -->
 
                                     <Grid Grid.Row="0">
 
                                         <Grid.ColumnDefinitions>
 
+                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
 
                                         </Grid.ColumnDefinitions>
 
 
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding SelectedImage.ShotStartPosition,
-                                                                  StringFormat={}{0:0} mm}"
-                                                   Foreground="White"
-                                                   FontSize="10"
-                                                   FontWeight="Bold"/>
-
-
-                                        <TextBlock Grid.Column="1"
-                                                   Text="50"
-                                                   Foreground="#D8DEE7"
-                                                   FontSize="9"
-                                                   HorizontalAlignment="Center"/>
-
-
-                                        <TextBlock Grid.Column="2"
-                                                   Text="100"
-                                                   Foreground="#D8DEE7"
-                                                   FontSize="9"
-                                                   HorizontalAlignment="Center"/>
-
-
-                                        <TextBlock Grid.Column="3"
-                                                   Text="150"
-                                                   Foreground="#D8DEE7"
-                                                   FontSize="9"
-                                                   HorizontalAlignment="Center"/>
-
-
-                                        <TextBlock Grid.Column="4"
-                                                   Text="200"
-                                                   Foreground="#D8DEE7"
-                                                   FontSize="9"
-                                                   HorizontalAlignment="Center"/>
-
-
-                                        <TextBlock Grid.Column="5"
-                                                   Text="250"
-                                                   Foreground="#D8DEE7"
-                                                   FontSize="9"
-                                                   HorizontalAlignment="Center"/>
-
-
-                                        <TextBlock Grid.Column="6"
-                                                   Text="{Binding SelectedImage.ShotEndPosition,
-                                                                  StringFormat={}{0:0} mm}"
+                                        <TextBlock Text="{Binding SelectedImage.ShotStartPosition,
+                                            StringFormat={}{0:0} mm}"
                                                    Foreground="White"
                                                    FontSize="10"
                                                    FontWeight="Bold"
-                                                   HorizontalAlignment="Right"/>
+                                                   VerticalAlignment="Center"/>
+
+
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding SelectedImage.ShotEndPosition,
+                                                   StringFormat={}{0:0} mm}"
+                                                   Foreground="White"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
 
                                     </Grid>
+
+
+                                    <ItemsControl Grid.Row="1"
+                                                  ItemsSource="{Binding RulerTicks}"
+                                                  HorizontalContentAlignment="Stretch">
+
+                                        <ItemsControl.ItemsPanel>
+
+                                            <ItemsPanelTemplate>
+
+                                                <UniformGrid Rows="1"/>
+
+                                            </ItemsPanelTemplate>
+
+                                        </ItemsControl.ItemsPanel>
+
+
+                                        <ItemsControl.ItemTemplate>
+
+                                            <DataTemplate>
+
+                                                <Grid>
+
+                                                    <Border Height="2"
+                                                            Background="#D8DEE7"
+                                                            VerticalAlignment="Top"
+                                                            Margin="0,7,0,0"/>
+
+
+                                                    <Rectangle Width="1"
+                                                               Fill="#D8DEE7"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Top">
+
+                                                        <Rectangle.Style>
+
+                                                            <Style TargetType="Rectangle">
+
+                                                                <Setter Property="Height"
+                                                                        Value="8"/>
+
+                                                                <Style.Triggers>
+
+                                                                    <DataTrigger Binding="{Binding IsMajor}"
+                                                                                 Value="True">
+
+                                                                        <Setter Property="Height"
+                                                                                Value="16"/>
+
+                                                                    </DataTrigger>
+
+                                                                </Style.Triggers>
+
+                                                            </Style>
+
+                                                        </Rectangle.Style>
+
+                                                    </Rectangle>
+
+
+                                                    <TextBlock Text="{Binding Label}"
+                                                               Foreground="White"
+                                                               FontSize="9"
+                                                               FontWeight="Bold"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Bottom"/>
+
+                                                </Grid>
+
+                                            </DataTemplate>
+
+                                        </ItemsControl.ItemTemplate>
+
+                                    </ItemsControl>
 
                                 </Grid>
 
                             </Border>
-
-
-                            <!-- NO IMAGE -->
-
-                            <TextBlock Text="NO IMAGE SELECTED"
-                                       Foreground="#65707D"
-                                       FontSize="20"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center">
-
-                                <TextBlock.Style>
-
-                                    <Style TargetType="TextBlock">
-
-                                        <Setter Property="Visibility"
-                                                Value="Collapsed"/>
-
-                                        <Style.Triggers>
-
-                                            <DataTrigger Binding="{Binding SelectedImage}"
-                                                         Value="{x:Null}">
-
-                                                <Setter Property="Visibility"
-                                                        Value="Visible"/>
-
-                                            </DataTrigger>
-
-                                        </Style.Triggers>
-
-                                    </Style>
-
-                                </TextBlock.Style>
-
-                            </TextBlock>
 
                         </Grid>
 
                     </Grid>
 
 
-                    <!-- FOOTER -->
+                    <!-- BOTTOM STATUS -->
 
                     <Border VerticalAlignment="Bottom"
-                            Background="#252B33"
-                            CornerRadius="0,0,8,8"
-                            Padding="12,7"
-                            Panel.ZIndex="10">
+                            Height="32"
+                            Background="#171B20"
+                            BorderBrush="#343B46"
+                            BorderThickness="0,1,0,0"
+                            Padding="10,0">
 
                         <Grid>
 
@@ -880,29 +969,41 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
 
                             </Grid.ColumnDefinitions>
 
 
-                            <TextBlock Text="{Binding ReviewMessage}"
-                                       Foreground="#9AA5B3"
-                                       FontSize="11"
+                            <TextBlock Text="RULER: 10 mm minor / 50 mm major"
+                                       Foreground="#7F8B99"
+                                       FontSize="9"
                                        VerticalAlignment="Center"/>
 
 
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding SelectedImage.ShotNumber,
-                                                     StringFormat={}SHOT {0}}"
-                                       Foreground="White"
-                                       FontWeight="Bold"
-                                       Margin="10,0"
+                                       Text="{Binding SelectedImage.ShotSize,
+                                       StringFormat={}SHOT {0:0} mm}"
+                                       Foreground="#C5CDD8"
+                                       FontSize="9"
+                                       Margin="12,0"
                                        VerticalAlignment="Center"/>
 
 
                             <TextBlock Grid.Column="2"
-                                       Text="{Binding SelectedImage.TotalShots,
-                                                     StringFormat={}/ {0}}"
-                                       Foreground="#8F9AAA"
+                                       Text="{Binding SelectedImage.Overlap,
+                                       StringFormat={}OVERLAP {0:0} mm}"
+                                       Foreground="#C5CDD8"
+                                       FontSize="9"
+                                       Margin="12,0"
+                                       VerticalAlignment="Center"/>
+
+
+                            <TextBlock Grid.Column="3"
+                                       Text="{Binding ZoomLevel,
+                                       StringFormat={}ZOOM {0:0.00}x}"
+                                       Foreground="#C5CDD8"
+                                       FontSize="9"
+                                       Margin="12,0,0,0"
                                        VerticalAlignment="Center"/>
 
                         </Grid>
@@ -919,319 +1020,278 @@
             <Border Grid.Column="2"
                     Background="#252B33"
                     CornerRadius="8"
-                    Padding="12">
+                    Padding="10">
 
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid>
 
-                    <StackPanel>
+                    <Grid.RowDefinitions>
 
-                        <TextBlock Text="SHOT DETAILS"
-                                   Foreground="#C5CDD8"
-                                   FontSize="12"
-                                   FontWeight="Bold"
-                                   Margin="2,0,0,10"/>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="44"/>
 
+                    </Grid.RowDefinitions>
 
-                        <Border Background="#20252C"
-                                CornerRadius="6"
-                                Padding="10">
 
-                            <Grid>
+                    <TextBlock Grid.Row="0"
+                               Text="SHOT DETAILS"
+                               Foreground="#C5CDD8"
+                               FontSize="11"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
 
-                                <Grid.ColumnDefinitions>
 
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
+                    <Grid Grid.Row="1">
 
-                                </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
 
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="26"/>
 
-                                <StackPanel>
+                        </Grid.RowDefinitions>
 
-                                    <TextBlock Text="SHOT"
-                                               Style="{StaticResource InfoLabel}"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.ShotNumber,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
+                        <TextBlock Grid.Row="0"
+                                   Text="FILE"
+                                   Style="{StaticResource InfoLabel}"/>
 
+                        <TextBlock Grid.Row="0"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.FileName,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"
+                                   FontSize="11"/>
 
-                                    <TextBlock Text="TOTAL SHOTS"
-                                               Style="{StaticResource InfoLabel}"
-                                               Margin="0,8,0,0"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.TotalShots,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
+                        <TextBlock Grid.Row="1"
+                                   Text="SHOT"
+                                   Style="{StaticResource InfoLabel}"/>
 
+                        <TextBlock Grid.Row="1"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ShotNumber,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                                    <TextBlock Text="START"
-                                               Style="{StaticResource InfoLabel}"
-                                               Margin="0,8,0,0"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.ShotStartPosition,
-                                                              StringFormat={}{0:0} mm,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
+                        <TextBlock Grid.Row="2"
+                                   Text="TOTAL SHOTS"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                </StackPanel>
+                        <TextBlock Grid.Row="2"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.TotalShots,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"/>
 
 
-                                <StackPanel Grid.Column="1">
+                        <TextBlock Grid.Row="3"
+                                   Text="POSITION"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                    <TextBlock Text="END"
-                                               Style="{StaticResource InfoLabel}"/>
+                        <TextBlock Grid.Row="3"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ShotPosition,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"
+                                   FontSize="11"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.ShotEndPosition,
-                                                              StringFormat={}{0:0} mm,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
 
+                        <TextBlock Grid.Row="4"
+                                   Text="START"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                    <TextBlock Text="SHOT SIZE"
-                                               Style="{StaticResource InfoLabel}"
-                                               Margin="0,8,0,0"/>
+                        <TextBlock Grid.Row="4"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ShotStartPosition,
+                                          StringFormat={}{0:0} mm}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.ShotSize,
-                                                              StringFormat={}{0:0} mm,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
 
+                        <TextBlock Grid.Row="5"
+                                   Text="END"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                    <TextBlock Text="OVERLAP"
-                                               Style="{StaticResource InfoLabel}"
-                                               Margin="0,8,0,0"/>
+                        <TextBlock Grid.Row="5"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ShotEndPosition,
+                                          StringFormat={}{0:0} mm}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.Overlap,
-                                                              StringFormat={}{0:0} mm,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
 
-                                </StackPanel>
+                        <TextBlock Grid.Row="6"
+                                   Text="SHOT SIZE"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                            </Grid>
+                        <TextBlock Grid.Row="6"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ShotSize,
+                                          StringFormat={}{0:0} mm}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                        </Border>
 
+                        <TextBlock Grid.Row="7"
+                                   Text="OVERLAP"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                        <Border Background="#20252C"
-                                CornerRadius="6"
-                                Padding="10"
-                                Margin="0,8,0,0">
+                        <TextBlock Grid.Row="7"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.Overlap,
+                                          StringFormat={}{0:0} mm}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                            <Grid>
 
-                                <Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="8"
+                                   Text="KV"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
+                        <TextBlock Grid.Row="8"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.KV,
+                                          StringFormat={}{0:0.0}}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                                </Grid.ColumnDefinitions>
 
+                        <TextBlock Grid.Row="9"
+                                   Text="MA"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                <StackPanel>
+                        <TextBlock Grid.Row="9"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.MA,
+                                          StringFormat={}{0:0.0}}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                                    <TextBlock Text="kV"
-                                               Style="{StaticResource InfoLabel}"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.KV,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
+                        <TextBlock Grid.Row="10"
+                                   Text="EXPOSURE"
+                                   Style="{StaticResource InfoLabel}"/>
 
+                        <TextBlock Grid.Row="10"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ExposureTime,
+                                          StringFormat={}{0:0.00} s}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                                    <TextBlock Text="mA"
-                                               Style="{StaticResource InfoLabel}"
-                                               Margin="0,8,0,0"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.MA,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
+                        <TextBlock Grid.Row="11"
+                                   Text="FRAME"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                </StackPanel>
+                        <TextBlock Grid.Row="11"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.FrameNumber,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"/>
 
 
-                                <StackPanel Grid.Column="1">
+                        <TextBlock Grid.Row="12"
+                                   Text="JOB"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                    <TextBlock Text="EXPOSURE"
-                                               Style="{StaticResource InfoLabel}"/>
+                        <TextBlock Grid.Row="12"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.JobNumber,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"
+                                   FontSize="11"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.ExposureTime,
-                                                              StringFormat={}{0:0.##} s,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
 
+                        <TextBlock Grid.Row="13"
+                                   Text="OPERATOR"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                    <TextBlock Text="FRAME"
-                                               Style="{StaticResource InfoLabel}"
-                                               Margin="0,8,0,0"/>
+                        <TextBlock Grid.Row="13"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.Operator,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"
+                                   FontSize="11"/>
 
-                                    <TextBlock Text="{Binding SelectedImage.FrameNumber,
-                                                              TargetNullValue=—}"
-                                               Style="{StaticResource InfoValue}"/>
 
-                                </StackPanel>
+                        <TextBlock Grid.Row="14"
+                                   Text="DETECTOR"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                            </Grid>
+                        <TextBlock Grid.Row="14"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.DetectorName,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"
+                                   FontSize="11"/>
 
-                        </Border>
 
+                        <TextBlock Grid.Row="15"
+                                   Text="STATUS"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                        <Border Background="#20252C"
-                                CornerRadius="6"
-                                Padding="10"
-                                Margin="0,8,0,0">
+                        <TextBlock Grid.Row="15"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ReviewStatus,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"/>
 
-                            <StackPanel>
 
-                                <TextBlock Text="JOB"
-                                           Style="{StaticResource InfoLabel}"/>
+                        <TextBlock Grid.Row="16"
+                                   Text="REVIEWED BY"
+                                   Style="{StaticResource InfoLabel}"/>
 
-                                <TextBlock Text="{Binding SelectedImage.JobNumber,
-                                                          TargetNullValue=—}"
-                                           Style="{StaticResource InfoValue}"/>
+                        <TextBlock Grid.Row="16"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding SelectedImage.ReviewedBy,
+                                          TargetNullValue=—}"
+                                   Style="{StaticResource InfoValue}"
+                                   FontSize="10"/>
 
+                    </Grid>
 
-                                <TextBlock Text="OPERATOR"
-                                           Style="{StaticResource InfoLabel}"
-                                           Margin="0,8,0,0"/>
 
-                                <TextBlock Text="{Binding SelectedImage.Operator,
-                                                          TargetNullValue=—}"
-                                           Style="{StaticResource InfoValue}"/>
+                    <Grid Grid.Row="2">
 
+                        <Grid.ColumnDefinitions>
 
-                                <TextBlock Text="DETECTOR"
-                                           Style="{StaticResource InfoLabel}"
-                                           Margin="0,8,0,0"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
 
-                                <TextBlock Text="{Binding SelectedImage.DetectorName,
-                                                          TargetNullValue=—}"
-                                           Style="{StaticResource InfoValue}"/>
+                        </Grid.ColumnDefinitions>
 
 
-                                <TextBlock Text="FILE"
-                                           Style="{StaticResource InfoLabel}"
-                                           Margin="0,8,0,0"/>
-
-                                <TextBlock Text="{Binding SelectedImage.FileName,
-                                                          TargetNullValue=—}"
-                                           Style="{StaticResource InfoValue}"
-                                           TextTrimming="CharacterEllipsis"/>
-
-                            </StackPanel>
-
-                        </Border>
-
-
-                        <Border Background="#20252C"
-                                CornerRadius="6"
-                                Padding="10"
-                                Margin="0,8,0,0">
-
-                            <StackPanel>
-
-                                <TextBlock Text="REVIEW STATUS"
-                                           Style="{StaticResource InfoLabel}"/>
-
-                                <TextBlock Text="{Binding SelectedImage.ReviewStatus,
-                                                          TargetNullValue=PENDING}"
-                                           Foreground="White"
-                                           FontSize="20"
-                                           FontWeight="Bold"
-                                           Margin="0,4,0,6"/>
-
-
-                                <TextBlock Text="{Binding SelectedImage.ReviewedBy,
-                                                          TargetNullValue=Not reviewed}"
-                                           Foreground="#B8C0CC"
-                                           FontSize="11"/>
-
-
-                                <TextBlock Text="{Binding SelectedImage.ReviewedOn,
-                                                          StringFormat={}{0:dd-MM-yyyy HH:mm},
-                                                          TargetNullValue=—}"
-                                           Foreground="#B8C0CC"
-                                           FontSize="11"
-                                           Margin="0,3,0,0"/>
-
-                            </StackPanel>
-
-                        </Border>
-
-
-                        <TextBlock Text="REVIEW ACTION"
-                                   Foreground="#C5CDD8"
-                                   FontSize="11"
-                                   FontWeight="Bold"
-                                   Margin="2,12,0,4"/>
-
-
-                        <Grid>
-
-                            <Grid.ColumnDefinitions>
-
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-
-                            </Grid.ColumnDefinitions>
-
-
-                            <Button Grid.Column="0"
-                                    Content="✓ ACCEPT"
-                                    Command="{Binding ApproveCommand}"
-                                    Background="#315B3A"
-                                    BorderBrush="#4E8A5A"
-                                    Style="{StaticResource ActionButton}"/>
-
-
-                            <Button Grid.Column="1"
-                                    Content="✕ REJECT"
-                                    Command="{Binding RejectCommand}"
-                                    Background="#633737"
-                                    BorderBrush="#995050"
-                                    Style="{StaticResource ActionButton}"/>
-
-                        </Grid>
-
-
-                        <Button Content="↺ MARK PENDING"
+                        <Button Grid.Column="0"
+                                Content="PENDING"
                                 Command="{Binding PendingCommand}"
-                                Background="#5B4B2A"
-                                BorderBrush="#8D7540"
-                                Style="{StaticResource ActionButton}"
-                                Margin="3,2,3,0"/>
+                                Style="{StaticResource ActionButton}"/>
 
 
-                        <Button Content="OPEN FULL IMAGE"
-                                Command="{Binding OpenImageCommand}"
-                                Style="{StaticResource ActionButton}"
-                                Margin="3,8,3,0"/>
+                        <Button Grid.Column="1"
+                                Content="ACCEPT"
+                                Command="{Binding ApproveCommand}"
+                                Style="{StaticResource ActionButton}"/>
 
 
-                        <Border Background="#20252C"
-                                CornerRadius="6"
-                                Padding="10"
-                                Margin="0,10,0,0">
+                        <Button Grid.Column="2"
+                                Content="REJECT"
+                                Command="{Binding RejectCommand}"
+                                Style="{StaticResource ActionButton}"/>
 
-                            <StackPanel>
+                    </Grid>
 
-                                <TextBlock Text="REMARKS"
-                                           Style="{StaticResource InfoLabel}"/>
-
-                                <TextBlock Text="{Binding SelectedImage.Remarks,
-                                                          TargetNullValue=No remarks}"
-                                           Foreground="#B8C0CC"
-                                           FontSize="11"
-                                           TextWrapping="Wrap"
-                                           Margin="0,5,0,0"/>
-
-                            </StackPanel>
-
-                        </Border>
-
-                    </StackPanel>
-
-                </ScrollViewer>
+                </Grid>
 
             </Border>
 
