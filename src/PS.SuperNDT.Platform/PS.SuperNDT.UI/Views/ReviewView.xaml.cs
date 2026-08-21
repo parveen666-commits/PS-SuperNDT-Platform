@@ -21,10 +21,14 @@ public partial class ReviewView : UserControl
     private Point _lastMousePosition;
 
     private TranslateTransform? _panTransform;
+    private ScaleTransform? _scaleTransform;
 
     private bool _isDrawingDefect;
     private Point _defectStartPoint;
     private Point _defectCurrentPoint;
+
+    private bool _updatingScrollMode;
+    private bool _isFittingFrame;
 
     public ReviewView()
     {
@@ -34,6 +38,9 @@ public partial class ReviewView : UserControl
 
         Loaded += ReviewView_Loaded;
         Unloaded += ReviewView_Unloaded;
+
+        PreviewKeyDown += ReviewView_PreviewKeyDown;
+        PreviewMouseWheel += ReviewView_PreviewMouseWheel;
     }
 
     // ============================================================
@@ -72,7 +79,7 @@ public partial class ReviewView : UserControl
         ImageViewport.MouseLeave +=
             ImageViewport_MouseLeave;
 
-        ImageViewport.MouseWheel +=
+        ImageViewport.PreviewMouseWheel +=
             ImageViewport_MouseWheel;
 
         ImageViewport.SizeChanged +=
@@ -85,7 +92,12 @@ public partial class ReviewView : UserControl
         }
 
         Dispatcher.BeginInvoke(
-            new Action(LoadSavedDefects),
+            new Action(() =>
+            {
+                UpdateScrollMode();
+                FitImageToFrame();
+                LoadSavedDefects();
+            }),
             DispatcherPriority.Render);
     }
 
@@ -127,21 +139,24 @@ public partial class ReviewView : UserControl
         ImageViewport.MouseLeave -=
             ImageViewport_MouseLeave;
 
-        ImageViewport.MouseWheel -=
+        ImageViewport.PreviewMouseWheel -=
             ImageViewport_MouseWheel;
 
         ImageViewport.SizeChanged -=
             ImageViewport_SizeChanged;
 
+        PreviewKeyDown -=
+            ReviewView_PreviewKeyDown;
+
+        PreviewMouseWheel -=
+            ReviewView_PreviewMouseWheel;
+
         ClearPersistedDefectRectangles();
 
-        if (_isPanning || _isDrawingDefect)
-        {
-            _isPanning = false;
-            _isDrawingDefect = false;
+        _isPanning = false;
+        _isDrawingDefect = false;
 
-            Mouse.Capture(null);
-        }
+        Mouse.Capture(null);
     }
 
     // ============================================================
@@ -160,19 +175,16 @@ public partial class ReviewView : UserControl
             Dispatcher.BeginInvoke(
                 new Action(() =>
                 {
-                    if (_panTransform == null)
-                    {
-                        return;
-                    }
-
-                    double zoom = GetZoom();
+                    double zoom =
+                        GetZoom();
 
                     if (zoom <= 1.001)
                     {
-                        ResetPan();
+                        FitImageToFrame();
                     }
                     else
                     {
+                        UpdateScrollMode();
                         ClampPan();
                     }
                 }),
@@ -186,121 +198,180 @@ public partial class ReviewView : UserControl
                 nameof(ReviewViewModel.SelectedImage),
                 StringComparison.Ordinal))
         {
-            RefreshSavedDefects();
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    if (GetZoom() <= 1.001)
+                    {
+                        FitImageToFrame();
+                    }
+
+                    RefreshSavedDefects();
+                }),
+                DispatcherPriority.Render);
+        }
+
+        if (string.Equals(
+                e.PropertyName,
+                nameof(ReviewViewModel.DisplayImage),
+                StringComparison.Ordinal))
+        {
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    if (GetZoom() <= 1.001)
+                    {
+                        FitImageToFrame();
+                    }
+
+                    RefreshSavedDefects();
+                }),
+                DispatcherPriority.Render);
         }
     }
 
     // ============================================================
-    // SAVED DEFECTS
+    // FIT TO FRAME
     // ============================================================
 
-    private void LoadSavedDefects()
+    private void FitImageToFrame()
     {
-        ClearPersistedDefectRectangles();
-
-        if (DataContext is not ReviewViewModel viewModel)
+        if (!IsLoaded ||
+            _isFittingFrame)
         {
             return;
         }
 
-        ImageRecordModel? selectedImage =
-            viewModel.SelectedImage;
-
-        if (selectedImage == null)
+        if (ImageViewport.ActualWidth <= 20 ||
+            ImageViewport.ActualHeight <= 20)
         {
             return;
         }
 
-        var defects =
-            DefectService.Instance.GetByImage(
-                selectedImage.Id);
+        _isFittingFrame = true;
 
-        foreach (DefectModel defect in defects)
+        try
         {
-            AddPersistedDefectRectangle(defect);
-        }
-    }
+            _isPanning = false;
 
-    private void RefreshSavedDefects()
-    {
-        Dispatcher.BeginInvoke(
-            new Action(LoadSavedDefects),
-            DispatcherPriority.Render);
-    }
+            Mouse.Capture(null);
 
-    private void ClearPersistedDefectRectangles()
-    {
-        for (int i =
-             DefectOverlayCanvas.Children.Count - 1;
-             i >= 0;
-             i--)
-        {
-            UIElement element =
-                DefectOverlayCanvas.Children[i];
+            ImageViewport.Cursor =
+                Cursors.Arrow;
 
-            if (element is FrameworkElement frameworkElement &&
-                frameworkElement.Tag is string tag &&
-                tag.StartsWith(
-                    PersistedDefectTagPrefix,
-                    StringComparison.Ordinal))
+            ImagePanCanvas.Cursor =
+                Cursors.Arrow;
+
+            ImageViewport.HorizontalScrollBarVisibility =
+                ScrollBarVisibility.Hidden;
+
+            ImageViewport.VerticalScrollBarVisibility =
+                ScrollBarVisibility.Hidden;
+
+            ImageViewport.ScrollToHorizontalOffset(0);
+            ImageViewport.ScrollToVerticalOffset(0);
+
+            if (_panTransform != null)
             {
-                DefectOverlayCanvas.Children.RemoveAt(i);
+                _panTransform.X = 0;
+                _panTransform.Y = 0;
+            }
+
+            /*
+             * At 1.00x the canvas itself becomes exactly the
+             * available viewport. The Image uses Uniform so the
+             * complete image/ruler area remains inside one frame.
+             */
+            double viewportWidth =
+                Math.Max(
+                    1,
+                    ImageViewport.ActualWidth - 4);
+
+            double viewportHeight =
+                Math.Max(
+                    1,
+                    ImageViewport.ActualHeight - 4);
+
+            ImagePanCanvas.Width =
+                viewportWidth;
+
+            ImagePanCanvas.Height =
+                viewportHeight;
+
+            if (_scaleTransform != null)
+            {
+                _scaleTransform.ScaleX = 1.0;
+                _scaleTransform.ScaleY = 1.0;
+            }
+
+            UpdateScrollMode();
+
+            ImageViewport.ScrollToHorizontalOffset(0);
+            ImageViewport.ScrollToVerticalOffset(0);
+        }
+        finally
+        {
+            _isFittingFrame = false;
+        }
+    }
+
+    // ============================================================
+    // SCROLL MODE
+    // ============================================================
+
+    private void UpdateScrollMode()
+    {
+        if (!IsLoaded ||
+            _updatingScrollMode)
+        {
+            return;
+        }
+
+        _updatingScrollMode = true;
+
+        try
+        {
+            double zoom =
+                GetZoom();
+
+            if (zoom <= 1.001)
+            {
+                ImageViewport.HorizontalScrollBarVisibility =
+                    ScrollBarVisibility.Hidden;
+
+                ImageViewport.VerticalScrollBarVisibility =
+                    ScrollBarVisibility.Hidden;
+
+                ImageViewport.ScrollToHorizontalOffset(0);
+                ImageViewport.ScrollToVerticalOffset(0);
+
+                _isPanning = false;
+
+                Mouse.Capture(null);
+
+                ImageViewport.Cursor =
+                    Cursors.Arrow;
+
+                ImagePanCanvas.Cursor =
+                    Cursors.Arrow;
+            }
+            else
+            {
+                ImageViewport.HorizontalScrollBarVisibility =
+                    ScrollBarVisibility.Auto;
+
+                ImageViewport.VerticalScrollBarVisibility =
+                    ScrollBarVisibility.Auto;
             }
         }
-    }
-
-    private void AddPersistedDefectRectangle(
-        DefectModel defect)
-    {
-        Rectangle rectangle =
-            new Rectangle
-            {
-                Width = Math.Max(
-                    1,
-                    defect.Width),
-
-                Height = Math.Max(
-                    1,
-                    defect.Height),
-
-                Stroke =
-                    new SolidColorBrush(
-                        Color.FromRgb(
-                            255,
-                            60,
-                            60)),
-
-                StrokeThickness = 2,
-
-                Fill =
-                    new SolidColorBrush(
-                        Color.FromArgb(
-                            35,
-                            255,
-                            60,
-                            60)),
-
-                IsHitTestVisible = false,
-
-                Tag =
-                    PersistedDefectTagPrefix +
-                    defect.Id
-            };
-
-        Canvas.SetLeft(
-            rectangle,
-            defect.X);
-
-        Canvas.SetTop(
-            rectangle,
-            defect.Y);
-
-        DefectOverlayCanvas.Children.Add(
-            rectangle);
+        finally
+        {
+            _updatingScrollMode = false;
+        }
     }
 
     // ============================================================
-    // TRANSFORM
+    // TRANSFORMS
     // ============================================================
 
     private void SetupPanTransform()
@@ -308,67 +379,286 @@ public partial class ReviewView : UserControl
         if (ImagePanCanvas.RenderTransform
             is TransformGroup existingGroup)
         {
-            foreach (Transform transform
-                     in existingGroup.Children)
+            foreach (
+                Transform transform
+                in existingGroup.Children)
             {
+                if (transform is ScaleTransform scale)
+                {
+                    _scaleTransform =
+                        scale;
+                }
+
                 if (transform is TranslateTransform translate)
                 {
-                    _panTransform = translate;
-                    return;
+                    _panTransform =
+                        translate;
                 }
             }
 
-            _panTransform =
-                new TranslateTransform();
+            if (_scaleTransform == null)
+            {
+                _scaleTransform =
+                    new ScaleTransform(
+                        1.0,
+                        1.0);
 
-            existingGroup.Children.Add(
-                _panTransform);
+                existingGroup.Children.Insert(
+                    0,
+                    _scaleTransform);
+            }
 
-            return;
-        }
+            if (_panTransform == null)
+            {
+                _panTransform =
+                    new TranslateTransform();
 
-        if (ImagePanCanvas.RenderTransform
-            is ScaleTransform existingScale)
-        {
-            TransformGroup scaleGroup =
-                new TransformGroup();
-
-            scaleGroup.Children.Add(
-                existingScale);
-
-            _panTransform =
-                new TranslateTransform();
-
-            scaleGroup.Children.Add(
-                _panTransform);
-
-            ImagePanCanvas.RenderTransform =
-                scaleGroup;
+                existingGroup.Children.Add(
+                    _panTransform);
+            }
 
             return;
         }
 
-        TransformGroup newTransformGroup =
+        TransformGroup transformGroup =
             new TransformGroup();
 
-        newTransformGroup.Children.Add(
+        _scaleTransform =
             new ScaleTransform(
                 1.0,
-                1.0));
+                1.0);
 
         _panTransform =
             new TranslateTransform();
 
-        newTransformGroup.Children.Add(
+        transformGroup.Children.Add(
+            _scaleTransform);
+
+        transformGroup.Children.Add(
             _panTransform);
 
         ImagePanCanvas.RenderTransform =
-            newTransformGroup;
+            transformGroup;
     }
 
     // ============================================================
-    // MOUSE DOWN
+    // KEYBOARD
     // ============================================================
+
+    private void ReviewView_PreviewKeyDown(
+        object sender,
+        KeyEventArgs e)
+    {
+        if (DataContext is not ReviewViewModel viewModel)
+        {
+            return;
+        }
+
+        if (e.Key == Key.Add ||
+            e.Key == Key.OemPlus)
+        {
+            viewModel.ZoomInCommand.Execute(null);
+
+            e.Handled = true;
+
+            return;
+        }
+
+        if (e.Key == Key.Subtract ||
+            e.Key == Key.OemMinus)
+        {
+            viewModel.ZoomOutCommand.Execute(null);
+
+            e.Handled = true;
+
+            return;
+        }
+
+        if (e.Key == Key.D0 ||
+            e.Key == Key.NumPad0)
+        {
+            viewModel.ResetZoomCommand.Execute(null);
+
+            Dispatcher.BeginInvoke(
+                new Action(FitImageToFrame),
+                DispatcherPriority.Render);
+
+            e.Handled = true;
+        }
+    }
+
+    // ============================================================
+    // MOUSE WHEEL ZOOM
+    // ============================================================
+
+    private void ReviewView_PreviewMouseWheel(
+        object sender,
+        MouseWheelEventArgs e)
+    {
+        HandleZoomWheel(e);
+    }
+
+    private void ImageViewport_MouseWheel(
+        object sender,
+        MouseWheelEventArgs e)
+    {
+        HandleZoomWheel(e);
+    }
+
+    private void HandleZoomWheel(
+        MouseWheelEventArgs e)
+    {
+        if (DataContext is not ReviewViewModel viewModel)
+        {
+            return;
+        }
+
+        double oldZoom =
+            viewModel.ZoomLevel;
+
+        double newZoom;
+
+        if (e.Delta > 0)
+        {
+            newZoom =
+                Math.Min(
+                    5.0,
+                    oldZoom + 0.25);
+        }
+        else
+        {
+            newZoom =
+                Math.Max(
+                    0.25,
+                    oldZoom - 0.25);
+        }
+
+        if (Math.Abs(
+                oldZoom - newZoom) < 0.001)
+        {
+            e.Handled = true;
+
+            return;
+        }
+
+        if (newZoom <= 1.001)
+        {
+            viewModel.ResetZoomCommand.Execute(null);
+
+            Dispatcher.BeginInvoke(
+                new Action(FitImageToFrame),
+                DispatcherPriority.Render);
+
+            e.Handled = true;
+
+            return;
+        }
+
+        if (_panTransform == null ||
+            _scaleTransform == null)
+        {
+            SetupPanTransform();
+        }
+
+        Point mousePosition =
+            e.GetPosition(
+                ImageViewport);
+
+        double centerX =
+            ImageViewport.ActualWidth / 2.0;
+
+        double centerY =
+            ImageViewport.ActualHeight / 2.0;
+
+        double relativeX =
+            mousePosition.X - centerX;
+
+        double relativeY =
+            mousePosition.Y - centerY;
+
+        double oldPanX =
+            _panTransform?.X ?? 0;
+
+        double oldPanY =
+            _panTransform?.Y ?? 0;
+
+        double zoomRatio =
+            newZoom / oldZoom;
+
+        if (_panTransform != null)
+        {
+            _panTransform.X =
+                relativeX -
+                (relativeX - oldPanX) *
+                zoomRatio;
+
+            _panTransform.Y =
+                relativeY -
+                (relativeY - oldPanY) *
+                zoomRatio;
+        }
+
+        SetZoomFromView(
+            viewModel,
+            newZoom);
+
+        Dispatcher.BeginInvoke(
+            new Action(() =>
+            {
+                UpdateScrollMode();
+                ClampPan();
+            }),
+            DispatcherPriority.Render);
+
+        e.Handled = true;
+    }
+
+    private static void SetZoomFromView(
+        ReviewViewModel viewModel,
+        double zoom)
+    {
+        if (Math.Abs(
+                viewModel.ZoomLevel - zoom) < 0.001)
+        {
+            return;
+        }
+
+        if (zoom > viewModel.ZoomLevel)
+        {
+            while (viewModel.ZoomLevel <
+                   zoom - 0.001)
+            {
+                viewModel.ZoomInCommand.Execute(null);
+            }
+        }
+        else
+        {
+            while (viewModel.ZoomLevel >
+                   zoom + 0.001)
+            {
+                viewModel.ZoomOutCommand.Execute(null);
+            }
+        }
+    }
+
+    // ============================================================
+    // PAN
+    // ============================================================
+
+    private bool IsZoomed()
+    {
+        return GetZoom() > 1.001;
+    }
+
+    private double GetZoom()
+    {
+        if (DataContext is ReviewViewModel viewModel)
+        {
+            return viewModel.ZoomLevel;
+        }
+
+        return 1.0;
+    }
 
     private void ImagePanCanvas_MouseDown(
         object sender,
@@ -377,11 +667,24 @@ public partial class ReviewView : UserControl
         if (e.ChangedButton ==
             MouseButton.Left)
         {
-            StartDefectDrawing(e);
+            if (Keyboard.Modifiers.HasFlag(
+                    ModifierKeys.Shift))
+            {
+                StartDefectDrawing(e);
+            }
+            else
+            {
+                StartPan(e);
+            }
+
             return;
         }
 
-        StartPan(e);
+        if (e.ChangedButton ==
+            MouseButton.Middle)
+        {
+            StartPan(e);
+        }
     }
 
     private void ImageViewport_MouseDown(
@@ -391,24 +694,37 @@ public partial class ReviewView : UserControl
         if (e.ChangedButton ==
             MouseButton.Left)
         {
-            StartDefectDrawing(e);
+            if (Keyboard.Modifiers.HasFlag(
+                    ModifierKeys.Shift))
+            {
+                StartDefectDrawing(e);
+            }
+            else
+            {
+                StartPan(e);
+            }
+
             return;
         }
 
-        StartPan(e);
+        if (e.ChangedButton ==
+            MouseButton.Middle)
+        {
+            StartPan(e);
+        }
     }
-
-    // ============================================================
-    // PAN START
-    // ============================================================
 
     private void StartPan(
         MouseButtonEventArgs e)
     {
-        if (e.ChangedButton !=
-            MouseButton.Middle)
+        if (!IsZoomed())
         {
             return;
+        }
+
+        if (_panTransform == null)
+        {
+            SetupPanTransform();
         }
 
         if (_panTransform == null)
@@ -416,93 +732,24 @@ public partial class ReviewView : UserControl
             return;
         }
 
-        if (!IsZoomed())
-        {
-            return;
-        }
-
         _isPanning = true;
 
         _lastMousePosition =
-            e.GetPosition(ImageViewport);
-
-        Mouse.Capture(
-            ImageViewport,
-            CaptureMode.SubTree);
-
-        ImageViewport.Cursor =
-            Cursors.Hand;
-
-        ImagePanCanvas.Cursor =
-            Cursors.Hand;
-
-        e.Handled = true;
-    }
-
-    // ============================================================
-    // DEFECT START
-    // ============================================================
-
-    private void StartDefectDrawing(
-        MouseButtonEventArgs e)
-    {
-        if (e.ChangedButton !=
-            MouseButton.Left)
-        {
-            return;
-        }
-
-        if (_isPanning ||
-            _isDrawingDefect)
-        {
-            return;
-        }
-
-        if (DefectOverlayCanvas.ActualWidth <= 0 ||
-            DefectOverlayCanvas.ActualHeight <= 0)
-        {
-            return;
-        }
-
-        // IMPORTANT:
-        // Use the exact same coordinate system as
-        // DefectRectangle and persisted rectangles.
-        Point startPoint =
             e.GetPosition(
-                DefectOverlayCanvas);
-
-        startPoint =
-            ClampPointToOverlay(
-                startPoint);
-
-        _isDrawingDefect = true;
-
-        _defectStartPoint =
-            startPoint;
-
-        _defectCurrentPoint =
-            startPoint;
-
-        PrepareDefectRectangle();
+                ImageViewport);
 
         Mouse.Capture(
             ImageViewport,
             CaptureMode.SubTree);
 
         ImageViewport.Cursor =
-            Cursors.Cross;
+            Cursors.Hand;
 
         ImagePanCanvas.Cursor =
-            Cursors.Cross;
-
-        UpdateDefectRectangle();
+            Cursors.Hand;
 
         e.Handled = true;
     }
-
-    // ============================================================
-    // MOUSE MOVE
-    // ============================================================
 
     private void ImagePanCanvas_MouseMove(
         object sender,
@@ -511,6 +758,7 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             UpdateDefectDrawing(e);
+
             return;
         }
 
@@ -529,6 +777,7 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             UpdateDefectDrawing(e);
+
             return;
         }
 
@@ -540,6 +789,262 @@ public partial class ReviewView : UserControl
         MovePan(e);
     }
 
+    private void MovePan(
+        MouseEventArgs e)
+    {
+        if (!_isPanning ||
+            _panTransform == null ||
+            !IsZoomed())
+        {
+            return;
+        }
+
+        Point currentPosition =
+            e.GetPosition(
+                ImageViewport);
+
+        double deltaX =
+            currentPosition.X -
+            _lastMousePosition.X;
+
+        double deltaY =
+            currentPosition.Y -
+            _lastMousePosition.Y;
+
+        _lastMousePosition =
+            currentPosition;
+
+        _panTransform.X +=
+            deltaX;
+
+        _panTransform.Y +=
+            deltaY;
+
+        ClampPan();
+
+        e.Handled = true;
+    }
+
+    private void ImagePanCanvas_MouseUp(
+        object sender,
+        MouseButtonEventArgs e)
+    {
+        if (_isDrawingDefect)
+        {
+            FinishDefectDrawing(e);
+
+            return;
+        }
+
+        EndPan(e);
+    }
+
+    private void ImageViewport_MouseUp(
+        object sender,
+        MouseButtonEventArgs e)
+    {
+        if (_isDrawingDefect)
+        {
+            FinishDefectDrawing(e);
+
+            return;
+        }
+
+        EndPan(e);
+    }
+
+    private void EndPan(
+        MouseButtonEventArgs e)
+    {
+        _isPanning = false;
+
+        Mouse.Capture(null);
+
+        ImageViewport.Cursor =
+            Cursors.Arrow;
+
+        ImagePanCanvas.Cursor =
+            Cursors.Arrow;
+
+        e.Handled = true;
+    }
+
+    private void ImagePanCanvas_MouseLeave(
+        object sender,
+        MouseEventArgs e)
+    {
+        if (_isPanning)
+        {
+            ImageViewport.Cursor =
+                Cursors.Hand;
+        }
+        else if (_isDrawingDefect)
+        {
+            ImageViewport.Cursor =
+                Cursors.Cross;
+        }
+    }
+
+    private void ImageViewport_MouseLeave(
+        object sender,
+        MouseEventArgs e)
+    {
+        if (_isPanning)
+        {
+            ImageViewport.Cursor =
+                Cursors.Hand;
+        }
+        else if (_isDrawingDefect)
+        {
+            ImageViewport.Cursor =
+                Cursors.Cross;
+        }
+    }
+
+    // ============================================================
+    // PAN CLAMP
+    // ============================================================
+
+    private void ClampPan()
+    {
+        if (_panTransform == null)
+        {
+            return;
+        }
+
+        double zoom =
+            GetZoom();
+
+        if (zoom <= 1.001)
+        {
+            _panTransform.X = 0;
+            _panTransform.Y = 0;
+
+            ImageViewport.ScrollToHorizontalOffset(0);
+            ImageViewport.ScrollToVerticalOffset(0);
+
+            return;
+        }
+
+        double canvasWidth =
+            ImagePanCanvas.ActualWidth;
+
+        double canvasHeight =
+            ImagePanCanvas.ActualHeight;
+
+        double viewportWidth =
+            ImageViewport.ActualWidth;
+
+        double viewportHeight =
+            ImageViewport.ActualHeight;
+
+        if (canvasWidth <= 0 ||
+            canvasHeight <= 0 ||
+            viewportWidth <= 0 ||
+            viewportHeight <= 0)
+        {
+            return;
+        }
+
+        double scaledWidth =
+            canvasWidth * zoom;
+
+        double scaledHeight =
+            canvasHeight * zoom;
+
+        double maxPanX =
+            Math.Max(
+                0,
+                (scaledWidth -
+                 viewportWidth) / 2.0);
+
+        double maxPanY =
+            Math.Max(
+                0,
+                (scaledHeight -
+                 viewportHeight) / 2.0);
+
+        _panTransform.X =
+            Math.Clamp(
+                _panTransform.X,
+                -maxPanX,
+                maxPanX);
+
+        _panTransform.Y =
+            Math.Clamp(
+                _panTransform.Y,
+                -maxPanY,
+                maxPanY);
+    }
+
+    // ============================================================
+    // VIEWPORT SIZE
+    // ============================================================
+
+    private void ImageViewport_SizeChanged(
+        object sender,
+        SizeChangedEventArgs e)
+    {
+        if (GetZoom() <= 1.001)
+        {
+            Dispatcher.BeginInvoke(
+                new Action(FitImageToFrame),
+                DispatcherPriority.Render);
+        }
+        else
+        {
+            UpdateScrollMode();
+            ClampPan();
+        }
+    }
+
+    // ============================================================
+    // DEFECT DRAWING
+    // ============================================================
+
+    private void StartDefectDrawing(
+        MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton !=
+            MouseButton.Left ||
+            !Keyboard.Modifiers.HasFlag(
+                ModifierKeys.Shift))
+        {
+            return;
+        }
+
+        Point point =
+            e.GetPosition(
+                DefectOverlayCanvas);
+
+        point =
+            ClampPointToOverlay(point);
+
+        _isDrawingDefect = true;
+
+        _defectStartPoint =
+            point;
+
+        _defectCurrentPoint =
+            point;
+
+        PrepareDefectRectangle();
+
+        Mouse.Capture(
+            ImageViewport,
+            CaptureMode.SubTree);
+
+        ImageViewport.Cursor =
+            Cursors.Cross;
+
+        ImagePanCanvas.Cursor =
+            Cursors.Cross;
+
+        UpdateDefectRectangle();
+
+        e.Handled = true;
+    }
+
     private void UpdateDefectDrawing(
         MouseEventArgs e)
     {
@@ -548,30 +1053,20 @@ public partial class ReviewView : UserControl
             return;
         }
 
-        Point currentPoint =
+        Point point =
             e.GetPosition(
                 DefectOverlayCanvas);
 
         _defectCurrentPoint =
-            ClampPointToOverlay(
-                currentPoint);
+            ClampPointToOverlay(point);
 
         UpdateDefectRectangle();
 
         e.Handled = true;
     }
 
-    // ============================================================
-    // DEFECT RECTANGLE
-    // ============================================================
-
     private void PrepareDefectRectangle()
     {
-        if (DefectRectangle == null)
-        {
-            return;
-        }
-
         DefectRectangle.Visibility =
             Visibility.Visible;
 
@@ -589,11 +1084,6 @@ public partial class ReviewView : UserControl
 
     private void UpdateDefectRectangle()
     {
-        if (DefectRectangle == null)
-        {
-            return;
-        }
-
         double left =
             Math.Min(
                 _defectStartPoint.X,
@@ -635,83 +1125,38 @@ public partial class ReviewView : UserControl
     private Point ClampPointToOverlay(
         Point point)
     {
-        double maxX =
-            Math.Max(
-                0,
-                DefectOverlayCanvas.ActualWidth);
-
-        double maxY =
-            Math.Max(
-                0,
-                DefectOverlayCanvas.ActualHeight);
-
         return new Point(
             Math.Clamp(
                 point.X,
                 0,
-                maxX),
+                Math.Max(
+                    0,
+                    DefectOverlayCanvas.ActualWidth)),
 
             Math.Clamp(
                 point.Y,
                 0,
-                maxY));
+                Math.Max(
+                    0,
+                    DefectOverlayCanvas.ActualHeight)));
     }
-
-    // ============================================================
-    // MOUSE UP
-    // ============================================================
-
-    private void ImagePanCanvas_MouseUp(
-        object sender,
-        MouseButtonEventArgs e)
-    {
-        if (_isDrawingDefect)
-        {
-            FinishDefectDrawing(e);
-            return;
-        }
-
-        EndPan(e);
-    }
-
-    private void ImageViewport_MouseUp(
-        object sender,
-        MouseButtonEventArgs e)
-    {
-        if (_isDrawingDefect)
-        {
-            FinishDefectDrawing(e);
-            return;
-        }
-
-        EndPan(e);
-    }
-
-    // ============================================================
-    // SAVE DEFECT
-    // ============================================================
 
     private void FinishDefectDrawing(
         MouseButtonEventArgs e)
     {
-        if (!_isDrawingDefect)
-        {
-            return;
-        }
-
-        if (e.ChangedButton !=
+        if (!_isDrawingDefect ||
+            e.ChangedButton !=
             MouseButton.Left)
         {
             return;
         }
 
-        Point finalPoint =
+        Point point =
             e.GetPosition(
                 DefectOverlayCanvas);
 
         _defectCurrentPoint =
-            ClampPointToOverlay(
-                finalPoint);
+            ClampPointToOverlay(point);
 
         UpdateDefectRectangle();
 
@@ -747,45 +1192,28 @@ public partial class ReviewView : UserControl
 
         e.Handled = true;
 
-        // Ignore tiny accidental clicks.
         if (width < 5 ||
             height < 5)
         {
             HideTemporaryDefectRectangle();
+
             return;
         }
 
-        if (DataContext is not ReviewViewModel viewModel)
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.SelectedImage == null)
         {
             HideTemporaryDefectRectangle();
+
             return;
         }
-
-        ImageRecordModel? selectedImage =
-            viewModel.SelectedImage;
-
-        if (selectedImage == null)
-        {
-            HideTemporaryDefectRectangle();
-            return;
-        }
-
-        // --------------------------------------------------------
-        // Save exact overlay coordinates.
-        // --------------------------------------------------------
 
         DefectService.Instance.AddDefect(
-            selectedImage,
+            viewModel.SelectedImage,
             left,
             top,
             width,
             height);
-
-        // --------------------------------------------------------
-        // VERY IMPORTANT:
-        // Remove temporary drawing before loading the
-        // database-backed rectangle.
-        // --------------------------------------------------------
 
         HideTemporaryDefectRectangle();
 
@@ -794,11 +1222,6 @@ public partial class ReviewView : UserControl
 
     private void HideTemporaryDefectRectangle()
     {
-        if (DefectRectangle == null)
-        {
-            return;
-        }
-
         DefectRectangle.Visibility =
             Visibility.Collapsed;
 
@@ -807,363 +1230,110 @@ public partial class ReviewView : UserControl
     }
 
     // ============================================================
-    // PAN MOVE
+    // SAVED DEFECTS
     // ============================================================
 
-    private void MovePan(
-        MouseEventArgs e)
+    private void LoadSavedDefects()
     {
-        if (!_isPanning ||
-            _panTransform == null)
+        ClearPersistedDefectRectangles();
+
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.SelectedImage == null)
         {
             return;
         }
 
-        Point currentPosition =
-            e.GetPosition(
-                ImageViewport);
+        var defects =
+            DefectService.Instance.GetByImage(
+                viewModel.SelectedImage.Id);
 
-        double deltaX =
-            currentPosition.X -
-            _lastMousePosition.X;
-
-        double deltaY =
-            currentPosition.Y -
-            _lastMousePosition.Y;
-
-        _lastMousePosition =
-            currentPosition;
-
-        _panTransform.X +=
-            deltaX;
-
-        _panTransform.Y +=
-            deltaY;
-
-        ClampPan();
-
-        e.Handled = true;
+        foreach (DefectModel defect in defects)
+        {
+            AddPersistedDefectRectangle(defect);
+        }
     }
 
-    // ============================================================
-    // ZOOM
-    // ============================================================
-
-    private void ImageViewport_MouseWheel(
-        object sender,
-        MouseWheelEventArgs e)
+    private void RefreshSavedDefects()
     {
-        if (DataContext is not ReviewViewModel viewModel)
-        {
-            return;
-        }
-
-        double oldZoom =
-            viewModel.ZoomLevel;
-
-        double newZoom;
-
-        if (e.Delta > 0)
-        {
-            newZoom =
-                Math.Min(
-                    5.0,
-                    oldZoom + 0.25);
-        }
-        else
-        {
-            newZoom =
-                Math.Max(
-                    0.25,
-                    oldZoom - 0.25);
-        }
-
-        if (Math.Abs(
-                oldZoom -
-                newZoom) < 0.001)
-        {
-            e.Handled = true;
-            return;
-        }
-
-        Point mousePosition =
-            e.GetPosition(
-                ImageViewport);
-
-        double relativeX =
-            mousePosition.X -
-            ImageViewport.ActualWidth /
-            2.0;
-
-        double relativeY =
-            mousePosition.Y -
-            ImageViewport.ActualHeight /
-            2.0;
-
-        double oldPanX =
-            _panTransform?.X ?? 0;
-
-        double oldPanY =
-            _panTransform?.Y ?? 0;
-
-        double zoomRatio =
-            newZoom /
-            oldZoom;
-
-        if (_panTransform != null)
-        {
-            _panTransform.X =
-                relativeX -
-                (relativeX - oldPanX) *
-                zoomRatio;
-
-            _panTransform.Y =
-                relativeY -
-                (relativeY - oldPanY) *
-                zoomRatio;
-        }
-
-        SetZoomFromView(
-            viewModel,
-            newZoom);
-
         Dispatcher.BeginInvoke(
-            new Action(ClampPan),
+            new Action(LoadSavedDefects),
             DispatcherPriority.Render);
-
-        e.Handled = true;
     }
 
-    private static void SetZoomFromView(
-        ReviewViewModel viewModel,
-        double zoom)
+    private void ClearPersistedDefectRectangles()
     {
-        if (Math.Abs(
-                viewModel.ZoomLevel -
-                zoom) < 0.001)
+        for (
+            int i =
+                DefectOverlayCanvas.Children.Count - 1;
+            i >= 0;
+            i--)
         {
-            return;
-        }
-
-        if (zoom >
-            viewModel.ZoomLevel)
-        {
-            while (viewModel.ZoomLevel <
-                   zoom - 0.001)
+            if (DefectOverlayCanvas.Children[i]
+                is FrameworkElement element &&
+                element.Tag is string tag &&
+                tag.StartsWith(
+                    PersistedDefectTagPrefix,
+                    StringComparison.Ordinal))
             {
-                viewModel.ZoomInCommand.Execute(
-                    null);
-            }
-        }
-        else
-        {
-            while (viewModel.ZoomLevel >
-                   zoom + 0.001)
-            {
-                viewModel.ZoomOutCommand.Execute(
-                    null);
+                DefectOverlayCanvas.Children.RemoveAt(i);
             }
         }
     }
 
-    // ============================================================
-    // PAN END
-    // ============================================================
-
-    private void EndPan(
-        MouseButtonEventArgs e)
+    private void AddPersistedDefectRectangle(
+        DefectModel defect)
     {
-        if (e.ChangedButton !=
-            MouseButton.Middle)
-        {
-            return;
-        }
+        Rectangle rectangle =
+            new Rectangle
+            {
+                Width =
+                    Math.Max(
+                        1,
+                        defect.Width),
 
-        if (!_isPanning)
-        {
-            return;
-        }
+                Height =
+                    Math.Max(
+                        1,
+                        defect.Height),
 
-        _isPanning = false;
+                Stroke =
+                    new SolidColorBrush(
+                        Color.FromRgb(
+                            255,
+                            60,
+                            60)),
 
-        Mouse.Capture(null);
+                StrokeThickness = 2,
 
-        ImageViewport.Cursor =
-            Cursors.Arrow;
+                Fill =
+                    new SolidColorBrush(
+                        Color.FromArgb(
+                            35,
+                            255,
+                            60,
+                            60)),
 
-        ImagePanCanvas.Cursor =
-            Cursors.Arrow;
+                IsHitTestVisible = false,
 
-        e.Handled = true;
+                Tag =
+                    PersistedDefectTagPrefix +
+                    defect.Id
+            };
+
+        Canvas.SetLeft(
+            rectangle,
+            defect.X);
+
+        Canvas.SetTop(
+            rectangle,
+            defect.Y);
+
+        DefectOverlayCanvas.Children.Add(
+            rectangle);
     }
 
     // ============================================================
-    // MOUSE LEAVE
-    // ============================================================
-
-    private void ImagePanCanvas_MouseLeave(
-        object sender,
-        MouseEventArgs e)
-    {
-        if (_isPanning)
-        {
-            ImageViewport.Cursor =
-                Cursors.Hand;
-        }
-        else if (_isDrawingDefect)
-        {
-            ImageViewport.Cursor =
-                Cursors.Cross;
-        }
-    }
-
-    private void ImageViewport_MouseLeave(
-        object sender,
-        MouseEventArgs e)
-    {
-        if (_isPanning)
-        {
-            ImageViewport.Cursor =
-                Cursors.Hand;
-        }
-        else if (_isDrawingDefect)
-        {
-            ImageViewport.Cursor =
-                Cursors.Cross;
-        }
-    }
-
-    // ============================================================
-    // VIEWPORT SIZE
-    // ============================================================
-
-    private void ImageViewport_SizeChanged(
-        object sender,
-        SizeChangedEventArgs e)
-    {
-        ClampPan();
-
-        if (IsLoaded)
-        {
-            RefreshSavedDefects();
-        }
-    }
-
-    // ============================================================
-    // ZOOM / PAN HELPERS
-    // ============================================================
-
-    private bool IsZoomed()
-    {
-        return GetZoom() > 1.001;
-    }
-
-    private double GetZoom()
-    {
-        if (DataContext is ReviewViewModel viewModel)
-        {
-            return viewModel.ZoomLevel;
-        }
-
-        return 1.0;
-    }
-
-    private void ResetPan()
-    {
-        if (_panTransform == null)
-        {
-            return;
-        }
-
-        _panTransform.X = 0;
-        _panTransform.Y = 0;
-
-        _isPanning = false;
-
-        if (Mouse.Captured ==
-            ImageViewport)
-        {
-            Mouse.Capture(null);
-        }
-
-        ImageViewport.Cursor =
-            Cursors.Arrow;
-
-        ImagePanCanvas.Cursor =
-            Cursors.Arrow;
-    }
-
-    private void ClampPan()
-    {
-        if (_panTransform == null)
-        {
-            return;
-        }
-
-        double zoom =
-            GetZoom();
-
-        if (zoom <= 1.001)
-        {
-            ResetPan();
-            return;
-        }
-
-        double canvasWidth =
-            ImagePanCanvas.ActualWidth;
-
-        double canvasHeight =
-            ImagePanCanvas.ActualHeight;
-
-        double viewportWidth =
-            ImageViewport.ActualWidth;
-
-        double viewportHeight =
-            ImageViewport.ActualHeight;
-
-        if (canvasWidth <= 0 ||
-            canvasHeight <= 0 ||
-            viewportWidth <= 0 ||
-            viewportHeight <= 0)
-        {
-            return;
-        }
-
-        double scaledWidth =
-            canvasWidth * zoom;
-
-        double scaledHeight =
-            canvasHeight * zoom;
-
-        double maxPanX =
-            Math.Max(
-                0,
-                (scaledWidth -
-                 viewportWidth) /
-                2.0);
-
-        double maxPanY =
-            Math.Max(
-                0,
-                (scaledHeight -
-                 viewportHeight) /
-                2.0);
-
-        _panTransform.X =
-            Math.Clamp(
-                _panTransform.X,
-                -maxPanX,
-                maxPanX);
-
-        _panTransform.Y =
-            Math.Clamp(
-                _panTransform.Y,
-                -maxPanY,
-                maxPanY);
-    }
-
-    // ============================================================
-    // COMBOBOX
+    // EMPTY HANDLER
     // ============================================================
 
     private void ComboBox_SelectionChanged(

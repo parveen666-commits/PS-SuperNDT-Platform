@@ -15,6 +15,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 {
     private readonly ImageService _imageService = new();
     private readonly AuditLogService _auditLogService = new();
+    private readonly ImageFolderService _imageFolderService = new();
 
     private ImageRecordModel? _selectedImage;
     private BitmapImage? _displayImage;
@@ -918,6 +919,54 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             DateTime reviewTime =
                 DateTime.Now;
 
+            /*
+             * Folder workflow:
+             *
+             * ACCEPTED -> ACCEPT
+             * REJECTED -> REJECT
+             * PENDING  -> REPAIR
+             */
+            string folderStatus =
+                status switch
+                {
+                    "ACCEPTED" => "ACCEPT",
+                    "REJECTED" => "REJECT",
+                    "PENDING" => "REPAIR",
+                    _ => string.Empty
+                };
+
+            string oldFilePath =
+                _selectedImage.FilePath;
+
+            /*
+             * Move the physical image first.
+             * If there is no physical file path, the review
+             * status can still be saved normally.
+             */
+            if (!string.IsNullOrWhiteSpace(
+                    folderStatus) &&
+                !string.IsNullOrWhiteSpace(
+                    oldFilePath) &&
+                File.Exists(oldFilePath))
+            {
+                _imageFolderService.MoveImageToStatus(
+                    _selectedImage,
+                    folderStatus);
+
+                string newFilePath =
+                    _imageFolderService.GetImagePath(
+                        _selectedImage,
+                        folderStatus);
+
+                if (!string.IsNullOrWhiteSpace(
+                        newFilePath) &&
+                    File.Exists(newFilePath))
+                {
+                    _selectedImage.FilePath =
+                        newFilePath;
+                }
+            }
+
             _selectedImage.ReviewStatus =
                 status;
 
@@ -942,6 +991,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                     $"Position: {_selectedImage.ShotPosition} | " +
                     $"Previous Status: {previousStatus} | " +
                     $"New Status: {status} | " +
+                    $"Folder: {folderStatus} | " +
                     $"Reviewer: {reviewer} | " +
                     $"Reviewed On: {reviewTime:yyyy-MM-dd HH:mm:ss}");
             }
@@ -962,10 +1012,20 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             OnPropertyChanged(
                 nameof(RejectedImages));
 
+            LoadDisplayImage();
             LoadReviewHistory();
 
-            ReviewMessage =
-                $"Shot {_selectedImage.ShotNumber} marked {status}.";
+            if (string.IsNullOrWhiteSpace(
+                    folderStatus))
+            {
+                ReviewMessage =
+                    $"Shot {_selectedImage.ShotNumber} marked {status}.";
+            }
+            else
+            {
+                ReviewMessage =
+                    $"Shot {_selectedImage.ShotNumber} marked {status} and moved to {folderStatus}.";
+            }
 
             ApplyFilter();
         }
