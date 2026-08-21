@@ -14,6 +14,7 @@ namespace PS.SuperNDT.UI.ViewModels;
 public sealed class ReviewViewModel : INotifyPropertyChanged
 {
     private readonly ImageService _imageService = new();
+    private readonly AuditLogService _auditLogService = new();
 
     private ImageRecordModel? _selectedImage;
     private BitmapImage? _displayImage;
@@ -47,6 +48,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             "REJECTED"
         };
 
+    public ObservableCollection<AuditLogModel> ReviewHistory { get; } =
+        new();
+
     public RelayCommand RefreshCommand { get; }
 
     public RelayCommand ClearFilterCommand { get; }
@@ -72,6 +76,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public string SelectedWorkOrder
     {
         get => _selectedWorkOrder;
+
         set
         {
             value ??= "ALL WORK ORDERS";
@@ -92,6 +97,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public string SearchText
     {
         get => _searchText;
+
         set
         {
             value ??= string.Empty;
@@ -112,6 +118,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public string ReviewStatusFilter
     {
         get => _reviewStatusFilter;
+
         set
         {
             value ??= "ALL";
@@ -132,6 +139,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public ImageRecordModel? SelectedImage
     {
         get => _selectedImage;
+
         set
         {
             if (ReferenceEquals(
@@ -150,6 +158,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             UpdateNavigationState();
             UpdateReviewMessage();
             UpdateRuler();
+            LoadReviewHistory();
 
             if (value != null)
             {
@@ -165,6 +174,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public BitmapImage? DisplayImage
     {
         get => _displayImage;
+
         private set
         {
             if (ReferenceEquals(
@@ -183,6 +193,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public double ZoomLevel
     {
         get => _zoomLevel;
+
         private set
         {
             if (Math.Abs(
@@ -200,6 +211,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public bool HasPreviousImage
     {
         get => _hasPreviousImage;
+
         private set
         {
             if (_hasPreviousImage == value)
@@ -216,6 +228,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public bool HasNextImage
     {
         get => _hasNextImage;
+
         private set
         {
             if (_hasNextImage == value)
@@ -232,6 +245,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public string ReviewMessage
     {
         get => _reviewMessage;
+
         private set
         {
             if (_reviewMessage == value)
@@ -346,6 +360,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 UpdateNavigationState();
                 UpdateReviewMessage();
                 UpdateRuler();
+                LoadReviewHistory();
             }
         }
 
@@ -358,6 +373,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         else if (FilteredImages.Count == 0)
         {
             UpdateRuler();
+            ReviewHistory.Clear();
         }
     }
 
@@ -399,6 +415,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 SelectedImage = null;
 
                 RulerTicks.Clear();
+                ReviewHistory.Clear();
 
                 HasPreviousImage = false;
                 HasNextImage = false;
@@ -428,6 +445,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 $"Loaded {Images.Count} saved image(s) from all jobs.";
 
             UpdateRuler();
+            LoadReviewHistory();
         }
         catch (Exception ex)
         {
@@ -435,6 +453,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             FilteredImages.Clear();
             WorkOrderItems.Clear();
             RulerTicks.Clear();
+            ReviewHistory.Clear();
 
             SelectedImage = null;
 
@@ -722,6 +741,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             ImageViewerService.Instance.Clear();
 
             RulerTicks.Clear();
+            ReviewHistory.Clear();
         }
 
         if (_selectedImage == null &&
@@ -889,17 +909,46 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
         try
         {
+            string previousStatus =
+                _selectedImage.ReviewStatus;
+
+            string reviewer =
+                Environment.UserName;
+
+            DateTime reviewTime =
+                DateTime.Now;
+
             _selectedImage.ReviewStatus =
                 status;
 
             _selectedImage.ReviewedBy =
-                Environment.UserName;
+                reviewer;
 
             _selectedImage.ReviewedOn =
-                DateTime.Now;
+                reviewTime;
 
             _imageService.Save(
                 _selectedImage);
+
+            try
+            {
+                _auditLogService.Add(
+                    reviewer,
+                    $"REVIEW_{status}",
+                    "Review",
+                    $"Job/Work Order: {_selectedImage.JobNumber} | " +
+                    $"Shot: {_selectedImage.ShotNumber}/{_selectedImage.TotalShots} | " +
+                    $"Pipe: {_selectedImage.PipeId} | " +
+                    $"Position: {_selectedImage.ShotPosition} | " +
+                    $"Previous Status: {previousStatus} | " +
+                    $"New Status: {status} | " +
+                    $"Reviewer: {reviewer} | " +
+                    $"Reviewed On: {reviewTime:yyyy-MM-dd HH:mm:ss}");
+            }
+            catch
+            {
+                // Audit failure must not prevent review status from being saved.
+            }
 
             OnPropertyChanged(
                 nameof(SelectedImage));
@@ -913,8 +962,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             OnPropertyChanged(
                 nameof(RejectedImages));
 
+            LoadReviewHistory();
+
             ReviewMessage =
-                $"Shot {_selectedImage.ShotNumber} marked {status}";
+                $"Shot {_selectedImage.ShotNumber} marked {status}.";
 
             ApplyFilter();
         }
@@ -922,6 +973,55 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         {
             ReviewMessage =
                 $"Review update failed: {ex.Message}";
+        }
+    }
+
+    private void LoadReviewHistory()
+    {
+        ReviewHistory.Clear();
+
+        if (_selectedImage == null)
+        {
+            return;
+        }
+
+        try
+        {
+            string jobNumber =
+                _selectedImage.JobNumber ?? string.Empty;
+
+            string shotNumber =
+                _selectedImage.ShotNumber.ToString();
+
+            var history =
+                _auditLogService
+                    .GetAll()
+                    .Where(
+                        log =>
+                            string.Equals(
+                                log.Module,
+                                "Review",
+                                StringComparison.OrdinalIgnoreCase)
+                            &&
+                            log.Description.Contains(
+                                $"Job/Work Order: {jobNumber}",
+                                StringComparison.OrdinalIgnoreCase)
+                            &&
+                            log.Description.Contains(
+                                $"Shot: {shotNumber}/",
+                                StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(
+                        log => log.Timestamp)
+                    .ToList();
+
+            foreach (var log in history)
+            {
+                ReviewHistory.Add(log);
+            }
+        }
+        catch
+        {
+            ReviewHistory.Clear();
         }
     }
 
@@ -969,6 +1069,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             UpdateNavigationState();
 
             RulerTicks.Clear();
+            ReviewHistory.Clear();
 
             return;
         }
@@ -1006,6 +1107,8 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         UpdateReviewMessage();
 
         UpdateRuler();
+
+        LoadReviewHistory();
     }
 
     private void LoadDisplayImage()

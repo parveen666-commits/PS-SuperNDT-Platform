@@ -196,9 +196,7 @@
         </Style>
 
 
-        <!-- DARK COMBOBOX ITEM -->
-
-        <Style x:Key="StatusComboBoxItemStyle"
+        <Style x:Key="DarkComboBoxItemStyle"
                TargetType="ComboBoxItem">
 
             <Setter Property="Foreground"
@@ -386,10 +384,17 @@
                 <Grid.ColumnDefinitions>
 
                     <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="190"/>
+
                     <ColumnDefinition Width="150"/>
+
                     <ColumnDefinition Width="82"/>
+
                     <ColumnDefinition Width="82"/>
+
                     <ColumnDefinition Width="82"/>
+
                     <ColumnDefinition Width="Auto"/>
 
                 </Grid.ColumnDefinitions>
@@ -406,11 +411,12 @@
                          Foreground="White"
                          BorderBrush="#4A5563"
                          FontSize="12"
+                         ToolTip="Search Job, Pipe, Shot, Frame, Operator..."
                          Text="{Binding SearchText,
                                 UpdateSourceTrigger=PropertyChanged}"/>
 
 
-                <!-- STATUS FILTER -->
+                <!-- WORK ORDER -->
 
                 <ComboBox Grid.Column="1"
                           Height="34"
@@ -420,10 +426,11 @@
                           Foreground="White"
                           BorderBrush="#4A5563"
                           BorderThickness="1"
-                          ItemsSource="{Binding StatusFilterItems}"
-                          SelectedItem="{Binding ReviewStatusFilter,
-                                               Mode=TwoWay}"
-                          SelectionChanged="ComboBox_SelectionChanged">
+                          ItemsSource="{Binding WorkOrderItems}"
+                          SelectedItem="{Binding SelectedWorkOrder,
+                                               Mode=TwoWay,
+                                               UpdateSourceTrigger=PropertyChanged}"
+                          ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}">
 
                     <ComboBox.Resources>
 
@@ -446,62 +453,50 @@
                                          Color="#3D5872"/>
 
                         <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
-                 Color="White"/>
+                                         Color="White"/>
+
+                    </ComboBox.Resources>
+
+                </ComboBox>
 
 
-                        <Style TargetType="ComboBoxItem">
+                <!-- STATUS FILTER -->
 
-                            <Setter Property="Foreground"
-                                    Value="White"/>
+                <ComboBox Grid.Column="2"
+                          Height="34"
+                          Margin="0,0,6,0"
+                          Padding="6,3"
+                          Background="#171B20"
+                          Foreground="White"
+                          BorderBrush="#4A5563"
+                          BorderThickness="1"
+                          ItemsSource="{Binding StatusFilterItems}"
+                          SelectedItem="{Binding ReviewStatusFilter,
+                                               Mode=TwoWay}"
+                          ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}">
 
-                            <Setter Property="Background"
-                                    Value="#252B33"/>
+                    <ComboBox.Resources>
 
-                            <Setter Property="Padding"
-                                    Value="10,8"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}"
+                                         Color="#252B33"/>
 
-                            <Setter Property="Margin"
-                                    Value="1"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
+                                         Color="#252B33"/>
 
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Stretch"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
+                                         Color="White"/>
 
-                            <Setter Property="VerticalContentAlignment"
-                                    Value="Center"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                         Color="#3D5872"/>
 
-                            <Setter Property="FontSize"
-                                    Value="11"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                         Color="White"/>
 
-                            <Setter Property="FontWeight"
-                                    Value="SemiBold"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                                         Color="#3D5872"/>
 
-                            <Style.Triggers>
-
-                                <Trigger Property="IsMouseOver"
-                                         Value="True">
-
-                                    <Setter Property="Background"
-                                            Value="#3D5872"/>
-
-                                    <Setter Property="Foreground"
-                                            Value="White"/>
-
-                                </Trigger>
-
-                                <Trigger Property="IsSelected"
-                                         Value="True">
-
-                                    <Setter Property="Background"
-                                            Value="#4A6A8A"/>
-
-                                    <Setter Property="Foreground"
-                                            Value="White"/>
-
-                                </Trigger>
-
-                            </Style.Triggers>
-
-                        </Style>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                                         Color="White"/>
 
                     </ComboBox.Resources>
 
@@ -510,7 +505,7 @@
 
                 <!-- REFRESH -->
 
-                <Button Grid.Column="2"
+                <Button Grid.Column="3"
                         Content="REFRESH"
                         Command="{Binding RefreshCommand}"
                         Style="{StaticResource ActionButton}"/>
@@ -518,7 +513,7 @@
 
                 <!-- CLEAR -->
 
-                <Button Grid.Column="3"
+                <Button Grid.Column="4"
                         Content="CLEAR"
                         Command="{Binding ClearFilterCommand}"
                         Style="{StaticResource ActionButton}"/>
@@ -526,7 +521,7 @@
 
                 <!-- OPEN -->
 
-                <Button Grid.Column="4"
+                <Button Grid.Column="5"
                         Content="OPEN"
                         Command="{Binding OpenImageCommand}"
                         Style="{StaticResource ActionButton}"/>
@@ -534,7 +529,7 @@
 
                 <!-- ZOOM -->
 
-                <StackPanel Grid.Column="5"
+                <StackPanel Grid.Column="6"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             Margin="6,0,0,0">
@@ -577,7 +572,9 @@
             <Grid.ColumnDefinitions>
 
                 <ColumnDefinition Width="280"/>
+
                 <ColumnDefinition Width="*"/>
+
                 <ColumnDefinition Width="290"/>
 
             </Grid.ColumnDefinitions>
@@ -596,7 +593,9 @@
                     <Grid.RowDefinitions>
 
                         <RowDefinition Height="32"/>
+
                         <RowDefinition Height="*"/>
+
                         <RowDefinition Height="44"/>
 
                     </Grid.RowDefinitions>
@@ -607,6 +606,7 @@
                         <Grid.ColumnDefinitions>
 
                             <ColumnDefinition Width="*"/>
+
                             <ColumnDefinition Width="Auto"/>
 
                         </Grid.ColumnDefinitions>
@@ -619,7 +619,7 @@
                                    VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Column="1"
-                                   Text="{Binding TotalImages,
+                                   Text="{Binding FilteredImages.Count,
                                           StringFormat={}Shots: {0}}"
                                    Foreground="#7F8B99"
                                    FontSize="10"
@@ -664,6 +664,7 @@
                         <Grid.ColumnDefinitions>
 
                             <ColumnDefinition Width="*"/>
+
                             <ColumnDefinition Width="*"/>
 
                         </Grid.ColumnDefinitions>
@@ -716,7 +717,9 @@
                             <Grid.ColumnDefinitions>
 
                                 <ColumnDefinition Width="*"/>
+
                                 <ColumnDefinition Width="Auto"/>
+
                                 <ColumnDefinition Width="Auto"/>
 
                             </Grid.ColumnDefinitions>
@@ -836,6 +839,7 @@
                                     <Grid.RowDefinitions>
 
                                         <RowDefinition Height="18"/>
+
                                         <RowDefinition Height="30"/>
 
                                     </Grid.RowDefinitions>
@@ -846,7 +850,9 @@
                                         <Grid.ColumnDefinitions>
 
                                             <ColumnDefinition Width="Auto"/>
+
                                             <ColumnDefinition Width="*"/>
+
                                             <ColumnDefinition Width="Auto"/>
 
                                         </Grid.ColumnDefinitions>
@@ -967,8 +973,11 @@
                             <Grid.ColumnDefinitions>
 
                                 <ColumnDefinition Width="*"/>
+
                                 <ColumnDefinition Width="Auto"/>
+
                                 <ColumnDefinition Width="Auto"/>
+
                                 <ColumnDefinition Width="Auto"/>
 
                             </Grid.ColumnDefinitions>
@@ -1027,7 +1036,9 @@
                     <Grid.RowDefinitions>
 
                         <RowDefinition Height="32"/>
+
                         <RowDefinition Height="*"/>
+
                         <RowDefinition Height="44"/>
 
                     </Grid.RowDefinitions>
@@ -1266,7 +1277,9 @@
                         <Grid.ColumnDefinitions>
 
                             <ColumnDefinition Width="*"/>
+
                             <ColumnDefinition Width="*"/>
+
                             <ColumnDefinition Width="*"/>
 
                         </Grid.ColumnDefinitions>
