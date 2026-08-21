@@ -20,6 +20,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     private string _searchText = string.Empty;
     private string _reviewStatusFilter = "ALL";
+    private string _selectedWorkOrder = "ALL WORK ORDERS";
 
     private double _zoomLevel = 1.0;
 
@@ -33,6 +34,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public ObservableCollection<ImageRecordModel> FilteredImages { get; } = new();
 
     public ObservableCollection<RulerTick> RulerTicks { get; } = new();
+
+    public ObservableCollection<string> WorkOrderItems { get; } =
+        new();
 
     public ObservableCollection<string> StatusFilterItems { get; } =
         new()
@@ -64,6 +68,26 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public RelayCommand PendingCommand { get; }
 
     public RelayCommand OpenImageCommand { get; }
+
+    public string SelectedWorkOrder
+    {
+        get => _selectedWorkOrder;
+        set
+        {
+            value ??= "ALL WORK ORDERS";
+
+            if (_selectedWorkOrder == value)
+            {
+                return;
+            }
+
+            _selectedWorkOrder = value;
+
+            OnPropertyChanged();
+
+            ApplyFilter();
+        }
+    }
 
     public string SearchText
     {
@@ -225,21 +249,21 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         Images.Count;
 
     public int PendingImages =>
-        Images.Count(image =>
+        FilteredImages.Count(image =>
             string.Equals(
                 image.ReviewStatus,
                 "PENDING",
                 StringComparison.OrdinalIgnoreCase));
 
     public int AcceptedImages =>
-        Images.Count(image =>
+        FilteredImages.Count(image =>
             string.Equals(
                 image.ReviewStatus,
                 "ACCEPTED",
                 StringComparison.OrdinalIgnoreCase));
 
     public int RejectedImages =>
-        Images.Count(image =>
+        FilteredImages.Count(image =>
             string.Equals(
                 image.ReviewStatus,
                 "REJECTED",
@@ -294,33 +318,44 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         CurrentJobService.Instance.CurrentJobChanged +=
             CurrentJobService_CurrentJobChanged;
 
-        LoadImages();
+        ImageService.ImageSaved +=
+            ImageService_ImageSaved;
 
         ImageViewerService.Instance.CurrentImageChanged +=
             ImageViewerService_CurrentImageChanged;
 
+        LoadImages();
+
         var currentImage =
             ImageViewerService.Instance.CurrentImage;
 
-        if (currentImage != null &&
-            Images.Contains(currentImage))
+        if (currentImage != null)
         {
-            _selectedImage = currentImage;
+            var savedImage =
+                Images.FirstOrDefault(
+                    image => image.Id == currentImage.Id);
 
-            OnPropertyChanged(
-                nameof(SelectedImage));
+            if (savedImage != null)
+            {
+                _selectedImage = savedImage;
 
-            LoadDisplayImage();
-            UpdateNavigationState();
-            UpdateReviewMessage();
-            UpdateRuler();
+                OnPropertyChanged(
+                    nameof(SelectedImage));
+
+                LoadDisplayImage();
+                UpdateNavigationState();
+                UpdateReviewMessage();
+                UpdateRuler();
+            }
         }
-        else if (FilteredImages.Count > 0)
+
+        if (_selectedImage == null &&
+            FilteredImages.Count > 0)
         {
             SelectedImage =
                 FilteredImages[0];
         }
-        else
+        else if (FilteredImages.Count == 0)
         {
             UpdateRuler();
         }
@@ -330,15 +365,12 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     {
         try
         {
+            var previousSelectedId =
+                _selectedImage?.Id;
+
             Images.Clear();
             FilteredImages.Clear();
 
-            /*
-             * IMPORTANT:
-             * Review must not depend only on CurrentJob.
-             * All captured shots are persisted in the Images table
-             * with their JobId, so Review loads the complete history.
-             */
             var records =
                 _imageService
                     .GetAll()
@@ -355,17 +387,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 Images.Add(record);
             }
 
+            BuildWorkOrderList();
+
             OnPropertyChanged(
                 nameof(TotalImages));
-
-            OnPropertyChanged(
-                nameof(PendingImages));
-
-            OnPropertyChanged(
-                nameof(AcceptedImages));
-
-            OnPropertyChanged(
-                nameof(RejectedImages));
 
             ApplyFilter();
 
@@ -380,19 +405,35 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
                 ReviewMessage =
                     "No saved images found.";
-            }
-            else
-            {
-                ReviewMessage =
-                    $"Loaded {Images.Count} saved image(s) from all jobs.";
 
-                UpdateRuler();
+                return;
             }
+
+            if (previousSelectedId.HasValue)
+            {
+                var previousImage =
+                    FilteredImages.FirstOrDefault(
+                        image =>
+                            image.Id ==
+                            previousSelectedId.Value);
+
+                if (previousImage != null)
+                {
+                    SelectedImage =
+                        previousImage;
+                }
+            }
+
+            ReviewMessage =
+                $"Loaded {Images.Count} saved image(s) from all jobs.";
+
+            UpdateRuler();
         }
         catch (Exception ex)
         {
             Images.Clear();
             FilteredImages.Clear();
+            WorkOrderItems.Clear();
             RulerTicks.Clear();
 
             SelectedImage = null;
@@ -417,15 +458,128 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
+    private void BuildWorkOrderList()
+    {
+        var currentSelection =
+            SelectedWorkOrder;
+
+        WorkOrderItems.Clear();
+
+        WorkOrderItems.Add(
+            "ALL WORK ORDERS");
+
+        var jobs =
+            Images
+                .Select(
+                    image => image.JobNumber)
+                .Where(
+                    jobNumber =>
+                        !string.IsNullOrWhiteSpace(
+                            jobNumber))
+                .Distinct(
+                    StringComparer.OrdinalIgnoreCase)
+                .OrderBy(
+                    jobNumber => jobNumber,
+                    StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+        foreach (var jobNumber in jobs)
+        {
+            WorkOrderItems.Add(
+                jobNumber);
+        }
+
+        if (WorkOrderItems.Any(
+                item =>
+                    string.Equals(
+                        item,
+                        currentSelection,
+                        StringComparison.OrdinalIgnoreCase)))
+        {
+            _selectedWorkOrder =
+                currentSelection;
+        }
+        else
+        {
+            _selectedWorkOrder =
+                "ALL WORK ORDERS";
+        }
+
+        OnPropertyChanged(
+            nameof(SelectedWorkOrder));
+    }
+
+    private void ImageService_ImageSaved(
+        object? sender,
+        ImageRecordModel image)
+    {
+        var selectedWorkOrderBeforeRefresh =
+            SelectedWorkOrder;
+
+        LoadImages();
+
+        if (WorkOrderItems.Any(
+                item =>
+                    string.Equals(
+                        item,
+                        image.JobNumber,
+                        StringComparison.OrdinalIgnoreCase)))
+        {
+            if (string.Equals(
+                    selectedWorkOrderBeforeRefresh,
+                    "ALL WORK ORDERS",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                SelectedWorkOrder =
+                    selectedWorkOrderBeforeRefresh;
+            }
+            else
+            {
+                SelectedWorkOrder =
+                    image.JobNumber;
+            }
+        }
+
+        var savedImage =
+            FilteredImages.FirstOrDefault(
+                x => x.Id == image.Id);
+
+        if (savedImage != null)
+        {
+            SelectedImage =
+                savedImage;
+        }
+
+        ReviewMessage =
+            $"New Shot {image.ShotNumber} saved and loaded in Review.";
+    }
+
     private void CurrentJobService_CurrentJobChanged(
         object? sender,
         JobModel? job)
     {
-        /*
-         * Current job changes should refresh the review history,
-         * but Review itself is not restricted to that job.
-         */
+        if (job == null)
+        {
+            return;
+        }
+
         LoadImages();
+
+        if (WorkOrderItems.Any(
+                item =>
+                    string.Equals(
+                        item,
+                        job.JobNumber,
+                        StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectedWorkOrder =
+                job.JobNumber;
+        }
+        else
+        {
+            SelectedWorkOrder =
+                "ALL WORK ORDERS";
+        }
     }
 
     private void ApplyFilter()
@@ -436,99 +590,98 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         string status =
             ReviewStatusFilter.Trim();
 
+        string workOrder =
+            SelectedWorkOrder.Trim();
+
         var filtered =
             Images
-                .Where(image =>
-                {
-                    if (!string.Equals(
-                            status,
-                            "ALL",
-                            StringComparison.OrdinalIgnoreCase))
+                .Where(
+                    image =>
                     {
-                        if (string.Equals(
+                        if (!string.Equals(
+                                workOrder,
+                                "ALL WORK ORDERS",
+                                StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!string.Equals(
+                                    image.JobNumber,
+                                    workOrder,
+                                    StringComparison.OrdinalIgnoreCase))
+                            {
+                                return false;
+                            }
+                        }
+
+                        if (!string.Equals(
                                 status,
-                                "ACCEPTED",
+                                "ALL",
                                 StringComparison.OrdinalIgnoreCase))
                         {
                             if (!string.Equals(
                                     image.ReviewStatus,
-                                    "ACCEPTED",
+                                    status,
                                     StringComparison.OrdinalIgnoreCase))
                             {
                                 return false;
                             }
                         }
-                        else if (string.Equals(
-                                     status,
-                                     "REJECTED",
-                                     StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (!string.Equals(
-                                    image.ReviewStatus,
-                                    "REJECTED",
-                                    StringComparison.OrdinalIgnoreCase))
-                            {
-                                return false;
-                            }
-                        }
-                        else if (string.Equals(
-                                     status,
-                                     "PENDING",
-                                     StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (!string.Equals(
-                                    image.ReviewStatus,
-                                    "PENDING",
-                                    StringComparison.OrdinalIgnoreCase))
-                            {
-                                return false;
-                            }
-                        }
-                    }
 
-                    if (string.IsNullOrWhiteSpace(search))
-                    {
-                        return true;
-                    }
+                        if (string.IsNullOrWhiteSpace(
+                                search))
+                        {
+                            return true;
+                        }
 
-                    return
-                        Contains(
-                            image.JobNumber,
-                            search)
-                        ||
-                        Contains(
-                            image.FileName,
-                            search)
-                        ||
-                        Contains(
-                            image.Operator,
-                            search)
-                        ||
-                        Contains(
-                            image.DetectorName,
-                            search)
-                        ||
-                        Contains(
-                            image.Remarks,
-                            search)
-                        ||
-                        image.FrameNumber
-                            .ToString()
-                            .Contains(
-                                search,
-                                StringComparison.OrdinalIgnoreCase)
-                        ||
-                        image.ShotNumber
-                            .ToString()
-                            .Contains(
-                                search,
-                                StringComparison.OrdinalIgnoreCase)
-                        ||
-                        image.ShotPosition
-                            .Contains(
-                                search,
-                                StringComparison.OrdinalIgnoreCase);
-                })
+                        return
+                            Contains(
+                                image.JobNumber,
+                                search)
+                            ||
+                            Contains(
+                                image.FileName,
+                                search)
+                            ||
+                            Contains(
+                                image.PipeId,
+                                search)
+                            ||
+                            Contains(
+                                image.Operator,
+                                search)
+                            ||
+                            Contains(
+                                image.DetectorName,
+                                search)
+                            ||
+                            Contains(
+                                image.Remarks,
+                                search)
+                            ||
+                            Contains(
+                                image.WeldNumber,
+                                search)
+                            ||
+                            Contains(
+                                image.JointNumber,
+                                search)
+                            ||
+                            image.FrameNumber
+                                .ToString()
+                                .Contains(
+                                    search,
+                                    StringComparison.OrdinalIgnoreCase)
+                            ||
+                            image.ShotNumber
+                                .ToString()
+                                .Contains(
+                                    search,
+                                    StringComparison.OrdinalIgnoreCase)
+                            ||
+                            image.ShotPosition
+                                .Contains(
+                                    search,
+                                    StringComparison.OrdinalIgnoreCase);
+                    })
                 .OrderBy(
                     image => image.CapturedOn)
                 .ThenBy(
@@ -544,9 +697,20 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             FilteredImages.Add(image);
         }
 
+        OnPropertyChanged(
+            nameof(PendingImages));
+
+        OnPropertyChanged(
+            nameof(AcceptedImages));
+
+        OnPropertyChanged(
+            nameof(RejectedImages));
+
         if (_selectedImage != null &&
-            !FilteredImages.Contains(
-                _selectedImage))
+            !FilteredImages.Any(
+                image =>
+                    image.Id ==
+                    _selectedImage.Id))
         {
             _selectedImage = null;
 
@@ -577,6 +741,11 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 ReviewMessage =
                     "No images match the current filter.";
             }
+            else
+            {
+                ReviewMessage =
+                    "No saved images found.";
+            }
         }
         else
         {
@@ -597,8 +766,17 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     private void ClearFilters()
     {
-        SearchText = string.Empty;
-        ReviewStatusFilter = "ALL";
+        _selectedWorkOrder =
+            "ALL WORK ORDERS";
+
+        OnPropertyChanged(
+            nameof(SelectedWorkOrder));
+
+        SearchText =
+            string.Empty;
+
+        ReviewStatusFilter =
+            "ALL";
 
         ApplyFilter();
     }
@@ -795,20 +973,26 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (!Images.Contains(currentImage))
+        var matchingImage =
+            Images.FirstOrDefault(
+                image =>
+                    image.Id ==
+                    currentImage.Id);
+
+        if (matchingImage == null)
         {
             return;
         }
 
         if (ReferenceEquals(
                 _selectedImage,
-                currentImage))
+                matchingImage))
         {
             return;
         }
 
         _selectedImage =
-            currentImage;
+            matchingImage;
 
         OnPropertyChanged(
             nameof(SelectedImage));
@@ -890,6 +1074,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
         ReviewMessage =
             $"Job {_selectedImage.JobNumber}  |  " +
+            $"Pipe {_selectedImage.PipeId}  |  " +
             $"Shot {_selectedImage.ShotNumber}/" +
             $"{_selectedImage.TotalShots}  |  " +
             $"{_selectedImage.ShotStartPosition:0}-" +
