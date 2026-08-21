@@ -60,6 +60,8 @@ public sealed class RtrReviewFilterService
                 x.WeldingProcess == value);
         }
 
+        // IQI
+
         if (!string.IsNullOrWhiteSpace(filter.IqiType))
         {
             string value = filter.IqiType.Trim();
@@ -76,6 +78,24 @@ public sealed class RtrReviewFilterService
                 x.IQISensitivity.Contains(value));
         }
 
+        if (filter.IqiMinimum.HasValue)
+        {
+            double minimum = filter.IqiMinimum.Value;
+
+            query = query.Where(x =>
+                x.IQI >= minimum);
+        }
+
+        if (filter.IqiMaximum.HasValue)
+        {
+            double maximum = filter.IqiMaximum.Value;
+
+            query = query.Where(x =>
+                x.IQI <= maximum);
+        }
+
+        // Filter / Grain
+
         if (!string.IsNullOrWhiteSpace(filter.Filter))
         {
             string value = filter.Filter.Trim();
@@ -84,15 +104,25 @@ public sealed class RtrReviewFilterService
                 x.Filter == value);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.Grain))
+        {
+            string value = filter.Grain.Trim();
+
+            query = query.Where(x =>
+                x.Grain.Contains(value));
+        }
+
+        // Defect
+
         if (!string.IsNullOrWhiteSpace(filter.DefectType))
         {
             string value = filter.DefectType.Trim();
 
             query = query.Where(x =>
                 db.Set<DefectModel>()
-                  .Any(d =>
-                      d.ImageId == x.Id &&
-                      d.DefectType == value));
+                    .Any(d =>
+                        d.ImageId == x.Id &&
+                        d.DefectType == value));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.AcceptanceCode))
@@ -101,9 +131,9 @@ public sealed class RtrReviewFilterService
 
             query = query.Where(x =>
                 db.Set<DefectModel>()
-                  .Any(d =>
-                      d.ImageId == x.Id &&
-                      d.Status == value));
+                    .Any(d =>
+                        d.ImageId == x.Id &&
+                        d.Status == value));
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Result))
@@ -114,6 +144,8 @@ public sealed class RtrReviewFilterService
                 x.ReviewStatus == value);
         }
 
+        // SNR
+
         if (filter.SnrMinimum.HasValue)
         {
             double minimum = filter.SnrMinimum.Value;
@@ -121,6 +153,16 @@ public sealed class RtrReviewFilterService
             query = query.Where(x =>
                 x.SNR >= minimum);
         }
+
+        if (filter.SnrMaximum.HasValue)
+        {
+            double maximum = filter.SnrMaximum.Value;
+
+            query = query.Where(x =>
+                x.SNR <= maximum);
+        }
+
+        // Density
 
         if (filter.DensityMinimum.HasValue)
         {
@@ -138,6 +180,8 @@ public sealed class RtrReviewFilterService
                 x.Density <= maximum);
         }
 
+        // Contrast
+
         if (filter.ContrastMinimum.HasValue)
         {
             double minimum = filter.ContrastMinimum.Value;
@@ -153,6 +197,19 @@ public sealed class RtrReviewFilterService
             query = query.Where(x =>
                 x.Contrast <= maximum);
         }
+
+        // Basic Spatial Resolution
+
+        if (filter.BasicSpatialResolutionMaximum.HasValue)
+        {
+            double maximum =
+                filter.BasicSpatialResolutionMaximum.Value;
+
+            query = query.Where(x =>
+                x.BasicSpatialResolution <= maximum);
+        }
+
+        // kV
 
         if (filter.KvMinimum.HasValue)
         {
@@ -170,6 +227,8 @@ public sealed class RtrReviewFilterService
                 x.KV <= maximum);
         }
 
+        // mA
+
         if (filter.MaMinimum.HasValue)
         {
             double minimum = filter.MaMinimum.Value;
@@ -186,9 +245,12 @@ public sealed class RtrReviewFilterService
                 x.MA <= maximum);
         }
 
+        // Exposure Time
+
         if (filter.ExposureTimeMinimum.HasValue)
         {
-            double minimum = filter.ExposureTimeMinimum.Value;
+            double minimum =
+                filter.ExposureTimeMinimum.Value;
 
             query = query.Where(x =>
                 x.ExposureTime >= minimum);
@@ -196,11 +258,14 @@ public sealed class RtrReviewFilterService
 
         if (filter.ExposureTimeMaximum.HasValue)
         {
-            double maximum = filter.ExposureTimeMaximum.Value;
+            double maximum =
+                filter.ExposureTimeMaximum.Value;
 
             query = query.Where(x =>
                 x.ExposureTime <= maximum);
         }
+
+        // SFD
 
         if (filter.SfdMinimum.HasValue)
         {
@@ -218,6 +283,26 @@ public sealed class RtrReviewFilterService
                 x.SFD <= maximum);
         }
 
+        // ODD
+
+        if (filter.OddMinimum.HasValue)
+        {
+            double minimum = filter.OddMinimum.Value;
+
+            query = query.Where(x =>
+                x.ODD >= minimum);
+        }
+
+        if (filter.OddMaximum.HasValue)
+        {
+            double maximum = filter.OddMaximum.Value;
+
+            query = query.Where(x =>
+                x.ODD <= maximum);
+        }
+
+        // Geometric Unsharpness
+
         if (filter.UnsharpnessMaximum.HasValue)
         {
             double maximum =
@@ -226,6 +311,28 @@ public sealed class RtrReviewFilterService
             query = query.Where(x =>
                 x.GeometricUnsharpness <= maximum);
         }
+
+        // Material Thickness
+
+        if (filter.MaterialThicknessMinimum.HasValue)
+        {
+            double minimum =
+                filter.MaterialThicknessMinimum.Value;
+
+            query = query.Where(x =>
+                x.MaterialThickness >= minimum);
+        }
+
+        if (filter.MaterialThicknessMaximum.HasValue)
+        {
+            double maximum =
+                filter.MaterialThicknessMaximum.Value;
+
+            query = query.Where(x =>
+                x.MaterialThickness <= maximum);
+        }
+
+        // Date
 
         if (filter.FromDate.HasValue)
         {
@@ -246,6 +353,8 @@ public sealed class RtrReviewFilterService
             query = query.Where(x =>
                 x.CapturedOn <= to);
         }
+
+        // Review Status
 
         if (filter.ReviewedOnly)
         {
@@ -318,6 +427,19 @@ public sealed class RtrReviewFilterService
             .AsNoTracking()
             .Where(x => x.Filter != "")
             .Select(x => x.Filter)
+            .Distinct()
+            .OrderBy(x => x)
+            .ToList();
+    }
+
+    public List<string> GetGrains()
+    {
+        using var db = new SuperNDTDbContext();
+
+        return db.Set<ImageRecordModel>()
+            .AsNoTracking()
+            .Where(x => x.Grain != "")
+            .Select(x => x.Grain)
             .Distinct()
             .OrderBy(x => x)
             .ToList();

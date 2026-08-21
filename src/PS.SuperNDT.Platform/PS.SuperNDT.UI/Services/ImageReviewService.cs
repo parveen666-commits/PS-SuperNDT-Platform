@@ -98,6 +98,88 @@ public sealed class ImageReviewService
         db.SaveChanges();
     }
 
+    public void SaveReviewDecision(
+        ImageReviewModel review,
+        string result,
+        string reviewer)
+    {
+        ArgumentNullException.ThrowIfNull(review);
+
+        using var db = new SuperNDTDbContext();
+
+        var existing = db.Set<ImageReviewModel>()
+            .FirstOrDefault(x => x.Id == review.Id);
+
+        if (existing == null)
+        {
+            existing = review;
+            db.Set<ImageReviewModel>().Add(existing);
+        }
+        else
+        {
+            existing.ImageName = review.ImageName;
+            existing.FilePath = review.FilePath;
+            existing.Reviewer = reviewer;
+            existing.ReviewDate = DateTime.Now;
+            existing.Result = result;
+            existing.DefectType = review.DefectType;
+            existing.DefectLocation = review.DefectLocation;
+            existing.DefectLength = review.DefectLength;
+            existing.DefectWidth = review.DefectWidth;
+            existing.AcceptanceCode = review.AcceptanceCode;
+            existing.Remarks = review.Remarks;
+            existing.IsAccepted = result == "ACCEPTED";
+            existing.IsReviewed = result != "PENDING";
+            existing.ZoomLevel = review.ZoomLevel;
+            existing.Brightness = review.Brightness;
+            existing.Contrast = review.Contrast;
+        }
+
+        existing.Reviewer = reviewer;
+        existing.ReviewDate = DateTime.Now;
+        existing.Result = result;
+        existing.IsAccepted = result == "ACCEPTED";
+        existing.IsReviewed = result != "PENDING";
+
+        db.SaveChanges();
+
+        SyncImageRecord(
+            db,
+            existing,
+            result,
+            reviewer);
+    }
+
+    private static void SyncImageRecord(
+        SuperNDTDbContext db,
+        ImageReviewModel review,
+        string result,
+        string reviewer)
+    {
+        if (string.IsNullOrWhiteSpace(review.ImageName) &&
+            string.IsNullOrWhiteSpace(review.FilePath))
+        {
+            return;
+        }
+
+        var image = db.Set<ImageRecordModel>()
+            .FirstOrDefault(x =>
+                (!string.IsNullOrWhiteSpace(review.ImageName) &&
+                 x.FileName == review.ImageName)
+                ||
+                (!string.IsNullOrWhiteSpace(review.FilePath) &&
+                 x.FilePath == review.FilePath));
+
+        if (image == null)
+            return;
+
+        image.ReviewStatus = result;
+        image.ReviewedBy = reviewer;
+        image.ReviewedOn = DateTime.Now;
+
+        db.SaveChanges();
+    }
+
     public void Delete(Guid id)
     {
         using var db = new SuperNDTDbContext();

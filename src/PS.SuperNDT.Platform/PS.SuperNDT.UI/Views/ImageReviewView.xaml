@@ -5,84 +5,899 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
 
+    <UserControl.Resources>
+
+        <Style x:Key="FilterLabel"
+               TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#AEB8C5"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="0,0,0,3"/>
+        </Style>
+
+        <Style x:Key="FilterTextBox"
+               TargetType="TextBox">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Padding" Value="7,3"/>
+            <Setter Property="Background" Value="#20262D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#46515E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="ActionButton"
+               TargetType="Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#34404D"/>
+            <Setter Property="BorderBrush" Value="#526171"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="ReviewActionButton"
+               TargetType="Button"
+               BasedOn="{StaticResource ActionButton}">
+            <Setter Property="MinWidth" Value="90"/>
+            <Setter Property="Height" Value="34"/>
+        </Style>
+
+        <Style x:Key="DecisionTextBox"
+               TargetType="TextBox"
+               BasedOn="{StaticResource FilterTextBox}">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#1B2026"/>
+            <Setter Property="Foreground" Value="#E8EDF3"/>
+            <Setter Property="BorderBrush" Value="#39434F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="RowBackground" Value="#20262D"/>
+            <Setter Property="AlternatingRowBackground" Value="#252C34"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#343D48"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#343D48"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#303943"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="7,5"/>
+        </Style>
+
+        <Style x:Key="DecisionLabel"
+               TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#AEB8C5"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+    </UserControl.Resources>
+
     <Grid Background="#1F232A">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
+            <RowDefinition Height="56"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- HEADER -->
+
         <Border Grid.Row="0"
-                Margin="10"
-                Background="#2B313A">
-            <TextBlock Text="Image Review Management"
-                       Margin="15,0"
-                       VerticalAlignment="Center"
-                       FontSize="22"
-                       FontWeight="SemiBold"
-                       Foreground="White"/>
+                Margin="10,10,10,6"
+                Background="#2B313A"
+                CornerRadius="4">
+
+            <Grid>
+
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="16,0">
+
+                    <TextBlock Text="RTR REVIEW"
+                               Foreground="White"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+
+                    <TextBlock Text="  |  Digital Radiography"
+                               Foreground="#8E9AA8"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+
+                </StackPanel>
+
+                <Border HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="0,0,15,0"
+                        Padding="12,5"
+                        Background="#20262D"
+                        CornerRadius="3">
+
+                    <TextBlock Text="MANUAL REVIEW"
+                               Foreground="#9FC5FF"
+                               FontSize="11"
+                               FontWeight="SemiBold"/>
+
+                </Border>
+
+            </Grid>
+
         </Border>
 
-        <DataGrid Grid.Row="1"
-                  Margin="10"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  ItemsSource="{Binding Reviews}"
-                  SelectedItem="{Binding SelectedReview}">
+        <!-- FILTER AREA -->
 
-            <DataGrid.Columns>
+        <Border Grid.Row="1"
+                Margin="10,4,10,8"
+                Padding="10"
+                Background="#252B33"
+                BorderBrush="#39434F"
+                BorderThickness="1"
+                CornerRadius="4">
 
-                <DataGridTextColumn Header="Image Name"
-                                    Binding="{Binding ImageName}"
-                                    Width="180"/>
+            <Grid>
 
-                <DataGridTextColumn Header="Reviewer"
-                                    Binding="{Binding Reviewer}"
-                                    Width="150"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <DataGridTextColumn Header="Result"
-                                    Binding="{Binding Result}"
-                                    Width="120"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <DataGridTextColumn Header="Defect Type"
-                                    Binding="{Binding DefectType}"
-                                    Width="160"/>
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="6"
+                           Text="RTR FILTER"
+                           Foreground="White"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
 
-                <DataGridTextColumn Header="Defect Location"
-                                    Binding="{Binding DefectLocation}"
-                                    Width="160"/>
+                <!-- ROW 1 -->
 
-                <DataGridTextColumn Header="Length"
-                                    Binding="{Binding DefectLength}"
-                                    Width="90"/>
+                <StackPanel Grid.Row="1" Grid.Column="0">
+                    <TextBlock Text="Image Name"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.ImageName,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
 
-                <DataGridTextColumn Header="Width"
-                                    Binding="{Binding DefectWidth}"
-                                    Width="90"/>
+                <StackPanel Grid.Row="1" Grid.Column="1">
+                    <TextBlock Text="Weld Number"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.WeldNumber,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
 
-                <DataGridTextColumn Header="Acceptance Code"
-                                    Binding="{Binding AcceptanceCode}"
-                                    Width="160"/>
+                <StackPanel Grid.Row="1" Grid.Column="2">
+                    <TextBlock Text="Joint Number"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.JointNumber,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
 
-                <DataGridCheckBoxColumn Header="Accepted"
-                                        Binding="{Binding IsAccepted}"
-                                        Width="100"/>
+                <StackPanel Grid.Row="1" Grid.Column="3">
+                    <TextBlock Text="Weld Type"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.WeldType,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
 
-                <DataGridCheckBoxColumn Header="Reviewed"
-                                        Binding="{Binding IsReviewed}"
-                                        Width="100"/>
+                <StackPanel Grid.Row="1" Grid.Column="4">
+                    <TextBlock Text="Welding Process"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.WeldingProcess,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
 
-                <DataGridTextColumn Header="Zoom %"
-                                    Binding="{Binding ZoomLevel}"
-                                    Width="90"/>
+                <StackPanel Grid.Row="1"
+                            Grid.Column="5"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Bottom">
 
-                <DataGridTextColumn Header="Review Date"
-                                    Binding="{Binding ReviewDate}"
-                                    Width="180"/>
+                    <Button Content="APPLY"
+                            Command="{Binding ApplyFilterCommand}"
+                            Style="{StaticResource ActionButton}"/>
 
-            </DataGrid.Columns>
+                    <Button Content="CLEAR"
+                            Command="{Binding ClearFilterCommand}"
+                            Style="{StaticResource ActionButton}"/>
 
-        </DataGrid>
+                </StackPanel>
+
+                <!-- ROW 2 -->
+
+                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,7,0,0">
+                    <TextBlock Text="IQI Type"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.IqiType,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,7,0,0">
+                    <TextBlock Text="IQI Sensitivity"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.IqiSensitivity,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,7,0,0">
+                    <TextBlock Text="IQI Min"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.IqiMinimum,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Grid.Column="3" Margin="0,7,0,0">
+                    <TextBlock Text="IQI Max"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.IqiMaximum,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Grid.Column="4" Margin="0,7,0,0">
+                    <TextBlock Text="Filter"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.Filter,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Grid.Column="5" Margin="0,7,0,0">
+                    <TextBlock Text="Grain"
+                               Style="{StaticResource FilterLabel}"/>
+                    <TextBox Style="{StaticResource FilterTextBox}"
+                             Text="{Binding RtrFilter.Grain,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <!-- IMAGE QUALITY -->
+
+                <Border Grid.Row="3"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="6"
+                        Margin="0,8,0,0"
+                        Padding="8"
+                        Background="#20262D"
+                        BorderBrush="#343D48"
+                        BorderThickness="1">
+
+                    <WrapPanel>
+
+                        <StackPanel Width="100">
+                            <TextBlock Text="SNR Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.SnrMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="100">
+                            <TextBlock Text="SNR Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.SnrMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="105">
+                            <TextBlock Text="Density Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.DensityMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="105">
+                            <TextBlock Text="Density Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.DensityMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="105">
+                            <TextBlock Text="Contrast Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.ContrastMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="105">
+                            <TextBlock Text="Contrast Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.ContrastMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="120">
+                            <TextBlock Text="BSR Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.BasicSpatialResolutionMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                    </WrapPanel>
+
+                </Border>
+
+                <!-- EXPOSURE -->
+
+                <Border Grid.Row="4"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="6"
+                        Margin="0,8,0,0"
+                        Padding="8"
+                        Background="#20262D"
+                        BorderBrush="#343D48"
+                        BorderThickness="1">
+
+                    <WrapPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="kV Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.KvMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="kV Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.KvMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="mA Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.MaMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="mA Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.MaMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="120">
+                            <TextBlock Text="Exposure Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.ExposureTimeMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="120">
+                            <TextBlock Text="Exposure Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.ExposureTimeMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                    </WrapPanel>
+
+                </Border>
+
+                <!-- GEOMETRY -->
+
+                <Border Grid.Row="5"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="6"
+                        Margin="0,8,0,0"
+                        Padding="8"
+                        Background="#20262D"
+                        BorderBrush="#343D48"
+                        BorderThickness="1">
+
+                    <WrapPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="SFD Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.SfdMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="SFD Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.SfdMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="ODD Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.OddMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="90">
+                            <TextBlock Text="ODD Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.OddMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="125">
+                            <TextBlock Text="Unsharpness Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.UnsharpnessMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="120">
+                            <TextBlock Text="Thickness Min"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.MaterialThicknessMinimum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="120">
+                            <TextBlock Text="Thickness Max"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.MaterialThicknessMaximum,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="115">
+                            <TextBlock Text="From Date"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <DatePicker Height="30"
+                                        SelectedDate="{Binding RtrFilter.FromDate}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="115">
+                            <TextBlock Text="To Date"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <DatePicker Height="30"
+                                        SelectedDate="{Binding RtrFilter.ToDate}"/>
+                        </StackPanel>
+
+                    </WrapPanel>
+
+                </Border>
+
+                <!-- DEFECT / REVIEW FILTER -->
+
+                <Border Grid.Row="6"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="6"
+                        Margin="0,8,0,0"
+                        Padding="8"
+                        Background="#20262D"
+                        BorderBrush="#343D48"
+                        BorderThickness="1">
+
+                    <WrapPanel>
+
+                        <StackPanel Width="140">
+                            <TextBlock Text="Defect Type"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.DefectType,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="140">
+                            <TextBlock Text="Acceptance Code"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.AcceptanceCode,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Width="120">
+                            <TextBlock Text="Result"
+                                       Style="{StaticResource FilterLabel}"/>
+                            <TextBox Style="{StaticResource FilterTextBox}"
+                                     Text="{Binding RtrFilter.Result,
+                                            UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <CheckBox Content="Reviewed Only"
+                                  IsChecked="{Binding RtrFilter.ReviewedOnly}"
+                                  Foreground="#DDE4EC"
+                                  VerticalAlignment="Bottom"
+                                  Margin="8,0,15,7"/>
+
+                        <CheckBox Content="Accepted Only"
+                                  IsChecked="{Binding RtrFilter.AcceptedOnly}"
+                                  Foreground="#DDE4EC"
+                                  VerticalAlignment="Bottom"
+                                  Margin="8,0,15,7"/>
+
+                        <CheckBox Content="Rejected Only"
+                                  IsChecked="{Binding RtrFilter.RejectedOnly}"
+                                  Foreground="#DDE4EC"
+                                  VerticalAlignment="Bottom"
+                                  Margin="8,0,15,7"/>
+
+                    </WrapPanel>
+
+                </Border>
+
+            </Grid>
+
+        </Border>
+
+        <!-- RTR IMAGE RESULTS -->
+
+        <Border Grid.Row="2"
+                Margin="10,0,10,6"
+                Padding="8"
+                Background="#252B33"
+                BorderBrush="#39434F"
+                BorderThickness="1"
+                CornerRadius="4">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="38"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+
+                    <TextBlock Text="RTR IMAGE RESULTS"
+                               Foreground="White"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+
+                        <Button Content="ACCEPT"
+                                Command="{Binding AcceptSelectedCommand}"
+                                Style="{StaticResource ReviewActionButton}"/>
+
+                        <Button Content="REJECT"
+                                Command="{Binding RejectSelectedCommand}"
+                                Style="{StaticResource ReviewActionButton}"/>
+
+                        <Button Content="HOLD"
+                                Command="{Binding HoldSelectedCommand}"
+                                Style="{StaticResource ReviewActionButton}"/>
+
+                        <TextBlock Margin="18,0,8,0"
+                                   Foreground="#8F9AA8"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding FilteredImages.Count,
+                                          StringFormat='Images: {0}'}"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+                <DataGrid Grid.Row="1"
+                          Margin="0,4,0,0"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          ItemsSource="{Binding FilteredImages}"
+                          SelectedItem="{Binding SelectedImage}">
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Shot"
+                                            Binding="{Binding ShotNumber}"
+                                            Width="60"/>
+
+                        <DataGridTextColumn Header="Image"
+                                            Binding="{Binding FileName}"
+                                            Width="180"/>
+
+                        <DataGridTextColumn Header="Position"
+                                            Binding="{Binding ShotPosition}"
+                                            Width="110"/>
+
+                        <DataGridTextColumn Header="Weld"
+                                            Binding="{Binding WeldNumber}"
+                                            Width="90"/>
+
+                        <DataGridTextColumn Header="Joint"
+                                            Binding="{Binding JointNumber}"
+                                            Width="90"/>
+
+                        <DataGridTextColumn Header="Weld Type"
+                                            Binding="{Binding WeldType}"
+                                            Width="110"/>
+
+                        <DataGridTextColumn Header="IQI"
+                                            Binding="{Binding IQI}"
+                                            Width="70"/>
+
+                        <DataGridTextColumn Header="SNR"
+                                            Binding="{Binding SNR}"
+                                            Width="70"/>
+
+                        <DataGridTextColumn Header="Density"
+                                            Binding="{Binding Density}"
+                                            Width="80"/>
+
+                        <DataGridTextColumn Header="Contrast"
+                                            Binding="{Binding Contrast}"
+                                            Width="80"/>
+
+                        <DataGridTextColumn Header="kV"
+                                            Binding="{Binding KV}"
+                                            Width="65"/>
+
+                        <DataGridTextColumn Header="mA"
+                                            Binding="{Binding MA}"
+                                            Width="65"/>
+
+                        <DataGridTextColumn Header="SFD"
+                                            Binding="{Binding SFD}"
+                                            Width="75"/>
+
+                        <DataGridTextColumn Header="ODD"
+                                            Binding="{Binding ODD}"
+                                            Width="75"/>
+
+                        <DataGridTextColumn Header="UG"
+                                            Binding="{Binding GeometricUnsharpness}"
+                                            Width="80"/>
+
+                        <DataGridTextColumn Header="Thickness"
+                                            Binding="{Binding MaterialThickness}"
+                                            Width="90"/>
+
+                        <DataGridTextColumn Header="Review"
+                                            Binding="{Binding ReviewStatus}"
+                                            Width="90"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </Grid>
+
+        </Border>
+
+        <!-- REVIEW DECISION PANEL -->
+
+        <Border Grid.Row="3"
+                Margin="10,0,10,6"
+                Padding="10"
+                Background="#252B33"
+                BorderBrush="#46515E"
+                BorderThickness="1"
+                CornerRadius="4">
+
+            <Grid>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="REVIEW DECISION"
+                               Style="{StaticResource DecisionLabel}"/>
+
+                    <TextBlock Text="{Binding SelectedReview.Result,
+                                              TargetNullValue=PENDING}"
+                               Foreground="White"
+                               FontSize="15"
+                               FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="DEFECT TYPE"
+                               Style="{StaticResource DecisionLabel}"/>
+
+                    <TextBox Style="{StaticResource DecisionTextBox}"
+                             Text="{Binding SelectedReview.DefectType,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2"
+                            Margin="10,0,0,0">
+                    <TextBlock Text="ACCEPTANCE CODE"
+                               Style="{StaticResource DecisionLabel}"/>
+
+                    <TextBox Style="{StaticResource DecisionTextBox}"
+                             Text="{Binding SelectedReview.AcceptanceCode,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3"
+                            Margin="10,0,10,0">
+                    <TextBlock Text="REMARKS"
+                               Style="{StaticResource DecisionLabel}"/>
+
+                    <TextBox Height="34"
+                             Padding="7,6"
+                             Background="#20262D"
+                             Foreground="White"
+                             BorderBrush="#46515E"
+                             BorderThickness="1"
+                             TextWrapping="NoWrap"
+                             Text="{Binding SelectedReview.Remarks,
+                                    UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Bottom">
+
+                    <Button Content="ACCEPT"
+                            Command="{Binding AcceptSelectedCommand}"
+                            Style="{StaticResource ReviewActionButton}"/>
+
+                    <Button Content="REJECT"
+                            Command="{Binding RejectSelectedCommand}"
+                            Style="{StaticResource ReviewActionButton}"/>
+
+                    <Button Content="HOLD"
+                            Command="{Binding HoldSelectedCommand}"
+                            Style="{StaticResource ReviewActionButton}"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+        <!-- REVIEW MANAGEMENT -->
+
+        <Border Grid.Row="4"
+                Margin="10,0,10,10"
+                Padding="8"
+                Background="#252B33"
+                BorderBrush="#39434F"
+                BorderThickness="1"
+                CornerRadius="4">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="38"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+
+                    <TextBlock Text="IMAGE REVIEW MANAGEMENT"
+                               Foreground="White"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+
+                        <TextBlock Margin="15,0,0,0"
+                                   Foreground="#8F9AA8"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding Reviews.Count,
+                                          StringFormat='Reviews: {0}'}"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+                <DataGrid Grid.Row="1"
+                          Margin="0,4,0,0"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          ItemsSource="{Binding Reviews}"
+                          SelectedItem="{Binding SelectedReview}">
+
+                    <DataGrid.Columns>
+
+                        <DataGridTextColumn Header="Image Name"
+                                            Binding="{Binding ImageName}"
+                                            Width="170"/>
+
+                        <DataGridTextColumn Header="Reviewer"
+                                            Binding="{Binding Reviewer}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Result"
+                                            Binding="{Binding Result}"
+                                            Width="100"/>
+
+                        <DataGridTextColumn Header="Defect Type"
+                                            Binding="{Binding DefectType}"
+                                            Width="130"/>
+
+                        <DataGridTextColumn Header="Defect Location"
+                                            Binding="{Binding DefectLocation}"
+                                            Width="130"/>
+
+                        <DataGridTextColumn Header="Length"
+                                            Binding="{Binding DefectLength}"
+                                            Width="75"/>
+
+                        <DataGridTextColumn Header="Width"
+                                            Binding="{Binding DefectWidth}"
+                                            Width="75"/>
+
+                        <DataGridTextColumn Header="Acceptance"
+                                            Binding="{Binding AcceptanceCode}"
+                                            Width="120"/>
+
+                        <DataGridTextColumn Header="Remarks"
+                                            Binding="{Binding Remarks}"
+                                            Width="220"/>
+
+                        <DataGridCheckBoxColumn Header="Accepted"
+                                                Binding="{Binding IsAccepted}"
+                                                Width="85"/>
+
+                        <DataGridCheckBoxColumn Header="Reviewed"
+                                                Binding="{Binding IsReviewed}"
+                                                Width="85"/>
+
+                        <DataGridTextColumn Header="Zoom"
+                                            Binding="{Binding ZoomLevel}"
+                                            Width="70"/>
+
+                        <DataGridTextColumn Header="Review Date"
+                                            Binding="{Binding ReviewDate}"
+                                            Width="150"/>
+
+                    </DataGrid.Columns>
+
+                </DataGrid>
+
+            </Grid>
+
+        </Border>
 
     </Grid>
 
