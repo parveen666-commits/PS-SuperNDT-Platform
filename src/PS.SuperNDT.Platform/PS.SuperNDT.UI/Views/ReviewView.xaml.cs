@@ -47,6 +47,9 @@ public partial class ReviewView : UserControl
     {
         InitializeComponent();
 
+        Focusable = true;
+        IsTabStop = false;
+
         DataContext = new ReviewViewModel();
 
         Loaded += ReviewView_Loaded;
@@ -64,6 +67,8 @@ public partial class ReviewView : UserControl
         RoutedEventArgs e)
     {
         Loaded -= ReviewView_Loaded;
+
+        Focusable = true;
 
         SetupPanTransform();
 
@@ -106,6 +111,8 @@ public partial class ReviewView : UserControl
         Dispatcher.BeginInvoke(
             new Action(() =>
             {
+                Focus();
+
                 FitImageToFrame();
                 ApplyZoomVisual();
                 UpdateScrollMode();
@@ -158,9 +165,6 @@ public partial class ReviewView : UserControl
 
         ImageViewport.SizeChanged -=
             ImageViewport_SizeChanged;
-
-        PreviewKeyDown -=
-            ReviewView_PreviewKeyDown;
 
         ClearPersistedDefectRectangles();
         ClearDynamicRulers();
@@ -1557,8 +1561,6 @@ public partial class ReviewView : UserControl
 
         if (result != true)
         {
-            // User cancelled the dialog.
-            // The temporary database defect must also be removed.
             try
             {
                 DefectService.Instance.RemoveDefect(
@@ -1566,8 +1568,6 @@ public partial class ReviewView : UserControl
             }
             catch
             {
-                // Do not interrupt the review screen
-                // if cleanup fails.
             }
 
             _selectedDefectId = null;
@@ -1616,6 +1616,14 @@ public partial class ReviewView : UserControl
                 defect.Id;
 
             RefreshSavedDefects();
+
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    Focus();
+                    Keyboard.Focus(this);
+                }),
+                DispatcherPriority.Input);
         }
         catch (Exception ex)
         {
@@ -1997,6 +2005,12 @@ public partial class ReviewView : UserControl
         _selectedDefectId =
             defectId;
 
+        // Keep keyboard focus on ReviewView so that
+        // Delete is received reliably after clicking
+        // a defect rectangle or detail card.
+        Focus();
+        Keyboard.Focus(this);
+
         RefreshSavedDefects();
     }
 
@@ -2049,6 +2063,14 @@ public partial class ReviewView : UserControl
             _selectedDefectId = null;
 
             RefreshSavedDefects();
+
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    Focus();
+                    Keyboard.Focus(this);
+                }),
+                DispatcherPriority.Input);
         }
         catch (Exception ex)
         {

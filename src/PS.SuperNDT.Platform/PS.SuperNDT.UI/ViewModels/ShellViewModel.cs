@@ -82,6 +82,11 @@ public class ShellViewModel : INotifyPropertyChanged
 
                 new NavigationItem
                 {
+                    Title = "Report Editor"
+                },
+
+                new NavigationItem
+                {
                     Title = "Settings"
                 }
             };
@@ -176,6 +181,16 @@ public class ShellViewModel : INotifyPropertyChanged
                 {
                     CurrentPage =
                         new ReportDashboardView();
+                }
+
+                break;
+
+            case "Report Editor":
+
+                if (_authorizationService.CanGenerateReports())
+                {
+                    CurrentPage =
+                        new ReportEditorView();
                 }
 
                 break;

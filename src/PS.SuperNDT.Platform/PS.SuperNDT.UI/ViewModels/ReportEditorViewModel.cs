@@ -34,11 +34,17 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         _imageService =
             new ImageService();
 
+        var currentJob =
+            CurrentJobService.Instance.CurrentJob;
+
         _report =
             new ReportDataModel
             {
                 ReportNumber =
                     $"PSNDT-RPT-{DateTime.Now:yyyyMMdd-HHmmss}",
+
+                JobId =
+                    currentJob?.Id ?? Guid.Empty,
 
                 InspectionDate =
                     DateTime.Now
@@ -70,6 +76,7 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
                 ExecuteRemoveSelectedImage);
 
         LoadReviewedImages();
+        LoadDefectFindings();
     }
 
     public RelayCommand GeneratePreviewCommand
@@ -161,20 +168,235 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         }
     }
 
+    // ============================================================
+    // FINDINGS
+    // ============================================================
+
     public void AddFinding(
         ReportFindingModel finding)
     {
+        if (finding == null)
+        {
+            return;
+        }
+
+        if (Findings.Any(
+                x => x.Id == finding.Id))
+        {
+            return;
+        }
+
         Findings.Add(finding);
 
-        Report.Findings.Add(finding);
+        if (!Report.Findings.Any(
+                x => x.Id == finding.Id))
+        {
+            Report.Findings.Add(finding);
+        }
+
+        RenumberFindings();
 
         StatusMessage =
             "Finding added successfully.";
     }
 
+    public void LoadDefectFindings()
+    {
+        Findings.Clear();
+        Report.Findings.Clear();
+
+        var currentJob =
+            CurrentJobService.Instance.CurrentJob;
+
+        if (currentJob == null)
+        {
+            Report.JobId =
+                Guid.Empty;
+
+            return;
+        }
+
+        Report.JobId =
+            currentJob.Id;
+
+        IEnumerable<DefectModel> defects;
+
+        try
+        {
+            defects =
+                DefectService.Instance.GetByJob(
+                    currentJob.Id);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage =
+                $"Unable to load defects: {ex.Message}";
+
+            return;
+        }
+
+        foreach (DefectModel defect in defects
+                     .OrderBy(x => x.ShotNumber)
+                     .ThenBy(x => x.PipePosition)
+                     .ThenBy(x => x.CreatedOn))
+        {
+            ReportFindingModel finding =
+                CreateFindingFromDefect(
+                    defect);
+
+            Findings.Add(finding);
+            Report.Findings.Add(finding);
+        }
+
+        RenumberFindings();
+
+        if (Findings.Count > 0)
+        {
+            StatusMessage =
+                $"{Findings.Count} defect finding(s) loaded automatically.";
+        }
+    }
+
+    private static ReportFindingModel CreateFindingFromDefect(
+        DefectModel defect)
+    {
+        string type =
+            string.IsNullOrWhiteSpace(
+                defect.DefectType)
+                ? "UNCLASSIFIED"
+                : defect.DefectType.Trim();
+
+        string severity =
+            string.IsNullOrWhiteSpace(
+                defect.Severity)
+                ? "UNCLASSIFIED"
+                : defect.Severity.Trim();
+
+        string status =
+            string.IsNullOrWhiteSpace(
+                defect.Status)
+                ? "OPEN"
+                : defect.Status.Trim();
+
+        string location =
+            $"Shot {defect.ShotNumber} / " +
+            $"Pipe Position {defect.PipePosition:0.0} mm";
+
+        string description =
+            $"Type: {type}; " +
+            $"Length: {defect.LengthMm:0.0} mm; " +
+            $"Width: {defect.WidthMm:0.0} mm";
+
+        if (!string.IsNullOrWhiteSpace(
+                defect.Description))
+        {
+            description +=
+                $"; Remarks: {defect.Description.Trim()}";
+        }
+
+        string evaluation =
+            $"Status: {status}; " +
+            $"Severity: {severity}";
+
+        if (defect.ThicknessChecked)
+        {
+            evaluation +=
+                $"; Thickness: " +
+                $"{defect.ActualThicknessMm:0.00} mm";
+
+            if (defect.MinimumThicknessMm > 0)
+            {
+                evaluation +=
+                    $" / Minimum " +
+                    $"{defect.MinimumThicknessMm:0.00} mm";
+            }
+
+            if (!string.IsNullOrWhiteSpace(
+                    defect.ThicknessStatus))
+            {
+                evaluation +=
+                    $" / {defect.ThicknessStatus}";
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                defect.ThicknessRemark))
+        {
+            evaluation +=
+                $"; Thickness Remark: " +
+                defect.ThicknessRemark.Trim();
+        }
+
+        bool accepted =
+            string.Equals(
+                status,
+                "ACCEPT",
+                StringComparison.OrdinalIgnoreCase)
+            ||
+            string.Equals(
+                status,
+                "ACCEPTED",
+                StringComparison.OrdinalIgnoreCase);
+
+        return new ReportFindingModel
+        {
+            Id =
+                defect.Id,
+
+            FindingNumber =
+                0,
+
+            Location =
+                location,
+
+            FindingType =
+                type,
+
+            Description =
+                description,
+
+            Severity =
+                severity,
+
+            Evaluation =
+                evaluation,
+
+            IsAccepted =
+                accepted,
+
+            InspectorRemark =
+                defect.Description ?? string.Empty,
+
+            CreatedOn =
+                defect.CreatedOn
+        };
+    }
+
+    private void RenumberFindings()
+    {
+        int sequence =
+            1;
+
+        foreach (ReportFindingModel finding
+                 in Findings)
+        {
+            finding.FindingNumber =
+                sequence++;
+        }
+    }
+
+    // ============================================================
+    // IMAGES
+    // ============================================================
+
     public void AddImage(
         ReportImageModel image)
     {
+        if (image == null)
+        {
+            return;
+        }
+
         Images.Add(image);
 
         Report.Images.Add(image);
@@ -192,11 +414,17 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
 
         if (currentJob == null)
         {
+            Report.JobId =
+                Guid.Empty;
+
             StatusMessage =
                 "No current job is open.";
 
             return;
         }
+
+        Report.JobId =
+            currentJob.Id;
 
         List<ImageRecordModel> images;
 
@@ -233,9 +461,16 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             $"{ReviewedImages.Count} reviewed image(s) loaded automatically.";
     }
 
+    // ============================================================
+    // REPORT PREVIEW
+    // ============================================================
+
     public string GeneratePreview()
     {
-        if (!_reportValidationService.Validate(Report))
+        LoadDefectFindings();
+
+        if (!_reportValidationService.Validate(
+                Report))
         {
             StatusMessage =
                 "Report validation failed.";
@@ -243,12 +478,20 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             return string.Empty;
         }
 
+        Report.GeneratedDate =
+            DateTime.Now;
+
         StatusMessage =
             "Report generated.";
 
         return _reportGeneratorService
-            .GenerateReportSummary(Report);
+            .GenerateReportSummary(
+                Report);
     }
+
+    // ============================================================
+    // COMMANDS
+    // ============================================================
 
     private void ExecuteGeneratePreview(
         object? parameter)
@@ -260,6 +503,7 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         object? parameter)
     {
         LoadReviewedImages();
+        LoadDefectFindings();
     }
 
     private void ExecuteAddSelectedImage(
@@ -328,7 +572,8 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
                     source.Remarks
             };
 
-        AddImage(reportImage);
+        AddImage(
+            reportImage);
 
         SelectedReportImage =
             reportImage;
@@ -351,9 +596,11 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         var image =
             SelectedReportImage;
 
-        Images.Remove(image);
+        Images.Remove(
+            image);
 
-        Report.Images.Remove(image);
+        Report.Images.Remove(
+            image);
 
         RenumberReportImages();
 
@@ -366,7 +613,7 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
 
     private void RenumberReportImages()
     {
-        var sequence =
+        int sequence =
             1;
 
         foreach (var image in Images)
@@ -387,20 +634,41 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             ||
             string.Equals(
                 image.ReviewStatus,
+                "ACCEPTED",
+                StringComparison.OrdinalIgnoreCase)
+            ||
+            string.Equals(
+                image.ReviewStatus,
                 "REJECT",
                 StringComparison.OrdinalIgnoreCase)
             ||
             string.Equals(
                 image.ReviewStatus,
+                "REJECTED",
+                StringComparison.OrdinalIgnoreCase)
+            ||
+            string.Equals(
+                image.ReviewStatus,
                 "HOLD",
+                StringComparison.OrdinalIgnoreCase)
+            ||
+            string.Equals(
+                image.ReviewStatus,
+                "PENDING",
                 StringComparison.OrdinalIgnoreCase);
     }
 
+    // ============================================================
+    // PROPERTY CHANGED
+    // ============================================================
+
     private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+        [CallerMemberName]
+        string? propertyName = null)
     {
         PropertyChanged?.Invoke(
             this,
-            new PropertyChangedEventArgs(propertyName));
+            new PropertyChangedEventArgs(
+                propertyName));
     }
 }

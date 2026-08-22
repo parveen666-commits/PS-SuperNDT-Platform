@@ -825,7 +825,6 @@ public sealed class DefectDialog : Window
             new FrameworkElementFactory(
                 typeof(Grid));
 
-        // ToggleButton
         FrameworkElementFactory toggleButton =
             new FrameworkElementFactory(
                 typeof(ToggleButton));
@@ -861,7 +860,6 @@ public sealed class DefectDialog : Window
         rootGrid.AppendChild(
             toggleButton);
 
-        // Selected item display
         FrameworkElementFactory contentPresenter =
             new FrameworkElementFactory(
                 typeof(ContentPresenter));
@@ -1029,21 +1027,18 @@ public sealed class DefectDialog : Window
         comboBox.Template =
             comboTemplate;
 
-        // =====================================================
-        // ITEMS
-        // =====================================================
-
         foreach (string item in items)
         {
-            comboBox.Items.Add(item);
+            comboBox.Items.Add(
+                item);
         }
 
         return comboBox;
     }
 
-    // =========================================================
+    // =====================================================
     // TEXTBOX
-    // =========================================================
+    // =====================================================
 
     private static TextBox CreateTextBox(
         string text)
@@ -1091,9 +1086,9 @@ public sealed class DefectDialog : Window
         };
     }
 
-    // =========================================================
+    // =====================================================
     // SAVE
-    // =========================================================
+    // =====================================================
 
     private void SaveButton_Click(
         object sender,
@@ -1160,9 +1155,9 @@ public sealed class DefectDialog : Window
             true;
     }
 
-    // =========================================================
+    // =====================================================
     // CANCEL
-    // =========================================================
+    // =====================================================
 
     private void CancelButton_Click(
         object sender,
