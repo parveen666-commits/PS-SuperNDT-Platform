@@ -551,43 +551,26 @@ public partial class ReviewView : UserControl
             return;
         }
 
+        // IMPORTANT:
+        // The ruler canvas is already inside ImagePanCanvas,
+        // which receives the zoom and pan transforms.
+        //
+        // Therefore ruler tick coordinates must remain in the
+        // ruler's own local coordinate system.
+        //
+        // Do NOT multiply by zoom and do NOT add pan here.
         double rulerWidth =
-            ImagePanCanvas.ActualWidth;
+            RulerCanvas.ActualWidth;
 
         if (rulerWidth <= 1)
         {
             rulerWidth =
-                ImagePanCanvas.Width;
-        }
-
-        if (rulerWidth <= 1)
-        {
-            rulerWidth =
-                RulerCanvas.ActualWidth;
+                ShotFrame.ActualWidth;
         }
 
         if (rulerWidth <= 1)
         {
             return;
-        }
-
-        double zoom =
-            GetZoom();
-
-        double panX =
-            _panTransform?.X ?? 0;
-
-        double scaledWidth =
-            rulerWidth * zoom;
-
-        double leftOffset =
-            (RulerCanvas.ActualWidth -
-             rulerWidth) / 2.0;
-
-        if (double.IsNaN(leftOffset) ||
-            double.IsInfinity(leftOffset))
-        {
-            leftOffset = 0;
         }
 
         double firstTick =
@@ -606,12 +589,10 @@ public partial class ReviewView : UserControl
                 relative / totalLength;
 
             double x =
-                leftOffset +
-                (ratio * scaledWidth) +
-                panX;
+                ratio * rulerWidth;
 
             if (x >= -20 &&
-                x <= RulerCanvas.ActualWidth + 20)
+                x <= rulerWidth + 20)
             {
                 bool isMajor =
                     Math.Abs(
@@ -1688,8 +1669,9 @@ public partial class ReviewView : UserControl
     {
     }
 
-    private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+    private void ComboBox_SelectionChanged_1(
+        object sender,
+        SelectionChangedEventArgs e)
     {
-
     }
 }
