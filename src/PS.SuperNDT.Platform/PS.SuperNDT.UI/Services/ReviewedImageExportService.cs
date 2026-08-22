@@ -15,7 +15,8 @@ public sealed class ReviewedImageExportService
 
     public ReviewedImageExportService()
     {
-        _imageFolderService = new ImageFolderService();
+        _imageFolderService =
+            new ImageFolderService();
     }
 
     public string ExportReviewedPng(
@@ -25,34 +26,22 @@ public sealed class ReviewedImageExportService
     {
         if (image == null)
         {
-            throw new ArgumentNullException(nameof(image));
+            throw new ArgumentNullException(
+                nameof(image));
         }
 
         if (source == null)
         {
-            throw new ArgumentNullException(nameof(source));
+            throw new ArgumentNullException(
+                nameof(source));
         }
 
-        if (string.IsNullOrWhiteSpace(image.FilePath))
+        if (string.IsNullOrWhiteSpace(
+                image.FilePath))
         {
             throw new InvalidOperationException(
-                "The selected image does not have a valid file path.");
+                "The selected image file path is empty.");
         }
-
-        string destinationPath =
-            image.FilePath;
-
-        string? destinationDirectory =
-            Path.GetDirectoryName(destinationPath);
-
-        if (string.IsNullOrWhiteSpace(destinationDirectory))
-        {
-            throw new InvalidOperationException(
-                "The selected image path is invalid.");
-        }
-
-        Directory.CreateDirectory(
-            destinationDirectory);
 
         int pixelWidth =
             source.PixelWidth;
@@ -67,26 +56,40 @@ public sealed class ReviewedImageExportService
                 "The selected image has an invalid size.");
         }
 
+        string destinationPath =
+            image.FilePath;
+
+        string? directory =
+            Path.GetDirectoryName(
+                destinationPath);
+
+        if (string.IsNullOrWhiteSpace(
+                directory))
+        {
+            throw new InvalidOperationException(
+                "The selected image destination folder is invalid.");
+        }
+
+        Directory.CreateDirectory(
+            directory);
+
         /*
          * IMPORTANT
          *
-         * The export surface is created using the SOURCE IMAGE
-         * pixel dimensions.
+         * DefectModel X/Y/Width/Height are stored in
+         * SOURCE IMAGE PIXELS.
          *
-         * Defect X/Y/Width/Height are stored in source-image
-         * pixels by ReviewView.
+         * The export surface below is therefore created
+         * at exactly the same pixel dimensions.
          *
-         * Therefore:
-         *
-         *     DB pixel coordinates
-         *              ↓
-         *     PNG pixel coordinates
-         *
-         * No ZoomLevel
-         * No Canvas coordinates
-         * No ShotFrame coordinates
-         * No WPF mouse/DIP coordinates
+         * No Review zoom, viewport size, frame size,
+         * DPI or WPF DIP coordinate is used for defect
+         * geometry.
          */
+
+        BitmapSource normalizedSource =
+            NormalizeToPixelBitmap(
+                source);
 
         DrawingVisual visual =
             new DrawingVisual();
@@ -95,7 +98,7 @@ public sealed class ReviewedImageExportService
                visual.RenderOpen())
         {
             drawing.DrawImage(
-                source,
+                normalizedSource,
                 new Rect(
                     0,
                     0,
@@ -128,76 +131,107 @@ public sealed class ReviewedImageExportService
 
         renderedImage.Freeze();
 
-        PngBitmapEncoder encoder =
-            new PngBitmapEncoder();
-
-        encoder.Frames.Add(
-            BitmapFrame.Create(
-                renderedImage));
-
-        /*
-         * Write to a temporary file first.
-         *
-         * This prevents the original PNG from being damaged
-         * if encoding or file replacement fails.
-         */
-
         string temporaryPath =
-            Path.Combine(
-                destinationDirectory,
-                $".{Path.GetFileName(destinationPath)}.{Guid.NewGuid():N}.tmp");
+            destinationPath +
+            ".reviewing.tmp";
 
         try
         {
+            PngBitmapEncoder encoder =
+                new PngBitmapEncoder();
+
+            encoder.Frames.Add(
+                BitmapFrame.Create(
+                    renderedImage));
+
             using (FileStream stream =
                    new FileStream(
                        temporaryPath,
-                       FileMode.CreateNew,
+                       FileMode.Create,
                        FileAccess.Write,
                        FileShare.None))
             {
                 encoder.Save(stream);
-                stream.Flush(true);
             }
-
-            /*
-             * Replace the existing PNG with the reviewed PNG.
-             *
-             * Final result:
-             *
-             *     ONE PNG
-             *
-             * The old unmarked PNG is removed.
-             */
 
             ReplaceFile(
                 temporaryPath,
                 destinationPath);
         }
-        catch
+        finally
         {
-            TryDeleteFile(
-                temporaryPath);
-
-            throw;
+            try
+            {
+                if (File.Exists(
+                        temporaryPath))
+                {
+                    File.Delete(
+                        temporaryPath);
+                }
+            }
+            catch
+            {
+                // Cleanup failure must not hide
+                // a successful export.
+            }
         }
 
         return destinationPath;
     }
 
-    private static void ReplaceFile(
-        string temporaryPath,
-        string destinationPath)
+    private static BitmapSource NormalizeToPixelBitmap(
+        BitmapSource source)
     {
-        if (File.Exists(destinationPath))
-        {
-            File.Delete(
-                destinationPath);
-        }
+        int width =
+            source.PixelWidth;
 
-        File.Move(
-            temporaryPath,
-            destinationPath);
+        int height =
+            source.PixelHeight;
+
+        FormatConvertedBitmap converted =
+            new FormatConvertedBitmap(
+                source,
+                PixelFormats.Pbgra32,
+                null,
+                0);
+
+        converted.Freeze();
+
+        WriteableBitmap bitmap =
+            new WriteableBitmap(
+                width,
+                height,
+                96,
+                96,
+                PixelFormats.Pbgra32,
+                null);
+
+        int stride =
+            width * 4;
+
+        byte[] pixels =
+            new byte[
+                stride *
+                height];
+
+        converted.CopyPixels(
+            pixels,
+            stride,
+            0);
+
+        bitmap.WritePixels(
+            new Int32Rect(
+                0,
+                0,
+                width,
+                height),
+            pixels,
+            stride,
+            0);
+
+        bitmap.Freeze();
+
+        return bitmap;
     }
 
     private static void DrawDefect(
@@ -207,7 +241,17 @@ public sealed class ReviewedImageExportService
         int imageHeight)
     {
         /*
-         * Defect coordinates are SOURCE IMAGE PIXELS.
+         * DIRECT SOURCE-PIXEL MAPPING
+         *
+         * ReviewView stores:
+         *
+         * X      = source pixel X
+         * Y      = source pixel Y
+         * Width  = source pixel width
+         * Height = source pixel height
+         *
+         * Therefore these values are intentionally
+         * NOT multiplied or divided here.
          */
 
         double x =
@@ -232,13 +276,15 @@ public sealed class ReviewedImageExportService
                 1,
                 defect.Height);
 
-        if (x + width > imageWidth)
+        if (x + width >
+            imageWidth)
         {
             width =
                 imageWidth - x;
         }
 
-        if (y + height > imageHeight)
+        if (y + height >
+            imageHeight)
         {
             height =
                 imageHeight - y;
@@ -262,28 +308,28 @@ public sealed class ReviewedImageExportService
                 Color.FromArgb(
                     35,
                     255,
-                    0,
-                    0));
+                    60,
+                    60));
 
-        SolidColorBrush borderBrush =
+        SolidColorBrush border =
             new SolidColorBrush(
                 Color.FromRgb(
                     255,
-                    40,
-                    40));
+                    60,
+                    60));
 
-        Pen borderPen =
+        Pen pen =
             new Pen(
-                borderBrush,
-                3);
+                border,
+                2);
 
         fill.Freeze();
-        borderBrush.Freeze();
-        borderPen.Freeze();
+        border.Freeze();
+        pen.Freeze();
 
         drawing.DrawRectangle(
             fill,
-            borderPen,
+            pen,
             defectRect);
 
         DrawDefectDetailCard(
@@ -301,247 +347,302 @@ public sealed class ReviewedImageExportService
         int imageWidth,
         int imageHeight)
     {
-        const double cardWidth = 330;
-        const double cardPadding = 10;
-
         string type =
-            SafeText(
-                defect.DefectType,
-                "UNCLASSIFIED");
+            string.IsNullOrWhiteSpace(
+                defect.DefectType)
+                ? "UNCLASSIFIED"
+                : defect.DefectType.Trim();
 
         string severity =
-            SafeText(
-                defect.Severity,
-                "UNCLASSIFIED");
+            string.IsNullOrWhiteSpace(
+                defect.Severity)
+                ? "UNCLASSIFIED"
+                : defect.Severity.Trim();
 
-        string description =
-            SafeText(
-                defect.Description,
-                "No description");
+        string position =
+            $"POS       {defect.PipePosition:0.0} mm";
 
-        string status =
-            SafeText(
-                defect.Status,
-                "OPEN");
+        string length =
+            $"LENGTH    {defect.LengthMm:0.0} mm";
 
-        string thicknessStatus =
-            SafeText(
-                defect.ThicknessStatus,
-                "NOT CHECKED");
+        string width =
+            $"WIDTH     {defect.WidthMm:0.0} mm";
 
-        string thicknessRemark =
-            SafeText(
-                defect.ThicknessRemark,
-                "-");
+        string severityText =
+            $"SEVERITY  {severity}";
 
-        string createdBy =
-            SafeText(
-                defect.CreatedBy,
-                "-");
+        string? remark =
+            string.IsNullOrWhiteSpace(
+                defect.Description)
+                ? null
+                : $"REMARK    {defect.Description.Trim()}";
 
-        List<string> lines =
-            new List<string>
-            {
-                $"DEFECT: {type}",
-                $"SEVERITY: {severity}",
-                $"STATUS: {status}",
-                $"DESCRIPTION: {description}",
-                "",
-                $"LENGTH: {FormatNumber(defect.LengthMm)} mm",
-                $"WIDTH: {FormatNumber(defect.WidthMm)} mm",
-                "",
-                $"PIPE POSITION: {FormatNumber(defect.PipePosition)} mm",
-                $"PIPE LENGTH: {FormatNumber(defect.PipeLength)} mm",
-                $"SHOT START: {FormatNumber(defect.ShotStartPosition)} mm",
-                $"SHOT END: {FormatNumber(defect.ShotEndPosition)} mm",
-                "",
-                $"NOMINAL THK: {FormatNumber(defect.NominalThicknessMm)} mm",
-                $"ACTUAL THK: {FormatNumber(defect.ActualThicknessMm)} mm",
-                $"MIN THK: {FormatNumber(defect.MinimumThicknessMm)} mm",
-                $"THICKNESS: {thicknessStatus}",
-                $"THK REMARK: {thicknessRemark}",
-                "",
-                $"CREATED BY: {createdBy}",
-                $"CREATED: {defect.CreatedOn:dd-MM-yyyy HH:mm}"
-            };
+        const double cardWidth = 255;
+        const double padding = 8;
+        const double fontSize = 10;
+        const double lineHeight = 13;
 
-        const double fontSize = 11;
-        const double lineHeight = 17;
+        double contentHeight =
+            13 +
+            lineHeight +
+            lineHeight +
+            lineHeight +
+            lineHeight;
+
+        if (!string.IsNullOrWhiteSpace(
+                remark))
+        {
+            contentHeight +=
+                CalculateWrappedTextHeight(
+                    remark,
+                    cardWidth -
+                    (padding * 2),
+                    fontSize);
+        }
 
         double cardHeight =
-            cardPadding * 2 +
-            lines.Count * lineHeight;
+            contentHeight +
+            (padding * 2);
 
-        double cardX =
-            defectRect.Right + 12;
+        double center =
+            defectRect.Left +
+            (defectRect.Width / 2.0);
 
-        double cardY =
-            defectRect.Top;
+        double cardLeft =
+            center -
+            (cardWidth / 2.0);
 
-        /*
-         * Right side unavailable:
-         * place card on left.
-         */
+        cardLeft =
+            Math.Clamp(
+                cardLeft,
+                5,
+                Math.Max(
+                    5,
+                    imageWidth -
+                    cardWidth -
+                    5));
 
-        if (cardX + cardWidth >
-            imageWidth)
+        double cardTop =
+            defectRect.Top -
+            cardHeight -
+            8;
+
+        if (cardTop < 5)
         {
-            cardX =
-                defectRect.Left -
-                cardWidth -
-                12;
+            cardTop =
+                defectRect.Bottom +
+                8;
         }
 
-        /*
-         * If left side also unavailable,
-         * keep card inside image.
-         */
-
-        if (cardX < 0)
+        if (cardTop + cardHeight >
+            imageHeight - 5)
         {
-            cardX = 4;
-        }
-
-        /*
-         * Keep card vertically inside image.
-         */
-
-        if (cardY + cardHeight >
-            imageHeight)
-        {
-            cardY =
-                imageHeight -
-                cardHeight -
-                4;
-        }
-
-        if (cardY < 0)
-        {
-            cardY = 4;
+            cardTop =
+                Math.Max(
+                    5,
+                    imageHeight -
+                    cardHeight -
+                    5);
         }
 
         Rect cardRect =
             new Rect(
-                cardX,
-                cardY,
+                cardLeft,
+                cardTop,
                 cardWidth,
                 cardHeight);
 
         SolidColorBrush background =
             new SolidColorBrush(
                 Color.FromArgb(
-                    225,
+                    245,
                     20,
                     24,
                     31));
 
-        SolidColorBrush border =
+        SolidColorBrush borderBrush =
             new SolidColorBrush(
                 Color.FromRgb(
                     255,
-                    70,
-                    70));
+                    75,
+                    75));
 
-        Pen cardPen =
+        Pen borderPen =
             new Pen(
-                border,
-                2);
+                borderBrush,
+                1);
 
         background.Freeze();
-        border.Freeze();
-        cardPen.Freeze();
+        borderBrush.Freeze();
+        borderPen.Freeze();
 
         drawing.DrawRoundedRectangle(
             background,
-            cardPen,
+            borderPen,
             cardRect,
-            6,
-            6);
+            4,
+            4);
+
+        double textX =
+            cardLeft + padding;
 
         double textY =
-            cardY + cardPadding;
+            cardTop + padding;
 
-        for (int i = 0;
-             i < lines.Count;
-             i++)
+        DrawInfoText(
+            drawing,
+            $"DEFECT  •  {type}",
+            textX,
+            ref textY,
+            cardWidth -
+            (padding * 2),
+            true);
+
+        DrawInfoText(
+            drawing,
+            position,
+            textX,
+            ref textY,
+            cardWidth -
+            (padding * 2));
+
+        DrawInfoText(
+            drawing,
+            length,
+            textX,
+            ref textY,
+            cardWidth -
+            (padding * 2));
+
+        DrawInfoText(
+            drawing,
+            width,
+            textX,
+            ref textY,
+            cardWidth -
+            (padding * 2));
+
+        DrawInfoText(
+            drawing,
+            severityText,
+            textX,
+            ref textY,
+            cardWidth -
+            (padding * 2));
+
+        if (!string.IsNullOrWhiteSpace(
+                remark))
         {
-            string line =
-                lines[i];
+            DrawInfoText(
+                drawing,
+                remark,
+                textX,
+                ref textY,
+                cardWidth -
+                (padding * 2));
+        }
+    }
 
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                textY += lineHeight;
-                continue;
-            }
-
-            FontWeight weight =
-                i <= 2
+    private static void DrawInfoText(
+        DrawingContext drawing,
+        string text,
+        double x,
+        ref double y,
+        double maxWidth,
+        bool bold = false)
+    {
+        Typeface typeface =
+            new Typeface(
+                new FontFamily("Segoe UI"),
+                FontStyles.Normal,
+                bold
                     ? FontWeights.Bold
-                    : FontWeights.Normal;
+                    : FontWeights.Normal,
+                FontStretches.Normal);
 
-            SolidColorBrush textBrush =
-                i == 1
-                    ? new SolidColorBrush(
-                        Color.FromRgb(
-                            255,
-                            170,
-                            70))
-                    : Brushes.White;
-
-            FormattedText text =
-                new FormattedText(
-                    line,
-                    CultureInfo.InvariantCulture,
-                    FlowDirection.LeftToRight,
-                    new Typeface(
-                        new FontFamily("Segoe UI"),
-                        FontStyles.Normal,
-                        weight,
-                        FontStretches.Normal),
-                    fontSize,
-                    textBrush,
-                    1.0);
-
-            drawing.DrawText(
+        FormattedText formattedText =
+            new FormattedText(
                 text,
-                new Point(
-                    cardX + cardPadding,
-                    textY));
+                CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                typeface,
+                10,
+                Brushes.White,
+                1.0);
 
-            textY += lineHeight;
-        }
+        formattedText.MaxTextWidth =
+            maxWidth;
+
+        formattedText.Trimming =
+            TextTrimming.CharacterEllipsis;
+
+        drawing.DrawText(
+            formattedText,
+            new Point(
+                x,
+                y));
+
+        y +=
+            Math.Max(
+                13,
+                formattedText.Height);
     }
 
-    private static string SafeText(
-        string? value,
-        string fallback)
+    private static double CalculateWrappedTextHeight(
+        string text,
+        double width,
+        double fontSize)
     {
-        return string.IsNullOrWhiteSpace(value)
-            ? fallback
-            : value.Trim();
+        FormattedText formattedText =
+            new FormattedText(
+                text,
+                CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(
+                    new FontFamily("Segoe UI"),
+                    FontStyles.Normal,
+                    FontWeights.Normal,
+                    FontStretches.Normal),
+                fontSize,
+                Brushes.White,
+                1.0);
+
+        formattedText.MaxTextWidth =
+            width;
+
+        formattedText.Trimming =
+            TextTrimming.CharacterEllipsis;
+
+        return Math.Max(
+            13,
+            formattedText.Height);
     }
 
-    private static string FormatNumber(
-        double value)
+    private static void ReplaceFile(
+        string temporaryPath,
+        string destinationPath)
     {
-        return value.ToString(
-            "0.##",
-            CultureInfo.InvariantCulture);
-    }
-
-    private static void TryDeleteFile(
-        string path)
-    {
-        try
+        if (File.Exists(
+                destinationPath))
         {
-            if (File.Exists(path))
+            try
             {
-                File.Delete(path);
+                File.Replace(
+                    temporaryPath,
+                    destinationPath,
+                    null);
+
+                return;
+            }
+            catch
+            {
+                File.Delete(
+                    destinationPath);
             }
         }
-        catch
-        {
-            // Do not hide the original export exception.
-        }
+
+        File.Move(
+            temporaryPath,
+            destinationPath);
     }
 }
