@@ -10,13 +10,13 @@
                TargetType="Button">
 
             <Setter Property="Height"
-                    Value="34"/>
+                    Value="32"/>
 
             <Setter Property="Margin"
-                    Value="3"/>
+                    Value="2"/>
 
             <Setter Property="Padding"
-                    Value="10,0"/>
+                    Value="9,0"/>
 
             <Setter Property="Background"
                     Value="#343B46"/>
@@ -31,13 +31,12 @@
                     Value="1"/>
 
             <Setter Property="FontSize"
-                    Value="11"/>
+                    Value="10"/>
 
             <Setter Property="FontWeight"
                     Value="SemiBold"/>
 
         </Style>
-
 
         <Style x:Key="InfoLabel"
                TargetType="TextBlock">
@@ -49,7 +48,6 @@
                     Value="9"/>
 
         </Style>
-
 
         <Style x:Key="ReviewDataGrid"
                TargetType="DataGrid">
@@ -92,7 +90,6 @@
 
         </Style>
 
-
         <Style TargetType="DataGridColumnHeader">
 
             <Setter Property="Background"
@@ -123,7 +120,6 @@
                     Value="Center"/>
 
         </Style>
-
 
         <Style TargetType="DataGridRow">
 
@@ -161,7 +157,6 @@
 
         </Style>
 
-
         <Style TargetType="DataGridCell">
 
             <Setter Property="Foreground"
@@ -181,6 +176,9 @@
 
         </Style>
 
+        <!-- ================================================== -->
+        <!-- DARK COMBOBOX ITEM -->
+        <!-- ================================================== -->
 
         <Style x:Key="DarkComboBoxItemStyle"
                TargetType="ComboBoxItem">
@@ -192,13 +190,16 @@
                     Value="#252B33"/>
 
             <Setter Property="Padding"
-                    Value="10,8"/>
+                    Value="10,7"/>
 
             <Setter Property="HorizontalContentAlignment"
                     Value="Stretch"/>
 
             <Setter Property="VerticalContentAlignment"
                     Value="Center"/>
+
+            <Setter Property="FontSize"
+                    Value="11"/>
 
             <Style.Triggers>
 
@@ -228,8 +229,37 @@
 
         </Style>
 
-    </UserControl.Resources>
+        <!-- ================================================== -->
+        <!-- DARK COMBOBOX -->
+        <!-- ================================================== -->
 
+        <Style x:Key="DarkComboBox"
+               TargetType="ComboBox">
+
+            <Setter Property="Background"
+                    Value="#171B20"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#4A5563"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="Padding"
+                    Value="7,2"/>
+
+            <Setter Property="FontSize"
+                    Value="11"/>
+
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+
+        </Style>
+
+    </UserControl.Resources>
 
     <Grid Margin="12">
 
@@ -237,14 +267,15 @@
 
             <RowDefinition Height="60"/>
 
-            <RowDefinition Height="54"/>
+            <RowDefinition Height="58"/>
 
             <RowDefinition Height="*"/>
 
         </Grid.RowDefinitions>
 
-
+        <!-- ================================================== -->
         <!-- HEADER -->
+        <!-- ================================================== -->
 
         <Border Grid.Row="0"
                 Background="#252B33"
@@ -267,7 +298,6 @@
 
                 </Grid.ColumnDefinitions>
 
-
                 <StackPanel Grid.Column="0"
                             VerticalAlignment="Center">
 
@@ -282,7 +312,6 @@
                                Margin="0,2,0,0"/>
 
                 </StackPanel>
-
 
                 <StackPanel Grid.Column="1"
                             VerticalAlignment="Center">
@@ -299,7 +328,6 @@
 
                 </StackPanel>
 
-
                 <StackPanel Grid.Column="2"
                             VerticalAlignment="Center">
 
@@ -315,7 +343,6 @@
 
                 </StackPanel>
 
-
                 <StackPanel Grid.Column="3"
                             VerticalAlignment="Center">
 
@@ -330,7 +357,6 @@
                                HorizontalAlignment="Center"/>
 
                 </StackPanel>
-
 
                 <StackPanel Grid.Column="4"
                             VerticalAlignment="Center">
@@ -351,8 +377,10 @@
 
         </Border>
 
-
-        <!-- FILTER BAR -->
+        <!-- ================================================== -->
+        <!-- FILTER / ZOOM BAR -->
+        <!-- NO EMPTY BLACK BOX -->
+        <!-- ================================================== -->
 
         <Border Grid.Row="1"
                 Background="#252B33"
@@ -378,29 +406,14 @@
 
                 </Grid.ColumnDefinitions>
 
-
-                <TextBox Grid.Column="0"
-                         Height="34"
-                         Margin="0,0,6,0"
-                         Padding="9,4"
-                         VerticalContentAlignment="Center"
-                         Background="#171B20"
-                         Foreground="White"
-                         BorderBrush="#4A5563"
-                         FontSize="12"
-                         ToolTip="Search Job, Pipe, Shot, Frame, Operator..."
-                         Text="{Binding SearchText,
-                                UpdateSourceTrigger=PropertyChanged}"/>
-
+                <!-- STATUS FILTER -->
 
                 <ComboBox Grid.Column="1"
                           Height="34"
                           Margin="0,0,6,0"
-                          Padding="6,3"
-                          Background="#171B20"
-                          Foreground="White"
-                          BorderBrush="#4A5563"
-                          BorderThickness="1"
+                          VerticalContentAlignment="Center"
+                          HorizontalContentAlignment="Left"
+                          Style="{StaticResource DarkComboBox}"
                           ItemsSource="{Binding StatusFilterItems}"
                           SelectedItem="{Binding ReviewStatusFilter,
                                                Mode=TwoWay}"
@@ -418,7 +431,7 @@
                                          Color="White"/>
 
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                         Color="#3D5872"/>
+                                         Color="#4A6A8A"/>
 
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
                                          Color="White"/>
@@ -427,34 +440,30 @@
 
                 </ComboBox>
 
-
                 <Button Grid.Column="2"
                         Content="REFRESH"
                         Command="{Binding RefreshCommand}"
                         Style="{StaticResource ActionButton}"/>
-
 
                 <Button Grid.Column="3"
                         Content="CLEAR"
                         Command="{Binding ClearFilterCommand}"
                         Style="{StaticResource ActionButton}"/>
 
-
                 <Button Grid.Column="4"
                         Content="OPEN"
                         Command="{Binding OpenImageCommand}"
                         Style="{StaticResource ActionButton}"/>
-
 
                 <!-- ZOOM -->
 
                 <StackPanel Grid.Column="5"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
-                            Margin="6,0,0,0">
+                            Margin="4,0,0,0">
 
                     <Button Content="−"
-                            Width="34"
+                            Width="32"
                             Command="{Binding ZoomOutCommand}"
                             Style="{StaticResource ActionButton}"/>
 
@@ -462,17 +471,17 @@
                                       StringFormat={}{0:0.00}x}"
                                Foreground="White"
                                FontWeight="Bold"
-                               Width="50"
+                               Width="48"
                                TextAlignment="Center"
                                VerticalAlignment="Center"/>
 
                     <Button Content="+"
-                            Width="34"
+                            Width="32"
                             Command="{Binding ZoomInCommand}"
                             Style="{StaticResource ActionButton}"/>
 
                     <Button Content="RESET"
-                            Width="58"
+                            Width="56"
                             Command="{Binding ResetZoomCommand}"
                             Style="{StaticResource ActionButton}"/>
 
@@ -482,8 +491,9 @@
 
         </Border>
 
-
+        <!-- ================================================== -->
         <!-- MAIN -->
+        <!-- ================================================== -->
 
         <Grid Grid.Row="2"
               Margin="0,8,0,0">
@@ -498,8 +508,9 @@
 
             </Grid.ColumnDefinitions>
 
-
+            <!-- ================================================== -->
             <!-- SHOT LIST -->
+            <!-- ================================================== -->
 
             <Border Grid.Column="0"
                     Background="#252B33"
@@ -515,10 +526,7 @@
 
                         <RowDefinition Height="*"/>
 
-                        <RowDefinition Height="44"/>
-
                     </Grid.RowDefinitions>
-
 
                     <Grid Grid.Row="0">
 
@@ -530,13 +538,11 @@
 
                         </Grid.ColumnDefinitions>
 
-
                         <TextBlock Text="SHOT LIST"
                                    Foreground="#C5CDD8"
                                    FontSize="11"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"/>
-
 
                         <TextBlock Grid.Column="1"
                                    Text="{Binding FilteredImages.Count,
@@ -546,7 +552,6 @@
                                    VerticalAlignment="Center"/>
 
                     </Grid>
-
 
                     <DataGrid Grid.Row="1"
                               ItemsSource="{Binding FilteredImages}"
@@ -577,32 +582,13 @@
 
                     </DataGrid>
 
-
-                    <StackPanel Grid.Row="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-
-                        <Button Content="◀ PREV"
-                                Width="80"
-                                Command="{Binding PreviousImageCommand}"
-                                IsEnabled="{Binding HasPreviousImage}"
-                                Style="{StaticResource ActionButton}"/>
-
-                        <Button Content="NEXT ▶"
-                                Width="80"
-                                Command="{Binding NextImageCommand}"
-                                IsEnabled="{Binding HasNextImage}"
-                                Style="{StaticResource ActionButton}"/>
-
-                    </StackPanel>
-
                 </Grid>
 
             </Border>
 
-
+            <!-- ================================================== -->
             <!-- IMAGE VIEWPORT -->
+            <!-- ================================================== -->
 
             <Border Grid.Column="1"
                     Background="#080B0E"
@@ -621,6 +607,7 @@
                                   CanContentScroll="False">
 
                         <Grid x:Name="ImagePanCanvas"
+                              Background="Transparent"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
                               RenderTransformOrigin="0.5,0.5">
@@ -639,29 +626,118 @@
 
                             </Grid.RenderTransform>
 
+                            <Border x:Name="ShotFrame"
+                                    BorderBrush="#657383"
+                                    BorderThickness="1"
+                                    Background="#050709"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
 
-                            <Image Source="{Binding DisplayImage}"
-                                   Stretch="None"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <Grid>
 
+                                    <Image Source="{Binding DisplayImage}"
+                                           Stretch="None"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
 
-                            <Canvas x:Name="DefectOverlayCanvas"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    IsHitTestVisible="True">
+                                    <Canvas x:Name="DefectOverlayCanvas"
+                                            Background="Transparent"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            IsHitTestVisible="True">
 
-                                <Rectangle x:Name="DefectRectangle"
-                                           Width="0"
-                                           Height="0"
-                                           Stroke="#FF3C3C"
-                                           StrokeThickness="2"
-                                           Fill="#23FF3C3C"
-                                           Visibility="Collapsed"
-                                           IsHitTestVisible="False"/>
+                                        <Rectangle x:Name="DefectRectangle"
+                                                   Width="0"
+                                                   Height="0"
+                                                   Stroke="#FF3C3C"
+                                                   StrokeThickness="2"
+                                                   Fill="#23FF3C3C"
+                                                   Visibility="Collapsed"
+                                                   IsHitTestVisible="False"/>
 
-                            </Canvas>
+                                    </Canvas>
+
+                                    <!-- TOP RULER -->
+
+                                    <Border VerticalAlignment="Top"
+                                            Height="30"
+                                            Background="#151A20"
+                                            BorderBrush="#46515E"
+                                            BorderThickness="0,0,0,1"
+                                            IsHitTestVisible="False">
+
+                                        <Canvas x:Name="TopRulerCanvas"
+                                                Height="30"
+                                                Background="Transparent">
+
+                                            <Line X1="0"
+                                                  Y1="29"
+                                                  X2="0"
+                                                  Y2="14"
+                                                  Stroke="#D8DEE7"
+                                                  StrokeThickness="1"/>
+
+                                            <TextBlock Text="{Binding SelectedImage.ShotStartPosition,
+                                                              StringFormat={}{0:0}}"
+                                                       Foreground="#E3E8EE"
+                                                       FontSize="9"
+                                                       Canvas.Left="2"
+                                                       Canvas.Top="2"/>
+
+                                            <TextBlock Text="{Binding SelectedImage.ShotEndPosition,
+                                                              StringFormat={}{0:0}}"
+                                                       Foreground="#E3E8EE"
+                                                       FontSize="9"
+                                                       HorizontalAlignment="Right"
+                                                       Canvas.Right="2"
+                                                       Canvas.Top="2"/>
+
+                                        </Canvas>
+
+                                    </Border>
+
+                                    <!-- BOTTOM RULER -->
+
+                                    <Border VerticalAlignment="Bottom"
+                                            Height="34"
+                                            Background="#151A20"
+                                            BorderBrush="#46515E"
+                                            BorderThickness="0,1,0,0"
+                                            IsHitTestVisible="False">
+
+                                        <Canvas x:Name="RulerCanvas"
+                                                Height="34"
+                                                Background="Transparent">
+
+                                            <Line X1="0"
+                                                  Y1="0"
+                                                  X2="0"
+                                                  Y2="17"
+                                                  Stroke="#D8DEE7"
+                                                  StrokeThickness="1"/>
+
+                                            <TextBlock Text="{Binding SelectedImage.ShotStartPosition,
+                                                              StringFormat={}{0:0}}"
+                                                       Foreground="#E3E8EE"
+                                                       FontSize="9"
+                                                       Canvas.Left="2"
+                                                       Canvas.Top="18"/>
+
+                                            <TextBlock Text="{Binding SelectedImage.ShotEndPosition,
+                                                              StringFormat={}{0:0}}"
+                                                       Foreground="#E3E8EE"
+                                                       FontSize="9"
+                                                       Canvas.Right="2"
+                                                       Canvas.Top="18"/>
+
+                                        </Canvas>
+
+                                    </Border>
+
+                                </Grid>
+
+                            </Border>
 
                         </Grid>
 
@@ -671,8 +747,9 @@
 
             </Border>
 
-
-            <!-- RIGHT DETAILS -->
+            <!-- ================================================== -->
+            <!-- RIGHT SHOT DETAILS -->
+            <!-- ================================================== -->
 
             <Border Grid.Column="2"
                     Background="#252B33"
@@ -687,12 +764,9 @@
 
                         <RowDefinition Height="*"/>
 
-                        <RowDefinition Height="165"/>
-
                         <RowDefinition Height="48"/>
 
                     </Grid.RowDefinitions>
-
 
                     <Border Grid.Row="0"
                             Background="#343B46"
@@ -705,7 +779,6 @@
                                    FontSize="11"/>
 
                     </Border>
-
 
                     <ScrollViewer Grid.Row="1"
                                   VerticalScrollBarVisibility="Auto"
@@ -721,31 +794,20 @@
 
                             </Grid.ColumnDefinitions>
 
-
                             <Grid.RowDefinitions>
 
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
-
                                 <RowDefinition Height="30"/>
 
                             </Grid.RowDefinitions>
-
 
                             <TextBlock Grid.Row="0"
                                        Grid.Column="0"
@@ -760,7 +822,6 @@
                                        FontWeight="Bold"
                                        VerticalAlignment="Center"/>
 
-
                             <TextBlock Grid.Row="1"
                                        Grid.Column="0"
                                        Text="PIPE ID"
@@ -772,7 +833,6 @@
                                        Text="{Binding SelectedImage.PipeId}"
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
-
 
                             <TextBlock Grid.Row="2"
                                        Grid.Column="0"
@@ -786,7 +846,6 @@
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
 
-
                             <TextBlock Grid.Row="3"
                                        Grid.Column="0"
                                        Text="POSITION"
@@ -798,7 +857,6 @@
                                        Text="{Binding SelectedImage.ShotPosition}"
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
-
 
                             <TextBlock Grid.Row="4"
                                        Grid.Column="0"
@@ -812,7 +870,6 @@
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
 
-
                             <TextBlock Grid.Row="5"
                                        Grid.Column="0"
                                        Text="OVERLAP"
@@ -824,7 +881,6 @@
                                        Text="{Binding SelectedImage.Overlap}"
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
-
 
                             <TextBlock Grid.Row="6"
                                        Grid.Column="0"
@@ -838,7 +894,6 @@
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
 
-
                             <TextBlock Grid.Row="7"
                                        Grid.Column="0"
                                        Text="WELD NO."
@@ -851,7 +906,6 @@
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
 
-
                             <TextBlock Grid.Row="8"
                                        Grid.Column="0"
                                        Text="OPERATOR"
@@ -863,7 +917,6 @@
                                        Text="{Binding SelectedImage.Operator}"
                                        Foreground="White"
                                        VerticalAlignment="Center"/>
-
 
                             <TextBlock Grid.Row="9"
                                        Grid.Column="0"
@@ -882,66 +935,9 @@
 
                     </ScrollViewer>
 
-
-                    <!-- REVIEW HISTORY -->
-
-                    <Expander Grid.Row="2"
-                              Margin="0,0,0,5"
-                              Background="#11161B"
-                              BorderBrush="#46515E"
-                              BorderThickness="1"
-                              IsExpanded="False">
-
-                        <Expander.Header>
-
-                            <TextBlock Text="＋ REVIEW HISTORY"
-                                       Foreground="White"
-                                       FontSize="11"
-                                       FontWeight="Bold"/>
-
-                        </Expander.Header>
-
-
-                        <Grid Margin="4">
-
-                            <DataGrid ItemsSource="{Binding ReviewHistory}"
-                                      AutoGenerateColumns="False"
-                                      IsReadOnly="True"
-                                      CanUserAddRows="False"
-                                      CanUserDeleteRows="False"
-                                      Style="{StaticResource ReviewDataGrid}">
-
-                                <DataGrid.Columns>
-
-                                    <DataGridTextColumn Header="TIME"
-                                                        Binding="{Binding Timestamp,
-                                                        StringFormat={}{0:dd-MM-yyyy HH:mm}}"
-                                                        Width="105"/>
-
-                                    <DataGridTextColumn Header="ACTION"
-                                                        Binding="{Binding Action}"
-                                                        Width="82"/>
-
-                                    <DataGridTextColumn Header="USER"
-                                                        Binding="{Binding Username}"
-                                                        Width="75"/>
-
-                                    <DataGridTextColumn Header="DETAIL"
-                                                        Binding="{Binding Description}"
-                                                        Width="*"/>
-
-                                </DataGrid.Columns>
-
-                            </DataGrid>
-
-                        </Grid>
-
-                    </Expander>
-
-
                     <!-- REVIEW ACTIONS -->
 
-                    <StackPanel Grid.Row="3"
+                    <StackPanel Grid.Row="2"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
@@ -955,7 +951,6 @@
                                 BorderBrush="#4D956F"
                                 Margin="3"/>
 
-
                         <Button Content="REJECT"
                                 Width="82"
                                 Height="36"
@@ -964,7 +959,6 @@
                                 Foreground="White"
                                 BorderBrush="#B56B73"
                                 Margin="3"/>
-
 
                         <Button Content="PENDING"
                                 Width="82"

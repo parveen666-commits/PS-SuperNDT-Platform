@@ -72,11 +72,6 @@ public class ShellViewModel : INotifyPropertyChanged
 
                 new NavigationItem
                 {
-                    Title = "Review"
-                },
-
-                new NavigationItem
-                {
                     Title = "Calculator"
                 },
 
@@ -164,16 +159,6 @@ public class ShellViewModel : INotifyPropertyChanged
                 {
                     CurrentPage =
                         new JobHistoryView();
-                }
-
-                break;
-
-            case "Review":
-
-                if (_authorizationService.CanReview())
-                {
-                    CurrentPage =
-                        new ReviewView();
                 }
 
                 break;

@@ -17,6 +17,14 @@ public partial class ReviewView : UserControl
     private const string PersistedDefectTagPrefix =
         "PERSISTED_DEFECT:";
 
+    private const string RulerTickTag =
+        "DYNAMIC_RULER_TICK";
+
+    private const double MinimumZoom = 0.25;
+    private const double MaximumZoom = 5.0;
+    private const double ZoomStep = 0.25;
+    private const double FitZoom = 1.0;
+
     private bool _isPanning;
     private Point _lastMousePosition;
 
@@ -40,7 +48,6 @@ public partial class ReviewView : UserControl
         Unloaded += ReviewView_Unloaded;
 
         PreviewKeyDown += ReviewView_PreviewKeyDown;
-        PreviewMouseWheel += ReviewView_PreviewMouseWheel;
     }
 
     // ============================================================
@@ -94,9 +101,11 @@ public partial class ReviewView : UserControl
         Dispatcher.BeginInvoke(
             new Action(() =>
             {
-                UpdateScrollMode();
                 FitImageToFrame();
+                ApplyZoomVisual();
+                UpdateScrollMode();
                 LoadSavedDefects();
+                UpdateRulers();
             }),
             DispatcherPriority.Render);
     }
@@ -148,10 +157,8 @@ public partial class ReviewView : UserControl
         PreviewKeyDown -=
             ReviewView_PreviewKeyDown;
 
-        PreviewMouseWheel -=
-            ReviewView_PreviewMouseWheel;
-
         ClearPersistedDefectRectangles();
+        ClearDynamicRulers();
 
         _isPanning = false;
         _isDrawingDefect = false;
@@ -175,10 +182,13 @@ public partial class ReviewView : UserControl
             Dispatcher.BeginInvoke(
                 new Action(() =>
                 {
+                    ApplyZoomVisual();
+
                     double zoom =
                         GetZoom();
 
-                    if (zoom <= 1.001)
+                    if (Math.Abs(
+                            zoom - FitZoom) < 0.001)
                     {
                         FitImageToFrame();
                     }
@@ -187,6 +197,8 @@ public partial class ReviewView : UserControl
                         UpdateScrollMode();
                         ClampPan();
                     }
+
+                    UpdateRulers();
                 }),
                 DispatcherPriority.Render);
 
@@ -201,14 +213,28 @@ public partial class ReviewView : UserControl
             Dispatcher.BeginInvoke(
                 new Action(() =>
                 {
-                    if (GetZoom() <= 1.001)
+                    ApplyZoomVisual();
+
+                    double zoom =
+                        GetZoom();
+
+                    if (Math.Abs(
+                            zoom - FitZoom) < 0.001)
                     {
                         FitImageToFrame();
                     }
+                    else
+                    {
+                        UpdateScrollMode();
+                        ClampPan();
+                    }
 
                     RefreshSavedDefects();
+                    UpdateRulers();
                 }),
                 DispatcherPriority.Render);
+
+            return;
         }
 
         if (string.Equals(
@@ -219,12 +245,24 @@ public partial class ReviewView : UserControl
             Dispatcher.BeginInvoke(
                 new Action(() =>
                 {
-                    if (GetZoom() <= 1.001)
+                    ApplyZoomVisual();
+
+                    double zoom =
+                        GetZoom();
+
+                    if (Math.Abs(
+                            zoom - FitZoom) < 0.001)
                     {
                         FitImageToFrame();
                     }
+                    else
+                    {
+                        UpdateScrollMode();
+                        ClampPan();
+                    }
 
                     RefreshSavedDefects();
+                    UpdateRulers();
                 }),
                 DispatcherPriority.Render);
         }
@@ -277,11 +315,6 @@ public partial class ReviewView : UserControl
                 _panTransform.Y = 0;
             }
 
-            /*
-             * At 1.00x the canvas itself becomes exactly the
-             * available viewport. The Image uses Uniform so the
-             * complete image/ruler area remains inside one frame.
-             */
             double viewportWidth =
                 Math.Max(
                     1,
@@ -300,19 +333,55 @@ public partial class ReviewView : UserControl
 
             if (_scaleTransform != null)
             {
-                _scaleTransform.ScaleX = 1.0;
-                _scaleTransform.ScaleY = 1.0;
+                _scaleTransform.ScaleX =
+                    FitZoom;
+
+                _scaleTransform.ScaleY =
+                    FitZoom;
             }
-
-            UpdateScrollMode();
-
-            ImageViewport.ScrollToHorizontalOffset(0);
-            ImageViewport.ScrollToVerticalOffset(0);
         }
         finally
         {
             _isFittingFrame = false;
         }
+
+        UpdateRulers();
+    }
+
+    // ============================================================
+    // APPLY ZOOM
+    // ============================================================
+
+    private void ApplyZoomVisual()
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        if (_scaleTransform == null)
+        {
+            SetupPanTransform();
+        }
+
+        if (_scaleTransform == null)
+        {
+            return;
+        }
+
+        double zoom =
+            Math.Clamp(
+                GetZoom(),
+                MinimumZoom,
+                MaximumZoom);
+
+        _scaleTransform.ScaleX =
+            zoom;
+
+        _scaleTransform.ScaleY =
+            zoom;
+
+        UpdateRulers();
     }
 
     // ============================================================
@@ -334,7 +403,7 @@ public partial class ReviewView : UserControl
             double zoom =
                 GetZoom();
 
-            if (zoom <= 1.001)
+            if (zoom <= FitZoom + 0.001)
             {
                 ImageViewport.HorizontalScrollBarVisibility =
                     ScrollBarVisibility.Hidden;
@@ -368,6 +437,8 @@ public partial class ReviewView : UserControl
         {
             _updatingScrollMode = false;
         }
+
+        UpdateRulers();
     }
 
     // ============================================================
@@ -400,8 +471,8 @@ public partial class ReviewView : UserControl
             {
                 _scaleTransform =
                     new ScaleTransform(
-                        1.0,
-                        1.0);
+                        FitZoom,
+                        FitZoom);
 
                 existingGroup.Children.Insert(
                     0,
@@ -425,8 +496,8 @@ public partial class ReviewView : UserControl
 
         _scaleTransform =
             new ScaleTransform(
-                1.0,
-                1.0);
+                FitZoom,
+                FitZoom);
 
         _panTransform =
             new TranslateTransform();
@@ -439,6 +510,277 @@ public partial class ReviewView : UserControl
 
         ImagePanCanvas.RenderTransform =
             transformGroup;
+    }
+
+    // ============================================================
+    // RULER
+    // ============================================================
+
+    private void UpdateRulers()
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        if (TopRulerCanvas == null ||
+            RulerCanvas == null)
+        {
+            return;
+        }
+
+        ClearDynamicRulers();
+
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.SelectedImage == null)
+        {
+            return;
+        }
+
+        double start =
+            viewModel.SelectedImage.ShotStartPosition;
+
+        double end =
+            viewModel.SelectedImage.ShotEndPosition;
+
+        double totalLength =
+            end - start;
+
+        if (totalLength <= 0)
+        {
+            return;
+        }
+
+        double rulerWidth =
+            ImagePanCanvas.ActualWidth;
+
+        if (rulerWidth <= 1)
+        {
+            rulerWidth =
+                ImagePanCanvas.Width;
+        }
+
+        if (rulerWidth <= 1)
+        {
+            rulerWidth =
+                RulerCanvas.ActualWidth;
+        }
+
+        if (rulerWidth <= 1)
+        {
+            return;
+        }
+
+        double zoom =
+            GetZoom();
+
+        double panX =
+            _panTransform?.X ?? 0;
+
+        double scaledWidth =
+            rulerWidth * zoom;
+
+        double leftOffset =
+            (RulerCanvas.ActualWidth -
+             rulerWidth) / 2.0;
+
+        if (double.IsNaN(leftOffset) ||
+            double.IsInfinity(leftOffset))
+        {
+            leftOffset = 0;
+        }
+
+        double firstTick =
+            Math.Ceiling(
+                start / 10.0) * 10.0;
+
+        double current =
+            firstTick;
+
+        while (current <= end + 0.001)
+        {
+            double relative =
+                current - start;
+
+            double ratio =
+                relative / totalLength;
+
+            double x =
+                leftOffset +
+                (ratio * scaledWidth) +
+                panX;
+
+            if (x >= -20 &&
+                x <= RulerCanvas.ActualWidth + 20)
+            {
+                bool isMajor =
+                    Math.Abs(
+                        current % 50.0) <
+                    0.001;
+
+                DrawBottomRulerTick(
+                    x,
+                    isMajor,
+                    current);
+
+                DrawTopRulerTick(
+                    x,
+                    isMajor,
+                    current);
+            }
+
+            current += 10.0;
+
+            if (current - start >
+                totalLength + 10.0)
+            {
+                break;
+            }
+        }
+    }
+
+    private void DrawBottomRulerTick(
+        double x,
+        bool isMajor,
+        double value)
+    {
+        Line tick =
+            new Line
+            {
+                X1 = x,
+                X2 = x,
+                Y1 = 0,
+                Y2 = isMajor ? 18 : 9,
+                Stroke =
+                    new SolidColorBrush(
+                        Color.FromRgb(
+                            216,
+                            222,
+                            231)),
+                StrokeThickness =
+                    isMajor ? 1.4 : 1,
+                IsHitTestVisible = false,
+                Tag = RulerTickTag
+            };
+
+        RulerCanvas.Children.Add(tick);
+
+        if (isMajor)
+        {
+            TextBlock label =
+                new TextBlock
+                {
+                    Text =
+                        $"{value:0}",
+                    Foreground =
+                        new SolidColorBrush(
+                            Color.FromRgb(
+                                227,
+                                232,
+                                238)),
+                    FontSize = 9,
+                    IsHitTestVisible = false,
+                    Tag = RulerTickTag
+                };
+
+            Canvas.SetLeft(
+                label,
+                x + 2);
+
+            Canvas.SetTop(
+                label,
+                18);
+
+            RulerCanvas.Children.Add(
+                label);
+        }
+    }
+
+    private void DrawTopRulerTick(
+        double x,
+        bool isMajor,
+        double value)
+    {
+        Line tick =
+            new Line
+            {
+                X1 = x,
+                X2 = x,
+                Y1 = 29,
+                Y2 = isMajor ? 11 : 20,
+                Stroke =
+                    new SolidColorBrush(
+                        Color.FromRgb(
+                            216,
+                            222,
+                            231)),
+                StrokeThickness =
+                    isMajor ? 1.4 : 1,
+                IsHitTestVisible = false,
+                Tag = RulerTickTag
+            };
+
+        TopRulerCanvas.Children.Add(tick);
+
+        if (isMajor)
+        {
+            TextBlock label =
+                new TextBlock
+                {
+                    Text =
+                        $"{value:0}",
+                    Foreground =
+                        new SolidColorBrush(
+                            Color.FromRgb(
+                                227,
+                                232,
+                                238)),
+                    FontSize = 9,
+                    IsHitTestVisible = false,
+                    Tag = RulerTickTag
+                };
+
+            Canvas.SetLeft(
+                label,
+                x + 2);
+
+            Canvas.SetTop(
+                label,
+                1);
+
+            TopRulerCanvas.Children.Add(
+                label);
+        }
+    }
+
+    private void ClearDynamicRulers()
+    {
+        RemoveDynamicRulerChildren(
+            RulerCanvas);
+
+        RemoveDynamicRulerChildren(
+            TopRulerCanvas);
+    }
+
+    private static void RemoveDynamicRulerChildren(
+        Canvas canvas)
+    {
+        for (
+            int i =
+                canvas.Children.Count - 1;
+            i >= 0;
+            i--)
+        {
+            if (canvas.Children[i]
+                is FrameworkElement element &&
+                string.Equals(
+                    element.Tag as string,
+                    RulerTickTag,
+                    StringComparison.Ordinal))
+            {
+                canvas.Children.RemoveAt(i);
+            }
+        }
     }
 
     // ============================================================
@@ -480,7 +822,13 @@ public partial class ReviewView : UserControl
             viewModel.ResetZoomCommand.Execute(null);
 
             Dispatcher.BeginInvoke(
-                new Action(FitImageToFrame),
+                new Action(() =>
+                {
+                    FitImageToFrame();
+                    ApplyZoomVisual();
+                    UpdateScrollMode();
+                    UpdateRulers();
+                }),
                 DispatcherPriority.Render);
 
             e.Handled = true;
@@ -488,24 +836,11 @@ public partial class ReviewView : UserControl
     }
 
     // ============================================================
-    // MOUSE WHEEL ZOOM
+    // IMAGE MOUSE WHEEL ZOOM
     // ============================================================
-
-    private void ReviewView_PreviewMouseWheel(
-        object sender,
-        MouseWheelEventArgs e)
-    {
-        HandleZoomWheel(e);
-    }
 
     private void ImageViewport_MouseWheel(
         object sender,
-        MouseWheelEventArgs e)
-    {
-        HandleZoomWheel(e);
-    }
-
-    private void HandleZoomWheel(
         MouseWheelEventArgs e)
     {
         if (DataContext is not ReviewViewModel viewModel)
@@ -514,43 +849,24 @@ public partial class ReviewView : UserControl
         }
 
         double oldZoom =
-            viewModel.ZoomLevel;
+            Math.Clamp(
+                viewModel.ZoomLevel,
+                MinimumZoom,
+                MaximumZoom);
 
-        double newZoom;
-
-        if (e.Delta > 0)
-        {
-            newZoom =
-                Math.Min(
-                    5.0,
-                    oldZoom + 0.25);
-        }
-        else
-        {
-            newZoom =
-                Math.Max(
-                    0.25,
-                    oldZoom - 0.25);
-        }
+        double newZoom =
+            e.Delta > 0
+                ? Math.Min(
+                    MaximumZoom,
+                    oldZoom + ZoomStep)
+                : Math.Max(
+                    MinimumZoom,
+                    oldZoom - ZoomStep);
 
         if (Math.Abs(
                 oldZoom - newZoom) < 0.001)
         {
             e.Handled = true;
-
-            return;
-        }
-
-        if (newZoom <= 1.001)
-        {
-            viewModel.ResetZoomCommand.Execute(null);
-
-            Dispatcher.BeginInvoke(
-                new Action(FitImageToFrame),
-                DispatcherPriority.Render);
-
-            e.Handled = true;
-
             return;
         }
 
@@ -605,8 +921,20 @@ public partial class ReviewView : UserControl
         Dispatcher.BeginInvoke(
             new Action(() =>
             {
-                UpdateScrollMode();
-                ClampPan();
+                ApplyZoomVisual();
+
+                if (Math.Abs(
+                        newZoom - FitZoom) < 0.001)
+                {
+                    FitImageToFrame();
+                }
+                else
+                {
+                    UpdateScrollMode();
+                    ClampPan();
+                }
+
+                UpdateRulers();
             }),
             DispatcherPriority.Render);
 
@@ -617,6 +945,12 @@ public partial class ReviewView : UserControl
         ReviewViewModel viewModel,
         double zoom)
     {
+        zoom =
+            Math.Clamp(
+                zoom,
+                MinimumZoom,
+                MaximumZoom);
+
         if (Math.Abs(
                 viewModel.ZoomLevel - zoom) < 0.001)
         {
@@ -647,17 +981,20 @@ public partial class ReviewView : UserControl
 
     private bool IsZoomed()
     {
-        return GetZoom() > 1.001;
+        return GetZoom() > FitZoom + 0.001;
     }
 
     private double GetZoom()
     {
         if (DataContext is ReviewViewModel viewModel)
         {
-            return viewModel.ZoomLevel;
+            return Math.Clamp(
+                viewModel.ZoomLevel,
+                MinimumZoom,
+                MaximumZoom);
         }
 
-        return 1.0;
+        return FitZoom;
     }
 
     private void ImagePanCanvas_MouseDown(
@@ -758,7 +1095,6 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             UpdateDefectDrawing(e);
-
             return;
         }
 
@@ -777,7 +1113,6 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             UpdateDefectDrawing(e);
-
             return;
         }
 
@@ -821,6 +1156,7 @@ public partial class ReviewView : UserControl
             deltaY;
 
         ClampPan();
+        UpdateRulers();
 
         e.Handled = true;
     }
@@ -832,7 +1168,6 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             FinishDefectDrawing(e);
-
             return;
         }
 
@@ -846,7 +1181,6 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             FinishDefectDrawing(e);
-
             return;
         }
 
@@ -865,6 +1199,8 @@ public partial class ReviewView : UserControl
 
         ImagePanCanvas.Cursor =
             Cursors.Arrow;
+
+        UpdateRulers();
 
         e.Handled = true;
     }
@@ -915,7 +1251,7 @@ public partial class ReviewView : UserControl
         double zoom =
             GetZoom();
 
-        if (zoom <= 1.001)
+        if (zoom <= FitZoom + 0.001)
         {
             _panTransform.X = 0;
             _panTransform.Y = 0;
@@ -975,6 +1311,8 @@ public partial class ReviewView : UserControl
                 _panTransform.Y,
                 -maxPanY,
                 maxPanY);
+
+        UpdateRulers();
     }
 
     // ============================================================
@@ -985,16 +1323,26 @@ public partial class ReviewView : UserControl
         object sender,
         SizeChangedEventArgs e)
     {
-        if (GetZoom() <= 1.001)
+        double zoom =
+            GetZoom();
+
+        if (Math.Abs(
+                zoom - FitZoom) < 0.001)
         {
             Dispatcher.BeginInvoke(
-                new Action(FitImageToFrame),
+                new Action(() =>
+                {
+                    FitImageToFrame();
+                    UpdateRulers();
+                }),
                 DispatcherPriority.Render);
         }
         else
         {
+            ApplyZoomVisual();
             UpdateScrollMode();
             ClampPan();
+            UpdateRulers();
         }
     }
 
@@ -1196,7 +1544,6 @@ public partial class ReviewView : UserControl
             height < 5)
         {
             HideTemporaryDefectRectangle();
-
             return;
         }
 
@@ -1204,7 +1551,6 @@ public partial class ReviewView : UserControl
             viewModel.SelectedImage == null)
         {
             HideTemporaryDefectRectangle();
-
             return;
         }
 
@@ -1340,5 +1686,10 @@ public partial class ReviewView : UserControl
         object sender,
         SelectionChangedEventArgs e)
     {
+    }
+
+    private void ComboBox_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+    {
+
     }
 }
