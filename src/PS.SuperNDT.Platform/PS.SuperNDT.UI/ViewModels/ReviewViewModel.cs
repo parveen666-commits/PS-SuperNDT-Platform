@@ -97,7 +97,6 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     public RelayCommand SaveReviewedPngCommand { get; }
 
-    // Image processing commands
     public RelayCommand ResetImageFilterCommand { get; }
 
     public RelayCommand ApplyImageFilterCommand { get; }
@@ -1626,6 +1625,38 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             string oldFilePath =
                 _selectedImage.FilePath;
+
+            /*
+             * IMPORTANT:
+             *
+             * Before moving the image to ACCEPT / REJECT / REPAIR,
+             * render the current review image together with all saved
+             * defects.
+             *
+             * This means the image that gets moved to the status
+             * folder already contains the red defect mark and detail
+             * information.
+             */
+
+            if (!string.IsNullOrWhiteSpace(
+                    folderStatus) &&
+                !string.IsNullOrWhiteSpace(
+                    oldFilePath) &&
+                File.Exists(oldFilePath) &&
+                DisplayImage != null)
+            {
+                var defects =
+                    DefectService.Instance
+                        .GetByImage(
+                            _selectedImage.Id)
+                        .ToList();
+
+                _reviewedImageExportService
+                    .ExportReviewedPng(
+                        _selectedImage,
+                        DisplayImage,
+                        defects);
+            }
 
             if (!string.IsNullOrWhiteSpace(
                     folderStatus) &&

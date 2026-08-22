@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using PS.SuperNDT.UI.Models;
@@ -19,9 +20,6 @@ public partial class ReviewView : UserControl
 
     private const string PersistedDefectDetailTagPrefix =
         "PERSISTED_DEFECT_DETAIL:";
-
-    private const string PersistedDefectLabelTagPrefix =
-        "PERSISTED_DEFECT_LABEL:";
 
     private const string RulerTickTag =
         "DYNAMIC_RULER_TICK";
@@ -817,20 +815,6 @@ public partial class ReviewView : UserControl
         offsetX = 0;
         offsetY = 0;
 
-        /*
-         * IMPORTANT:
-         *
-         * DefectOverlayCanvas is inside ShotFrame and is a sibling
-         * of the Image. The Image uses Stretch="None".
-         *
-         * Therefore ShotFrame represents the real image coordinate
-         * system. We must NOT use ImagePanCanvas dimensions here.
-         *
-         * Using ImagePanCanvas previously caused the saved defect
-         * rectangle to be shifted because ImagePanCanvas represents
-         * the viewport-sized pan surface.
-         */
-
         double frameWidth =
             ShotFrame.ActualWidth;
 
@@ -861,16 +845,16 @@ public partial class ReviewView : UserControl
             double modelHeight =
                 viewModel.SelectedImage.ImageHeight;
 
-            /*
-             * Normally model dimensions and ShotFrame dimensions
-             * are identical because Stretch=None is used.
-             *
-             * If the model dimensions are unavailable, the actual
-             * rendered frame remains the source of truth.
-             */
             if (modelWidth > 0 &&
                 modelHeight > 0)
             {
+                /*
+                 * Keep the overlay coordinate system in the same
+                 * rendered DIP coordinate system as the image.
+                 *
+                 * The database coordinates are converted to/from
+                 * source pixels by the methods below.
+                 */
                 imageWidth =
                     frameWidth;
 
@@ -903,13 +887,6 @@ public partial class ReviewView : UserControl
             return;
         }
 
-        /*
-         * The overlay must be exactly the same size as the image.
-         *
-         * Do NOT use ImagePanCanvas.ActualWidth/ActualHeight here.
-         * ImagePanCanvas is the viewport/pan surface and can be much
-         * larger than the actual image.
-         */
         DefectOverlayCanvas.Width =
             frameWidth;
 
@@ -925,16 +902,113 @@ public partial class ReviewView : UserControl
             0);
     }
 
+    // ============================================================
+    // IMAGE PIXEL / DISPLAY COORDINATE CONVERSION
+    // ============================================================
+
+    private double GetImagePixelScaleX()
+    {
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.DisplayImage is not BitmapSource bitmap ||
+            bitmap.Width <= 0)
+        {
+            return 1.0;
+        }
+
+        return bitmap.PixelWidth /
+               bitmap.Width;
+    }
+
+    private double GetImagePixelScaleY()
+    {
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.DisplayImage is not BitmapSource bitmap ||
+            bitmap.Height <= 0)
+        {
+            return 1.0;
+        }
+
+        return bitmap.PixelHeight /
+               bitmap.Height;
+    }
+
+    private Point DisplayPointToImagePixels(
+        Point displayPoint)
+    {
+        double scaleX =
+            GetImagePixelScaleX();
+
+        double scaleY =
+            GetImagePixelScaleY();
+
+        return new Point(
+            displayPoint.X * scaleX,
+            displayPoint.Y * scaleY);
+    }
+
+    private Point ImagePixelsToDisplayPoint(
+        Point imagePoint)
+    {
+        double scaleX =
+            GetImagePixelScaleX();
+
+        double scaleY =
+            GetImagePixelScaleY();
+
+        if (scaleX <= 0)
+        {
+            scaleX = 1;
+        }
+
+        if (scaleY <= 0)
+        {
+            scaleY = 1;
+        }
+
+        return new Point(
+            imagePoint.X / scaleX,
+            imagePoint.Y / scaleY);
+    }
+
+    private double DisplayWidthToImagePixels(
+        double width)
+    {
+        return width *
+               GetImagePixelScaleX();
+    }
+
+    private double DisplayHeightToImagePixels(
+        double height)
+    {
+        return height *
+               GetImagePixelScaleY();
+    }
+
+    private double ImagePixelWidthToDisplay(
+        double width)
+    {
+        double scale =
+            GetImagePixelScaleX();
+
+        return scale <= 0
+            ? width
+            : width / scale;
+    }
+
+    private double ImagePixelHeightToDisplay(
+        double height)
+    {
+        double scale =
+            GetImagePixelScaleY();
+
+        return scale <= 0
+            ? height
+            : height / scale;
+    }
+
     private Point ImagePointToOverlay(
         Point imagePoint)
     {
-        /*
-         * Image coordinates and overlay coordinates are now the same.
-         *
-         * Both the Image and DefectOverlayCanvas are children of
-         * ShotFrame and both use the same native image coordinate
-         * system.
-         */
         if (!TryGetImageGeometry(
                 out double imageWidth,
                 out double imageHeight,
@@ -944,14 +1018,24 @@ public partial class ReviewView : UserControl
             return imagePoint;
         }
 
+        /*
+         * DefectModel X/Y are stored in SOURCE IMAGE PIXELS.
+         *
+         * Convert them back to WPF display/DIP coordinates before
+         * drawing the overlay.
+         */
+        Point displayPoint =
+            ImagePixelsToDisplayPoint(
+                imagePoint);
+
         return new Point(
             Math.Clamp(
-                imagePoint.X,
+                displayPoint.X,
                 0,
                 imageWidth),
 
             Math.Clamp(
-                imagePoint.Y,
+                displayPoint.Y,
                 0,
                 imageHeight));
     }
@@ -968,31 +1052,28 @@ public partial class ReviewView : UserControl
             return overlayPoint;
         }
 
-        return new Point(
-            Math.Clamp(
-                overlayPoint.X,
-                0,
-                imageWidth),
+        Point clamped =
+            new Point(
+                Math.Clamp(
+                    overlayPoint.X,
+                    0,
+                    imageWidth),
 
-            Math.Clamp(
-                overlayPoint.Y,
-                0,
-                imageHeight));
+                Math.Clamp(
+                    overlayPoint.Y,
+                    0,
+                    imageHeight));
+
+        /*
+         * Store coordinates in real source-image pixels.
+         */
+        return DisplayPointToImagePixels(
+            clamped);
     }
 
     private Point GetMouseImagePoint(
         MouseEventArgs e)
     {
-        /*
-         * GetPosition(DefectOverlayCanvas) is critical here.
-         *
-         * WPF automatically resolves the parent RenderTransform,
-         * zoom and pan before returning the point in the overlay's
-         * own coordinate system.
-         *
-         * This prevents zoom/pan from corrupting persisted defect
-         * coordinates.
-         */
         Point point =
             e.GetPosition(
                 DefectOverlayCanvas);
@@ -1543,7 +1624,8 @@ public partial class ReviewView : UserControl
 
         _defectStartPoint =
             ImagePointToOverlay(
-                imagePoint);
+                DisplayPointToImagePixels(
+                    imagePoint));
 
         _defectCurrentPoint =
             _defectStartPoint;
@@ -1578,7 +1660,8 @@ public partial class ReviewView : UserControl
 
         _defectCurrentPoint =
             ImagePointToOverlay(
-                imagePoint);
+                DisplayPointToImagePixels(
+                    imagePoint));
 
         UpdateDefectRectangle();
 
@@ -1680,7 +1763,8 @@ public partial class ReviewView : UserControl
 
         _defectCurrentPoint =
             ImagePointToOverlay(
-                imagePoint);
+                DisplayPointToImagePixels(
+                    imagePoint));
 
         UpdateDefectRectangle();
 
@@ -1702,12 +1786,12 @@ public partial class ReviewView : UserControl
                 start.Y,
                 current.Y);
 
-        double width =
+        double displayWidth =
             Math.Abs(
                 current.X -
                 start.X);
 
-        double height =
+        double displayHeight =
             Math.Abs(
                 current.Y -
                 start.Y);
@@ -1724,8 +1808,8 @@ public partial class ReviewView : UserControl
 
         e.Handled = true;
 
-        if (width < 5 ||
-            height < 5)
+        if (displayWidth < 5 ||
+            displayHeight < 5)
         {
             HideTemporaryDefectRectangle();
 
@@ -1746,6 +1830,14 @@ public partial class ReviewView : UserControl
                     overlayLeft,
                     overlayTop));
 
+        double pixelWidth =
+            DisplayWidthToImagePixels(
+                displayWidth);
+
+        double pixelHeight =
+            DisplayHeightToImagePixels(
+                displayHeight);
+
         DefectModel defect;
 
         try
@@ -1755,8 +1847,8 @@ public partial class ReviewView : UserControl
                     viewModel.SelectedImage,
                     imageStart.X,
                     imageStart.Y,
-                    width,
-                    height);
+                    pixelWidth,
+                    pixelHeight);
         }
         catch (Exception ex)
         {
@@ -2030,9 +2122,6 @@ public partial class ReviewView : UserControl
                         StringComparison.Ordinal) ||
                     tag.StartsWith(
                         PersistedDefectDetailTagPrefix,
-                        StringComparison.Ordinal) ||
-                    tag.StartsWith(
-                        PersistedDefectLabelTagPrefix,
                         StringComparison.Ordinal)
                 ))
             {
@@ -2064,12 +2153,14 @@ public partial class ReviewView : UserControl
         double width =
             Math.Max(
                 1,
-                defect.Width);
+                ImagePixelWidthToDisplay(
+                    defect.Width));
 
         double height =
             Math.Max(
                 1,
-                defect.Height);
+                ImagePixelHeightToDisplay(
+                    defect.Height));
 
         Rectangle rectangle =
             new Rectangle
@@ -2155,24 +2246,13 @@ public partial class ReviewView : UserControl
         DefectOverlayCanvas.Children.Add(
             rectangle);
 
-        Border label =
-            CreateDefectLabel(
-                defect);
-
-        Canvas.SetLeft(
-            label,
-            left + 3);
-
-        Canvas.SetTop(
-            label,
-            top + 3);
-
-        Canvas.SetZIndex(
-            label,
-            40);
-
-        DefectOverlayCanvas.Children.Add(
-            label);
+        /*
+         * IMPORTANT:
+         *
+         * The old DEFECT | SEVERITY label has intentionally been
+         * removed. The full detail card below is now the only
+         * information panel displayed for a saved defect.
+         */
 
         Border detailCard =
             CreateDefectDetailCard(
@@ -2196,99 +2276,6 @@ public partial class ReviewView : UserControl
 
         DefectOverlayCanvas.Children.Add(
             detailCard);
-    }
-
-    // ============================================================
-    // DEFECT LABEL INSIDE BOX
-    // ============================================================
-
-    private static Border CreateDefectLabel(
-        DefectModel defect)
-    {
-        string type =
-            string.IsNullOrWhiteSpace(
-                defect.DefectType)
-                ? "UNCLASSIFIED"
-                : defect.DefectType.Trim();
-
-        string severity =
-            string.IsNullOrWhiteSpace(
-                defect.Severity)
-                ? "UNCLASSIFIED"
-                : defect.Severity.Trim();
-
-        TextBlock text =
-            new TextBlock
-            {
-                Text =
-                    $"{type} | {severity}",
-
-                Foreground =
-                    Brushes.White,
-
-                FontSize = 9,
-
-                FontWeight =
-                    FontWeights.Bold,
-
-                TextTrimming =
-                    TextTrimming.CharacterEllipsis,
-
-                VerticalAlignment =
-                    VerticalAlignment.Center
-            };
-
-        Border label =
-            new Border
-            {
-                Background =
-                    new SolidColorBrush(
-                        Color.FromArgb(
-                            225,
-                            15,
-                            18,
-                            23)),
-
-                BorderBrush =
-                    new SolidColorBrush(
-                        Color.FromRgb(
-                            255,
-                            70,
-                            70)),
-
-                BorderThickness =
-                    new Thickness(1),
-
-                Padding =
-                    new Thickness(
-                        4,
-                        2,
-                        4,
-                        2),
-
-                MaxWidth = 230,
-
-                Child =
-                    text,
-
-                Cursor =
-                    Cursors.Hand,
-
-                IsHitTestVisible =
-                    true,
-
-                Tag =
-                    PersistedDefectLabelTagPrefix +
-                    defect.Id
-            };
-
-        label.MouseLeftButtonDown +=
-            (_, args) =>
-            {
-                args.Handled = true;
-            };
-
-        return label;
     }
 
     // ============================================================
