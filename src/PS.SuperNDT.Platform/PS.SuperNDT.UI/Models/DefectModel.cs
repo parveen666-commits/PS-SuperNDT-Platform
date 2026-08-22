@@ -12,11 +12,22 @@ public sealed class DefectModel
 
     public int ShotNumber { get; set; }
 
+    // ============================================================
+    // DEFECT INFORMATION
+    // ============================================================
+
     public string DefectType { get; set; } = "UNCLASSIFIED";
 
     public string Description { get; set; } = "";
 
-    // Image coordinates
+    public string Severity { get; set; } = "UNCLASSIFIED";
+
+    public string Status { get; set; } = "OPEN";
+
+    // ============================================================
+    // IMAGE COORDINATES
+    // ============================================================
+
     public double X { get; set; }
 
     public double Y { get; set; }
@@ -25,7 +36,18 @@ public sealed class DefectModel
 
     public double Height { get; set; }
 
-    // Pipe / shot coordinates
+    // ============================================================
+    // DEFECT MEASUREMENT
+    // ============================================================
+
+    public double LengthMm { get; set; }
+
+    public double WidthMm { get; set; }
+
+    // ============================================================
+    // PIPE / SHOT COORDINATES
+    // ============================================================
+
     public double PipePosition { get; set; }
 
     public double PipeLength { get; set; }
@@ -34,10 +56,25 @@ public sealed class DefectModel
 
     public double ShotEndPosition { get; set; }
 
-    // Review information
-    public string Severity { get; set; } = "UNCLASSIFIED";
+    // ============================================================
+    // THICKNESS CHECK
+    // ============================================================
 
-    public string Status { get; set; } = "OPEN";
+    public bool ThicknessChecked { get; set; }
+
+    public double NominalThicknessMm { get; set; }
+
+    public double ActualThicknessMm { get; set; }
+
+    public double MinimumThicknessMm { get; set; }
+
+    public string ThicknessStatus { get; set; } = "NOT CHECKED";
+
+    public string ThicknessRemark { get; set; } = "";
+
+    // ============================================================
+    // AUDIT
+    // ============================================================
 
     public string CreatedBy { get; set; } = "";
 

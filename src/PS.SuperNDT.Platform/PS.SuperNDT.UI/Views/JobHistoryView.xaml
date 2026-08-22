@@ -12,88 +12,292 @@
 
     <UserControl.Resources>
 
+        <!-- ================================================== -->
         <!-- TEXT -->
+        <!-- ================================================== -->
 
         <Style TargetType="TextBlock">
+
             <Setter Property="Foreground"
                     Value="#F2F5F8"/>
+
         </Style>
 
         <Style TargetType="Label">
+
             <Setter Property="Foreground"
                     Value="#B8C2CE"/>
+
             <Setter Property="FontSize"
                     Value="10"/>
+
             <Setter Property="FontWeight"
                     Value="SemiBold"/>
+
         </Style>
 
+        <!-- ================================================== -->
         <!-- TEXTBOX -->
+        <!-- ================================================== -->
 
         <Style TargetType="TextBox">
+
             <Setter Property="Height"
                     Value="34"/>
+
             <Setter Property="Padding"
                     Value="10,0"/>
+
             <Setter Property="VerticalContentAlignment"
                     Value="Center"/>
+
             <Setter Property="Background"
                     Value="#0F1317"/>
+
             <Setter Property="Foreground"
                     Value="#FFFFFF"/>
+
             <Setter Property="CaretBrush"
                     Value="#FFFFFF"/>
+
             <Setter Property="BorderBrush"
                     Value="#596574"/>
+
             <Setter Property="BorderThickness"
                     Value="1"/>
+
         </Style>
 
-        <!-- COMBOBOX -->
+        <!-- ================================================== -->
+        <!-- DARK COMBOBOX ITEM -->
+        <!-- ================================================== -->
 
-        <Style TargetType="ComboBox">
-            <Setter Property="Height"
-                    Value="34"/>
-            <Setter Property="Background"
-                    Value="#0F1317"/>
-            <Setter Property="Foreground"
-                    Value="#FFFFFF"/>
-            <Setter Property="BorderBrush"
-                    Value="#596574"/>
-            <Setter Property="BorderThickness"
-                    Value="1"/>
-            <Setter Property="FontSize"
-                    Value="12"/>
-        </Style>
+        <Style x:Key="DarkComboBoxItem"
+               TargetType="ComboBoxItem">
 
-        <Style TargetType="ComboBoxItem">
             <Setter Property="Background"
                     Value="#171C22"/>
+
             <Setter Property="Foreground"
                     Value="#FFFFFF"/>
+
             <Setter Property="Padding"
-                    Value="8,6"/>
+                    Value="10,7"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Stretch"/>
+
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+
+            <Setter Property="FontSize"
+                    Value="12"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="#34475A"/>
+
+                    <Setter Property="Foreground"
+                            Value="#FFFFFF"/>
+
+                </Trigger>
+
+                <Trigger Property="IsSelected"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="#3D5872"/>
+
+                    <Setter Property="Foreground"
+                            Value="#FFFFFF"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
         </Style>
 
-        <!-- BUTTON -->
+        <!-- ================================================== -->
+        <!-- DARK COMBOBOX -->
+        <!-- CLOSED BOX + DROPDOWN -->
+        <!-- ================================================== -->
 
-        <Style TargetType="Button">
+        <Style TargetType="ComboBox">
+
             <Setter Property="Height"
                     Value="34"/>
-            <Setter Property="Padding"
-                    Value="16,0"/>
-            <Setter Property="Margin"
-                    Value="4,0"/>
+
             <Setter Property="Background"
-                    Value="#29323D"/>
+                    Value="#0F1317"/>
+
             <Setter Property="Foreground"
                     Value="#FFFFFF"/>
+
             <Setter Property="BorderBrush"
-                    Value="#647180"/>
+                    Value="#596574"/>
+
             <Setter Property="BorderThickness"
                     Value="1"/>
+
+            <Setter Property="FontSize"
+                    Value="12"/>
+
+            <Setter Property="Padding"
+                    Value="8,0"/>
+
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+
+            <Setter Property="ItemContainerStyle"
+                    Value="{StaticResource DarkComboBoxItem}"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="ComboBox">
+
+                        <Grid>
+
+                            <!-- ================================== -->
+                            <!-- CLOSED BOX -->
+                            <!-- ================================== -->
+
+                            <ToggleButton x:Name="ToggleButton"
+                                          Focusable="False"
+                                          ClickMode="Press"
+                                          Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          IsChecked="{Binding IsDropDownOpen,
+                                                              RelativeSource={RelativeSource TemplatedParent},
+                                                              Mode=TwoWay}">
+
+                                <ToggleButton.Template>
+
+                                    <ControlTemplate TargetType="ToggleButton">
+
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="2">
+
+                                            <Grid>
+
+                                                <!-- SELECTED VALUE -->
+
+                                                <ContentPresenter
+                                                    Margin="9,0,32,0"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Content="{Binding SelectionBoxItem,
+                                                                     RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
+                                                    ContentTemplate="{Binding SelectionBoxItemTemplate,
+                                                                              RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
+                                                    ContentTemplateSelector="{Binding ItemTemplateSelector,
+                                                                                      RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
+                                                    TextElement.Foreground="#FFFFFF"
+                                                    TextElement.FontSize="12"
+                                                    IsHitTestVisible="False"/>
+
+                                                <!-- ARROW -->
+
+                                                <TextBlock Text="▼"
+                                                           Foreground="#B8C2CE"
+                                                           FontSize="9"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,9,0"
+                                                           IsHitTestVisible="False"/>
+
+                                            </Grid>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </ToggleButton.Template>
+
+                            </ToggleButton>
+
+                            <!-- ================================== -->
+                            <!-- DROPDOWN -->
+                            <!-- ================================== -->
+
+                            <Popup x:Name="PART_Popup"
+                                   Placement="Bottom"
+                                   PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   StaysOpen="False">
+
+                                <Border Background="#171C22"
+                                        BorderBrush="#596574"
+                                        BorderThickness="1"
+                                        CornerRadius="2"
+                                        MinWidth="{Binding ActualWidth,
+                                                           RelativeSource={RelativeSource TemplatedParent}}">
+
+                                    <ScrollViewer MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+
+                                        <ItemsPresenter/>
+
+                                    </ScrollViewer>
+
+                                </Border>
+
+                            </Popup>
+
+                        </Grid>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+        <!-- ================================================== -->
+        <!-- BUTTON -->
+        <!-- ================================================== -->
+
+        <Style TargetType="Button">
+
+            <Setter Property="Height"
+                    Value="34"/>
+
+            <Setter Property="Padding"
+                    Value="16,0"/>
+
+            <Setter Property="Margin"
+                    Value="4,0"/>
+
+            <Setter Property="Background"
+                    Value="#29323D"/>
+
+            <Setter Property="Foreground"
+                    Value="#FFFFFF"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#647180"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
             <Setter Property="FontSize"
                     Value="11"/>
+
             <Setter Property="FontWeight"
                     Value="Bold"/>
 
@@ -122,36 +326,53 @@
 
         </Style>
 
+        <!-- ================================================== -->
         <!-- DATAGRID -->
+        <!-- ================================================== -->
 
         <Style TargetType="DataGrid">
+
             <Setter Property="Background"
                     Value="#0F1317"/>
+
             <Setter Property="Foreground"
                     Value="#F2F5F8"/>
+
             <Setter Property="BorderBrush"
                     Value="#46515E"/>
+
             <Setter Property="BorderThickness"
                     Value="1"/>
+
             <Setter Property="RowBackground"
                     Value="#171C22"/>
+
             <Setter Property="AlternatingRowBackground"
                     Value="#1D232A"/>
+
             <Setter Property="GridLinesVisibility"
                     Value="Horizontal"/>
+
             <Setter Property="HorizontalGridLinesBrush"
                     Value="#303943"/>
+
             <Setter Property="VerticalGridLinesBrush"
                     Value="#303943"/>
+
             <Setter Property="FontSize"
                     Value="12"/>
+
             <Setter Property="SelectionMode"
                     Value="Single"/>
+
             <Setter Property="SelectionUnit"
                     Value="FullRow"/>
+
         </Style>
 
+        <!-- ================================================== -->
         <!-- DATAGRID ROW -->
+        <!-- ================================================== -->
 
         <Style TargetType="DataGridRow">
 
@@ -198,7 +419,9 @@
 
         </Style>
 
+        <!-- ================================================== -->
         <!-- DATAGRID CELL -->
+        <!-- ================================================== -->
 
         <Style TargetType="DataGridCell">
 
@@ -234,25 +457,36 @@
 
         </Style>
 
+        <!-- ================================================== -->
         <!-- HEADER -->
+        <!-- ================================================== -->
 
         <Style TargetType="DataGridColumnHeader">
+
             <Setter Property="Background"
                     Value="#29323D"/>
+
             <Setter Property="Foreground"
                     Value="#FFFFFF"/>
+
             <Setter Property="FontWeight"
                     Value="Bold"/>
+
             <Setter Property="FontSize"
                     Value="10"/>
+
             <Setter Property="Padding"
                     Value="8,0"/>
+
             <Setter Property="Height"
                     Value="36"/>
+
             <Setter Property="BorderBrush"
                     Value="#46515E"/>
+
             <Setter Property="BorderThickness"
                     Value="0,0,1,1"/>
+
         </Style>
 
     </UserControl.Resources>
@@ -261,13 +495,20 @@
           Margin="12">
 
         <Grid.RowDefinitions>
+
             <RowDefinition Height="58"/>
+
             <RowDefinition Height="90"/>
+
             <RowDefinition Height="*"/>
+
             <RowDefinition Height="56"/>
+
         </Grid.RowDefinitions>
 
+        <!-- ================================================== -->
         <!-- HEADER -->
+        <!-- ================================================== -->
 
         <Grid Grid.Row="0">
 
@@ -303,7 +544,9 @@
 
         </Grid>
 
+        <!-- ================================================== -->
         <!-- FILTER BAR -->
+        <!-- ================================================== -->
 
         <Border Grid.Row="1"
                 Background="#171C22"
@@ -316,12 +559,19 @@
             <Grid>
 
                 <Grid.ColumnDefinitions>
+
                     <ColumnDefinition Width="2.4*"/>
+
                     <ColumnDefinition Width="1.15*"/>
+
                     <ColumnDefinition Width="1.15*"/>
+
                     <ColumnDefinition Width="1.15*"/>
+
                     <ColumnDefinition Width="Auto"/>
+
                     <ColumnDefinition Width="Auto"/>
+
                 </Grid.ColumnDefinitions>
 
                 <!-- SEARCH -->
@@ -393,7 +643,9 @@
 
         </Border>
 
+        <!-- ================================================== -->
         <!-- TABLE -->
+        <!-- ================================================== -->
 
         <Border Grid.Row="2"
                 Background="#0F1317"
@@ -480,7 +732,9 @@
 
         </Border>
 
+        <!-- ================================================== -->
         <!-- FOOTER -->
+        <!-- ================================================== -->
 
         <Grid Grid.Row="3"
               Margin="0,8,0,0">

@@ -135,6 +135,12 @@ public sealed class SuperNDTDbContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(100);
 
+            entity.Property(e => e.ThicknessStatus)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.ThicknessRemark)
+                .HasMaxLength(1000);
+
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(100);
 
@@ -322,10 +328,10 @@ public sealed class SuperNDTDbContext : DbContext
 
         try
         {
-            using var command =
+            using var createCommand =
                 connection.CreateCommand();
 
-            command.CommandText =
+            createCommand.CommandText =
                 """
                 CREATE TABLE IF NOT EXISTS Defects
                 (
@@ -339,12 +345,20 @@ public sealed class SuperNDTDbContext : DbContext
                     Y REAL NOT NULL DEFAULT 0,
                     Width REAL NOT NULL DEFAULT 0,
                     Height REAL NOT NULL DEFAULT 0,
+                    LengthMm REAL NOT NULL DEFAULT 0,
+                    WidthMm REAL NOT NULL DEFAULT 0,
                     PipePosition REAL NOT NULL DEFAULT 0,
                     PipeLength REAL NOT NULL DEFAULT 0,
                     ShotStartPosition REAL NOT NULL DEFAULT 0,
                     ShotEndPosition REAL NOT NULL DEFAULT 0,
                     Severity TEXT NOT NULL DEFAULT 'UNCLASSIFIED',
                     Status TEXT NOT NULL DEFAULT 'OPEN',
+                    ThicknessChecked INTEGER NOT NULL DEFAULT 0,
+                    NominalThicknessMm REAL NOT NULL DEFAULT 0,
+                    ActualThicknessMm REAL NOT NULL DEFAULT 0,
+                    MinimumThicknessMm REAL NOT NULL DEFAULT 0,
+                    ThicknessStatus TEXT NOT NULL DEFAULT 'NOT CHECKED',
+                    ThicknessRemark TEXT NOT NULL DEFAULT '',
                     CreatedBy TEXT NOT NULL DEFAULT '',
                     CreatedOn TEXT NOT NULL,
                     UpdatedBy TEXT NOT NULL DEFAULT '',
@@ -352,7 +366,74 @@ public sealed class SuperNDTDbContext : DbContext
                 );
                 """;
 
-            command.ExecuteNonQuery();
+            createCommand.ExecuteNonQuery();
+
+            var requiredColumns =
+                new Dictionary<string, string>(
+                    StringComparer.OrdinalIgnoreCase)
+                {
+                    ["LengthMm"] =
+                        "REAL NOT NULL DEFAULT 0",
+
+                    ["WidthMm"] =
+                        "REAL NOT NULL DEFAULT 0",
+
+                    ["ThicknessChecked"] =
+                        "INTEGER NOT NULL DEFAULT 0",
+
+                    ["NominalThicknessMm"] =
+                        "REAL NOT NULL DEFAULT 0",
+
+                    ["ActualThicknessMm"] =
+                        "REAL NOT NULL DEFAULT 0",
+
+                    ["MinimumThicknessMm"] =
+                        "REAL NOT NULL DEFAULT 0",
+
+                    ["ThicknessStatus"] =
+                        "TEXT NOT NULL DEFAULT 'NOT CHECKED'",
+
+                    ["ThicknessRemark"] =
+                        "TEXT NOT NULL DEFAULT ''"
+                };
+
+            var existingColumns =
+                new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase);
+
+            using var pragmaCommand =
+                connection.CreateCommand();
+
+            pragmaCommand.CommandText =
+                "PRAGMA table_info(Defects);";
+
+            using var reader =
+                pragmaCommand.ExecuteReader();
+
+            while (reader.Read())
+            {
+                existingColumns.Add(
+                    reader.GetString(1));
+            }
+
+            foreach (var column in requiredColumns)
+            {
+                if (existingColumns.Contains(
+                    column.Key))
+                {
+                    continue;
+                }
+
+                using var alterCommand =
+                    connection.CreateCommand();
+
+                alterCommand.CommandText =
+                    $"ALTER TABLE Defects " +
+                    $"ADD COLUMN [{column.Key}] " +
+                    $"{column.Value};";
+
+                alterCommand.ExecuteNonQuery();
+            }
         }
         finally
         {

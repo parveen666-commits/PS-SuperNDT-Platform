@@ -31,20 +31,26 @@ public sealed class DefectService
     {
         var defect = new DefectModel
         {
-            ImageId = image.Id,
+            ImageId =
+                image.Id,
 
-            JobId = image.JobId,
+            JobId =
+                image.JobId,
 
             ShotNumber =
                 image.ShotNumber,
 
-            X = x,
+            X =
+                x,
 
-            Y = y,
+            Y =
+                y,
 
-            Width = width,
+            Width =
+                width,
 
-            Height = height,
+            Height =
+                height,
 
             ShotStartPosition =
                 image.ShotStartPosition,
@@ -61,13 +67,38 @@ public sealed class DefectService
                     x,
                     width),
 
-            Status = "OPEN",
+            LengthMm =
+                0,
+
+            WidthMm =
+                0,
+
+            Status =
+                "OPEN",
 
             Severity =
                 "UNCLASSIFIED",
 
             DefectType =
                 "UNCLASSIFIED",
+
+            ThicknessChecked =
+                false,
+
+            NominalThicknessMm =
+                0,
+
+            ActualThicknessMm =
+                0,
+
+            MinimumThicknessMm =
+                0,
+
+            ThicknessStatus =
+                "NOT CHECKED",
+
+            ThicknessRemark =
+                "",
 
             CreatedBy =
                 Environment.UserName,
@@ -187,6 +218,12 @@ public sealed class DefectService
         existing.Height =
             defect.Height;
 
+        existing.LengthMm =
+            defect.LengthMm;
+
+        existing.WidthMm =
+            defect.WidthMm;
+
         existing.PipePosition =
             defect.PipePosition;
 
@@ -205,6 +242,28 @@ public sealed class DefectService
         existing.Status =
             defect.Status;
 
+        // ========================================================
+        // THICKNESS CHECK
+        // ========================================================
+
+        existing.ThicknessChecked =
+            defect.ThicknessChecked;
+
+        existing.NominalThicknessMm =
+            defect.NominalThicknessMm;
+
+        existing.ActualThicknessMm =
+            defect.ActualThicknessMm;
+
+        existing.MinimumThicknessMm =
+            defect.MinimumThicknessMm;
+
+        existing.ThicknessStatus =
+            defect.ThicknessStatus;
+
+        existing.ThicknessRemark =
+            defect.ThicknessRemark;
+
         existing.UpdatedBy =
             Environment.UserName;
 
@@ -218,41 +277,76 @@ public sealed class DefectService
                 item =>
                     item.Id == defect.Id);
 
-        if (memoryDefect != null)
+        if (memoryDefect == null)
         {
-            memoryDefect.DefectType =
-                existing.DefectType;
-
-            memoryDefect.Description =
-                existing.Description;
-
-            memoryDefect.X =
-                existing.X;
-
-            memoryDefect.Y =
-                existing.Y;
-
-            memoryDefect.Width =
-                existing.Width;
-
-            memoryDefect.Height =
-                existing.Height;
-
-            memoryDefect.PipePosition =
-                existing.PipePosition;
-
-            memoryDefect.Severity =
-                existing.Severity;
-
-            memoryDefect.Status =
-                existing.Status;
-
-            memoryDefect.UpdatedBy =
-                existing.UpdatedBy;
-
-            memoryDefect.UpdatedOn =
-                existing.UpdatedOn;
+            return;
         }
+
+        memoryDefect.DefectType =
+            existing.DefectType;
+
+        memoryDefect.Description =
+            existing.Description;
+
+        memoryDefect.X =
+            existing.X;
+
+        memoryDefect.Y =
+            existing.Y;
+
+        memoryDefect.Width =
+            existing.Width;
+
+        memoryDefect.Height =
+            existing.Height;
+
+        memoryDefect.LengthMm =
+            existing.LengthMm;
+
+        memoryDefect.WidthMm =
+            existing.WidthMm;
+
+        memoryDefect.PipePosition =
+            existing.PipePosition;
+
+        memoryDefect.PipeLength =
+            existing.PipeLength;
+
+        memoryDefect.ShotStartPosition =
+            existing.ShotStartPosition;
+
+        memoryDefect.ShotEndPosition =
+            existing.ShotEndPosition;
+
+        memoryDefect.Severity =
+            existing.Severity;
+
+        memoryDefect.Status =
+            existing.Status;
+
+        memoryDefect.ThicknessChecked =
+            existing.ThicknessChecked;
+
+        memoryDefect.NominalThicknessMm =
+            existing.NominalThicknessMm;
+
+        memoryDefect.ActualThicknessMm =
+            existing.ActualThicknessMm;
+
+        memoryDefect.MinimumThicknessMm =
+            existing.MinimumThicknessMm;
+
+        memoryDefect.ThicknessStatus =
+            existing.ThicknessStatus;
+
+        memoryDefect.ThicknessRemark =
+            existing.ThicknessRemark;
+
+        memoryDefect.UpdatedBy =
+            existing.UpdatedBy;
+
+        memoryDefect.UpdatedOn =
+            existing.UpdatedOn;
     }
 
     public void RemoveDefect(

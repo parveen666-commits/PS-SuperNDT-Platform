@@ -231,6 +231,7 @@
 
         <!-- ================================================== -->
         <!-- DARK COMBOBOX -->
+        <!-- CLOSED BOX + DROPDOWN -->
         <!-- ================================================== -->
 
         <Style x:Key="DarkComboBox"
@@ -256,6 +257,112 @@
 
             <Setter Property="VerticalContentAlignment"
                     Value="Center"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="ComboBox">
+
+                        <Grid>
+
+                            <!-- CLOSED COMBOBOX -->
+
+                            <ToggleButton x:Name="ToggleButton"
+                                          Focusable="False"
+                                          ClickMode="Press"
+                                          Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          IsChecked="{Binding IsDropDownOpen,
+                                                              RelativeSource={RelativeSource TemplatedParent},
+                                                              Mode=TwoWay}">
+
+                                <ToggleButton.Template>
+
+                                    <ControlTemplate TargetType="ToggleButton">
+
+                                        <Border Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="2">
+
+                                            <Grid>
+
+                                                <!-- SELECTED VALUE -->
+
+                                                <ContentPresenter
+                                                    Margin="9,0,30,0"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Content="{Binding SelectionBoxItem,
+                                                                     RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                    ContentTemplate="{Binding SelectionBoxItemTemplate,
+                                                                              RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                    ContentTemplateSelector="{Binding ItemTemplateSelector,
+                                                                                      RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                                    TextElement.Foreground="White"
+                                                    TextElement.FontSize="11"/>
+
+                                                <!-- ARROW -->
+
+                                                <TextBlock Text="▼"
+                                                           Foreground="#B8C0CA"
+                                                           FontSize="9"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           Margin="0,0,9,0"
+                                                           IsHitTestVisible="False"/>
+
+                                            </Grid>
+
+                                        </Border>
+
+                                    </ControlTemplate>
+
+                                </ToggleButton.Template>
+
+                            </ToggleButton>
+
+                            <!-- DROPDOWN -->
+
+                            <Popup x:Name="PART_Popup"
+                                   Placement="Bottom"
+                                   PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   StaysOpen="True">
+
+                                <Border Background="#252B33"
+                                        BorderBrush="#4A5563"
+                                        BorderThickness="1"
+                                        CornerRadius="2"
+                                        MinWidth="{Binding ActualWidth,
+                                                           RelativeSource={RelativeSource TemplatedParent}}">
+
+                                    <ScrollViewer MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+
+                                        <ItemsPresenter/>
+
+                                    </ScrollViewer>
+
+                                </Border>
+
+                            </Popup>
+
+                        </Grid>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
 
         </Style>
 
@@ -379,7 +486,6 @@
 
         <!-- ================================================== -->
         <!-- FILTER / ZOOM BAR -->
-        <!-- NO EMPTY BLACK BOX -->
         <!-- ================================================== -->
 
         <Border Grid.Row="1"
