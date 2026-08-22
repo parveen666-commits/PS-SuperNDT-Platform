@@ -39,6 +39,23 @@ public sealed class DefectDialog : Window
         double position = 0,
         double length = 0,
         double width = 0)
+        : this(
+            "UNCLASSIFIED",
+            "UNCLASSIFIED",
+            position,
+            length,
+            width,
+            "")
+    {
+    }
+
+    public DefectDialog(
+        string defectType,
+        string severity,
+        double position,
+        double length,
+        double width,
+        string remarks)
     {
         Title = "DEFECT DETAILS";
 
@@ -66,9 +83,32 @@ public sealed class DefectDialog : Window
         Foreground =
             Brushes.White;
 
-        position = Math.Max(0, position);
-        length = Math.Max(0, length);
-        width = Math.Max(0, width);
+        position =
+            Math.Max(
+                0,
+                position);
+
+        length =
+            Math.Max(
+                0,
+                length);
+
+        width =
+            Math.Max(
+                0,
+                width);
+
+        defectType =
+            string.IsNullOrWhiteSpace(defectType)
+                ? "UNCLASSIFIED"
+                : defectType.Trim();
+
+        severity =
+            string.IsNullOrWhiteSpace(severity)
+                ? "UNCLASSIFIED"
+                : severity.Trim();
+
+        remarks ??= "";
 
         Grid root =
             new Grid
@@ -347,6 +387,9 @@ public sealed class DefectDialog : Window
         _remarksTextBox =
             new TextBox
             {
+                Text =
+                    remarks,
+
                 Margin =
                     new Thickness(
                         6,
@@ -517,8 +560,44 @@ public sealed class DefectDialog : Window
         Content =
             root;
 
-        _defectTypeComboBox.SelectedIndex = 0;
-        _severityComboBox.SelectedIndex = 0;
+        // =====================================================
+        // LOAD EXISTING VALUES
+        // =====================================================
+
+        SetComboBoxValue(
+            _defectTypeComboBox,
+            defectType);
+
+        SetComboBoxValue(
+            _severityComboBox,
+            severity);
+    }
+
+    // =========================================================
+    // SET COMBOBOX VALUE
+    // =========================================================
+
+    private static void SetComboBoxValue(
+        ComboBox comboBox,
+        string value)
+    {
+        for (
+            int i = 0;
+            i < comboBox.Items.Count;
+            i++)
+        {
+            if (string.Equals(
+                    comboBox.Items[i]?.ToString(),
+                    value,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                comboBox.SelectedIndex = i;
+
+                return;
+            }
+        }
+
+        comboBox.SelectedIndex = 0;
     }
 
     // =========================================================
@@ -647,10 +726,6 @@ public sealed class DefectDialog : Window
                     null
             };
 
-        // =====================================================
-        // COMBOBOX ITEM STYLE
-        // =====================================================
-
         Style itemStyle =
             new Style(
                 typeof(ComboBoxItem));
@@ -736,10 +811,6 @@ public sealed class DefectDialog : Window
         comboBox.ItemContainerStyle =
             itemStyle;
 
-        // =====================================================
-        // TOGGLE BUTTON TEMPLATE
-        // =====================================================
-
         ControlTemplate toggleTemplate =
             new ControlTemplate(
                 typeof(ToggleButton));
@@ -812,10 +883,6 @@ public sealed class DefectDialog : Window
 
         toggleTemplate.VisualTree =
             toggleGrid;
-
-        // =====================================================
-        // COMBOBOX TEMPLATE
-        // =====================================================
 
         ControlTemplate comboTemplate =
             new ControlTemplate(
@@ -912,10 +979,6 @@ public sealed class DefectDialog : Window
 
         rootGrid.AppendChild(
             contentPresenter);
-
-        // =====================================================
-        // POPUP
-        // =====================================================
 
         FrameworkElementFactory popup =
             new FrameworkElementFactory(
@@ -1036,9 +1099,9 @@ public sealed class DefectDialog : Window
         return comboBox;
     }
 
-    // =====================================================
+    // =========================================================
     // TEXTBOX
-    // =====================================================
+    // =========================================================
 
     private static TextBox CreateTextBox(
         string text)
@@ -1086,9 +1149,9 @@ public sealed class DefectDialog : Window
         };
     }
 
-    // =====================================================
+    // =========================================================
     // SAVE
-    // =====================================================
+    // =========================================================
 
     private void SaveButton_Click(
         object sender,
@@ -1155,9 +1218,9 @@ public sealed class DefectDialog : Window
             true;
     }
 
-    // =====================================================
+    // =========================================================
     // CANCEL
-    // =====================================================
+    // =========================================================
 
     private void CancelButton_Click(
         object sender,

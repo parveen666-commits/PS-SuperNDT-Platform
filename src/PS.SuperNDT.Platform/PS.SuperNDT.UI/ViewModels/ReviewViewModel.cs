@@ -1,13 +1,15 @@
-﻿using System;
+﻿using PS.SuperNDT.UI.Commands;
+using PS.SuperNDT.UI.Models;
+using PS.SuperNDT.UI.Services;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using PS.SuperNDT.UI.Commands;
-using PS.SuperNDT.UI.Models;
-using PS.SuperNDT.UI.Services;
 
 namespace PS.SuperNDT.UI.ViewModels;
 
@@ -16,6 +18,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     private readonly ImageService _imageService = new();
     private readonly AuditLogService _auditLogService = new();
     private readonly ImageFolderService _imageFolderService = new();
+    private readonly ReviewedImageExportService _reviewedImageExportService = new();
 
     private ImageRecordModel? _selectedImage;
     private BitmapImage? _displayImage;
@@ -31,11 +34,25 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     private string _reviewMessage = "Ready";
 
-    public ObservableCollection<ImageRecordModel> Images { get; } = new();
+    // ============================================================
+    // IMAGE FILTER
+    // ============================================================
 
-    public ObservableCollection<ImageRecordModel> FilteredImages { get; } = new();
+    private double _brightness;
+    private double _contrast;
+    private double _gamma = 1.0;
 
-    public ObservableCollection<RulerTick> RulerTicks { get; } = new();
+    private double _snr;
+    private string _snrText = "SNR: --";
+
+    public ObservableCollection<ImageRecordModel> Images { get; } =
+        new();
+
+    public ObservableCollection<ImageRecordModel> FilteredImages { get; } =
+        new();
+
+    public ObservableCollection<RulerTick> RulerTicks { get; } =
+        new();
 
     public ObservableCollection<string> WorkOrderItems { get; } =
         new();
@@ -51,6 +68,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     public ObservableCollection<AuditLogModel> ReviewHistory { get; } =
         new();
+
+    // ============================================================
+    // COMMANDS
+    // ============================================================
 
     public RelayCommand RefreshCommand { get; }
 
@@ -73,6 +94,17 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public RelayCommand PendingCommand { get; }
 
     public RelayCommand OpenImageCommand { get; }
+
+    public RelayCommand SaveReviewedPngCommand { get; }
+
+    // Image processing commands
+    public RelayCommand ResetImageFilterCommand { get; }
+
+    public RelayCommand ApplyImageFilterCommand { get; }
+
+    // ============================================================
+    // BASIC REVIEW FILTERS
+    // ============================================================
 
     public string SelectedWorkOrder
     {
@@ -137,6 +169,127 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
+    // ============================================================
+    // IMAGE FILTER PROPERTIES
+    // ============================================================
+
+    public double Brightness
+    {
+        get => _brightness;
+
+        set
+        {
+            double newValue =
+                Math.Clamp(
+                    value,
+                    -100.0,
+                    100.0);
+
+            if (Math.Abs(
+                    _brightness - newValue) < 0.001)
+            {
+                return;
+            }
+
+            _brightness = newValue;
+
+            OnPropertyChanged();
+
+            ApplyImageFilter();
+        }
+    }
+
+    public double Contrast
+    {
+        get => _contrast;
+
+        set
+        {
+            double newValue =
+                Math.Clamp(
+                    value,
+                    -100.0,
+                    100.0);
+
+            if (Math.Abs(
+                    _contrast - newValue) < 0.001)
+            {
+                return;
+            }
+
+            _contrast = newValue;
+
+            OnPropertyChanged();
+
+            ApplyImageFilter();
+        }
+    }
+
+    public double Gamma
+    {
+        get => _gamma;
+
+        set
+        {
+            double newValue =
+                Math.Clamp(
+                    value,
+                    0.20,
+                    3.00);
+
+            if (Math.Abs(
+                    _gamma - newValue) < 0.001)
+            {
+                return;
+            }
+
+            _gamma = newValue;
+
+            OnPropertyChanged();
+
+            ApplyImageFilter();
+        }
+    }
+
+    public double SNR
+    {
+        get => _snr;
+
+        private set
+        {
+            if (Math.Abs(
+                    _snr - value) < 0.001)
+            {
+                return;
+            }
+
+            _snr = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public string SNRText
+    {
+        get => _snrText;
+
+        private set
+        {
+            if (_snrText == value)
+            {
+                return;
+            }
+
+            _snrText = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    // ============================================================
+    // SELECTED IMAGE
+    // ============================================================
+
     public ImageRecordModel? SelectedImage
     {
         get => _selectedImage;
@@ -155,6 +308,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             OnPropertyChanged();
 
             ResetZoom();
+            ResetImageFilter();
             LoadDisplayImage();
             UpdateNavigationState();
             UpdateReviewMessage();
@@ -190,6 +344,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    // ============================================================
+    // ZOOM
+    // ============================================================
 
     public double ZoomLevel
     {
@@ -260,6 +418,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
+    // ============================================================
+    // COUNTERS
+    // ============================================================
+
     public int TotalImages =>
         Images.Count;
 
@@ -283,6 +445,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 image.ReviewStatus,
                 "REJECTED",
                 StringComparison.OrdinalIgnoreCase));
+
+    // ============================================================
+    // CONSTRUCTOR
+    // ============================================================
 
     public ReviewViewModel()
     {
@@ -330,6 +496,18 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             new RelayCommand(
                 _ => OpenSelectedImage());
 
+        SaveReviewedPngCommand =
+            new RelayCommand(
+                _ => SaveReviewedPng());
+
+        ResetImageFilterCommand =
+            new RelayCommand(
+                _ => ResetImageFilter());
+
+        ApplyImageFilterCommand =
+            new RelayCommand(
+                _ => ApplyImageFilter());
+
         CurrentJobService.Instance.CurrentJobChanged +=
             CurrentJobService_CurrentJobChanged;
 
@@ -375,8 +553,14 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         {
             UpdateRuler();
             ReviewHistory.Clear();
+            SNR = 0;
+            SNRText = "SNR: --";
         }
     }
+
+    // ============================================================
+    // LOAD IMAGES
+    // ============================================================
 
     private void LoadImages()
     {
@@ -421,6 +605,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 HasPreviousImage = false;
                 HasNextImage = false;
 
+                SNR = 0;
+                SNRText = "SNR: --";
+
                 ReviewMessage =
                     "No saved images found.";
 
@@ -461,6 +648,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             HasPreviousImage = false;
             HasNextImage = false;
 
+            SNR = 0;
+            SNRText = "SNR: --";
+
             ReviewMessage =
                 $"Review load failed: {ex.Message}";
 
@@ -477,6 +667,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 nameof(RejectedImages));
         }
     }
+
+    // ============================================================
+    // WORK ORDER LIST
+    // ============================================================
 
     private void BuildWorkOrderList()
     {
@@ -529,6 +723,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             nameof(SelectedWorkOrder));
     }
 
+    // ============================================================
+    // IMAGE SAVED EVENT
+    // ============================================================
+
     private void ImageService_ImageSaved(
         object? sender,
         ImageRecordModel image)
@@ -574,6 +772,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             $"New Shot {image.ShotNumber} saved and loaded in Review.";
     }
 
+    // ============================================================
+    // CURRENT JOB EVENT
+    // ============================================================
+
     private void CurrentJobService_CurrentJobChanged(
         object? sender,
         JobModel? job)
@@ -601,6 +803,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 "ALL WORK ORDERS";
         }
     }
+
+    // ============================================================
+    // REVIEW FILTER
+    // ============================================================
 
     private void ApplyFilter()
     {
@@ -743,6 +949,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             RulerTicks.Clear();
             ReviewHistory.Clear();
+
+            SNR = 0;
+            SNRText = "SNR: --";
         }
 
         if (_selectedImage == null &&
@@ -802,6 +1011,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         ApplyFilter();
     }
 
+    // ============================================================
+    // ZOOM
+    // ============================================================
+
     private void ZoomIn()
     {
         ZoomLevel =
@@ -822,6 +1035,485 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     {
         ZoomLevel = 1.0;
     }
+
+    // ============================================================
+    // IMAGE FILTER RESET
+    // ============================================================
+
+    private void ResetImageFilter()
+    {
+        _brightness = 0;
+        _contrast = 0;
+        _gamma = 1.0;
+
+        OnPropertyChanged(
+            nameof(Brightness));
+
+        OnPropertyChanged(
+            nameof(Contrast));
+
+        OnPropertyChanged(
+            nameof(Gamma));
+
+        ApplyImageFilter();
+    }
+
+    // ============================================================
+    // IMAGE FILTER
+    // ============================================================
+
+    private void ApplyImageFilter()
+    {
+        if (_selectedImage == null)
+        {
+            return;
+        }
+
+        string filePath =
+            _selectedImage.FilePath;
+
+        if (string.IsNullOrWhiteSpace(
+                filePath) ||
+            !File.Exists(filePath))
+        {
+            return;
+        }
+
+        try
+        {
+            BitmapImage source =
+                LoadBitmap(
+                    filePath);
+
+            if (Math.Abs(Brightness) < 0.001 &&
+                Math.Abs(Contrast) < 0.001 &&
+                Math.Abs(Gamma - 1.0) < 0.001)
+            {
+                DisplayImage =
+                    source;
+
+                CalculateSNR(
+                    source);
+
+                return;
+            }
+
+            int width =
+                source.PixelWidth;
+
+            int height =
+                source.PixelHeight;
+
+            if (width <= 0 ||
+                height <= 0)
+            {
+                return;
+            }
+
+            WriteableBitmap writable =
+                new WriteableBitmap(
+                    width,
+                    height,
+                    source.DpiX,
+                    source.DpiY,
+                    PixelFormats.Bgra32,
+                    null);
+
+            int stride =
+                width * 4;
+
+            byte[] pixels =
+                new byte[
+                    stride *
+                    height];
+
+            source.CopyPixels(
+                pixels,
+                stride,
+                0);
+
+            double contrastFactor =
+                (100.0 + Contrast) /
+                100.0;
+
+            contrastFactor *=
+                contrastFactor;
+
+            double brightnessOffset =
+                Brightness * 2.55;
+
+            double gammaValue =
+                Gamma;
+
+            for (int index = 0;
+                 index < pixels.Length;
+                 index += 4)
+            {
+                double blue =
+                    pixels[index];
+
+                double green =
+                    pixels[index + 1];
+
+                double red =
+                    pixels[index + 2];
+
+                blue =
+                    ApplyPixelFilter(
+                        blue,
+                        brightnessOffset,
+                        contrastFactor,
+                        gammaValue);
+
+                green =
+                    ApplyPixelFilter(
+                        green,
+                        brightnessOffset,
+                        contrastFactor,
+                        gammaValue);
+
+                red =
+                    ApplyPixelFilter(
+                        red,
+                        brightnessOffset,
+                        contrastFactor,
+                        gammaValue);
+
+                pixels[index] =
+                    (byte)blue;
+
+                pixels[index + 1] =
+                    (byte)green;
+
+                pixels[index + 2] =
+                    (byte)red;
+            }
+
+            writable.WritePixels(
+                new Int32Rect(
+                    0,
+                    0,
+                    width,
+                    height),
+                pixels,
+                stride,
+                0);
+
+            writable.Freeze();
+
+            DisplayImage =
+                ConvertToBitmapImage(
+                    writable);
+
+            CalculateSNR(
+                DisplayImage);
+        }
+        catch
+        {
+            DisplayImage = null;
+
+            SNR = 0;
+            SNRText = "SNR: --";
+        }
+    }
+
+    private static double ApplyPixelFilter(
+        double pixel,
+        double brightnessOffset,
+        double contrastFactor,
+        double gamma)
+    {
+        double normalized =
+            pixel / 255.0;
+
+        normalized =
+            Math.Clamp(
+                normalized +
+                brightnessOffset / 255.0,
+                0.0,
+                1.0);
+
+        normalized =
+            ((normalized - 0.5) *
+             contrastFactor) +
+            0.5;
+
+        normalized =
+            Math.Clamp(
+                normalized,
+                0.0,
+                1.0);
+
+        normalized =
+            Math.Pow(
+                normalized,
+                1.0 / gamma);
+
+        return Math.Clamp(
+            normalized * 255.0,
+            0.0,
+            255.0);
+    }
+
+    // ============================================================
+    // SNR
+    // ============================================================
+
+    private void CalculateSNR(
+        BitmapImage? bitmap)
+    {
+        if (bitmap == null ||
+            bitmap.PixelWidth <= 0 ||
+            bitmap.PixelHeight <= 0)
+        {
+            SNR = 0;
+            SNRText = "SNR: --";
+
+            return;
+        }
+
+        try
+        {
+            int width =
+                bitmap.PixelWidth;
+
+            int height =
+                bitmap.PixelHeight;
+
+            int stride =
+                width * 4;
+
+            byte[] pixels =
+                new byte[
+                    stride *
+                    height];
+
+            bitmap.CopyPixels(
+                pixels,
+                stride,
+                0);
+
+            double sum = 0;
+            double sumSquares = 0;
+
+            long pixelCount =
+                (long)width *
+                height;
+
+            if (pixelCount <= 0)
+            {
+                SNR = 0;
+                SNRText = "SNR: --";
+
+                return;
+            }
+
+            for (int index = 0;
+                 index < pixels.Length;
+                 index += 4)
+            {
+                double blue =
+                    pixels[index];
+
+                double green =
+                    pixels[index + 1];
+
+                double red =
+                    pixels[index + 2];
+
+                double luminance =
+                    (0.114 * blue) +
+                    (0.587 * green) +
+                    (0.299 * red);
+
+                sum += luminance;
+
+                sumSquares +=
+                    luminance *
+                    luminance;
+            }
+
+            double mean =
+                sum / pixelCount;
+
+            double variance =
+                (sumSquares /
+                 pixelCount) -
+                (mean * mean);
+
+            variance =
+                Math.Max(
+                    0,
+                    variance);
+
+            double standardDeviation =
+                Math.Sqrt(
+                    variance);
+
+            if (standardDeviation < 0.0001 ||
+                mean <= 0)
+            {
+                SNR = 0;
+
+                SNRText =
+                    "SNR: HIGH";
+
+                return;
+            }
+
+            double ratio =
+                mean /
+                standardDeviation;
+
+            double snrDb =
+                20.0 *
+                Math.Log10(
+                    Math.Max(
+                        ratio,
+                        0.000001));
+
+            if (double.IsNaN(snrDb) ||
+                double.IsInfinity(snrDb))
+            {
+                SNR = 0;
+                SNRText = "SNR: --";
+
+                return;
+            }
+
+            SNR =
+                Math.Max(
+                    0,
+                    snrDb);
+
+            SNRText =
+                $"SNR: {SNR:0.0} dB";
+        }
+        catch
+        {
+            SNR = 0;
+            SNRText = "SNR: --";
+        }
+    }
+
+    // ============================================================
+    // REVIEWED PNG EXPORT
+    // ============================================================
+
+    private void SaveReviewedPng()
+    {
+        if (_selectedImage == null)
+        {
+            ReviewMessage =
+                "Select an image first.";
+
+            return;
+        }
+
+        if (DisplayImage == null)
+        {
+            ReviewMessage =
+                "Reviewed image is not available.";
+
+            return;
+        }
+
+        try
+        {
+            var defects =
+                DefectService.Instance
+                    .GetByImage(
+                        _selectedImage.Id)
+                    .ToList();
+
+            string destinationPath =
+                _reviewedImageExportService
+                    .ExportReviewedPng(
+                        _selectedImage,
+                        DisplayImage,
+                        defects);
+
+            ReviewMessage =
+                $"Reviewed PNG saved: {destinationPath}";
+        }
+        catch (Exception ex)
+        {
+            ReviewMessage =
+                $"Reviewed PNG export failed: {ex.Message}";
+        }
+    }
+
+    // ============================================================
+    // IMAGE LOADING
+    // ============================================================
+
+    private static BitmapImage LoadBitmap(
+        string filePath)
+    {
+        var bitmap =
+            new BitmapImage();
+
+        using var stream =
+            new FileStream(
+                filePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite);
+
+        bitmap.BeginInit();
+
+        bitmap.CacheOption =
+            BitmapCacheOption.OnLoad;
+
+        bitmap.StreamSource =
+            stream;
+
+        bitmap.EndInit();
+
+        bitmap.Freeze();
+
+        return bitmap;
+    }
+
+    private static BitmapImage ConvertToBitmapImage(
+        BitmapSource source)
+    {
+        var encoder =
+            new PngBitmapEncoder();
+
+        encoder.Frames.Add(
+            BitmapFrame.Create(
+                source));
+
+        using var memory =
+            new MemoryStream();
+
+        encoder.Save(
+            memory);
+
+        memory.Position = 0;
+
+        var bitmap =
+            new BitmapImage();
+
+        bitmap.BeginInit();
+
+        bitmap.CacheOption =
+            BitmapCacheOption.OnLoad;
+
+        bitmap.StreamSource =
+            memory;
+
+        bitmap.EndInit();
+
+        bitmap.Freeze();
+
+        return bitmap;
+    }
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
 
     private void PreviousImage()
     {
@@ -897,6 +1589,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             FilteredImages.Count - 1;
     }
 
+    // ============================================================
+    // REVIEW STATUS
+    // ============================================================
+
     private void SetReviewStatus(
         string status)
     {
@@ -919,13 +1615,6 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             DateTime reviewTime =
                 DateTime.Now;
 
-            /*
-             * Folder workflow:
-             *
-             * ACCEPTED -> ACCEPT
-             * REJECTED -> REJECT
-             * PENDING  -> REPAIR
-             */
             string folderStatus =
                 status switch
                 {
@@ -938,11 +1627,6 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             string oldFilePath =
                 _selectedImage.FilePath;
 
-            /*
-             * Move the physical image first.
-             * If there is no physical file path, the review
-             * status can still be saved normally.
-             */
             if (!string.IsNullOrWhiteSpace(
                     folderStatus) &&
                 !string.IsNullOrWhiteSpace(
@@ -1036,6 +1720,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
+    // ============================================================
+    // REVIEW HISTORY
+    // ============================================================
+
     private void LoadReviewHistory()
     {
         ReviewHistory.Clear();
@@ -1085,6 +1773,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
+    // ============================================================
+    // OPEN IMAGE
+    // ============================================================
+
     private void OpenSelectedImage()
     {
         if (_selectedImage == null)
@@ -1110,6 +1802,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         }
     }
 
+    // ============================================================
+    // IMAGE VIEWER EVENT
+    // ============================================================
+
     private void ImageViewerService_CurrentImageChanged(
         object? sender,
         EventArgs e)
@@ -1130,6 +1826,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             RulerTicks.Clear();
             ReviewHistory.Clear();
+
+            SNR = 0;
+            SNRText = "SNR: --";
 
             return;
         }
@@ -1161,6 +1860,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         LoadDisplayImage();
 
         ResetZoom();
+        ResetImageFilter();
 
         UpdateNavigationState();
 
@@ -1171,12 +1871,19 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         LoadReviewHistory();
     }
 
+    // ============================================================
+    // DISPLAY IMAGE
+    // ============================================================
+
     private void LoadDisplayImage()
     {
         DisplayImage = null;
 
         if (_selectedImage == null)
         {
+            SNR = 0;
+            SNRText = "SNR: --";
+
             return;
         }
 
@@ -1186,47 +1893,45 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         if (string.IsNullOrWhiteSpace(
                 filePath))
         {
+            SNR = 0;
+            SNRText = "SNR: --";
+
             return;
         }
 
         if (!File.Exists(
                 filePath))
         {
+            SNR = 0;
+            SNRText = "SNR: --";
+
             return;
         }
 
         try
         {
             var bitmap =
-                new BitmapImage();
-
-            using var stream =
-                new FileStream(
-                    filePath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite);
-
-            bitmap.BeginInit();
-
-            bitmap.CacheOption =
-                BitmapCacheOption.OnLoad;
-
-            bitmap.StreamSource =
-                stream;
-
-            bitmap.EndInit();
-
-            bitmap.Freeze();
+                LoadBitmap(
+                    filePath);
 
             DisplayImage =
                 bitmap;
+
+            CalculateSNR(
+                bitmap);
         }
         catch
         {
             DisplayImage = null;
+
+            SNR = 0;
+            SNRText = "SNR: --";
         }
     }
+
+    // ============================================================
+    // REVIEW MESSAGE
+    // ============================================================
 
     private void UpdateReviewMessage()
     {
@@ -1243,6 +1948,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             $"{_selectedImage.ShotStartPosition:0}-" +
             $"{_selectedImage.ShotEndPosition:0} mm";
     }
+
+    // ============================================================
+    // RULER
+    // ============================================================
 
     private void UpdateRuler()
     {
@@ -1303,6 +2012,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             });
     }
 
+    // ============================================================
+    // PROPERTY CHANGED
+    // ============================================================
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged(
@@ -1315,6 +2028,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 propertyName));
     }
 
+    // ============================================================
+    // RULER TICK
+    // ============================================================
+
     public sealed class RulerTick
     {
         public double Position { get; init; }
@@ -1323,6 +2040,7 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
         public bool IsMajor { get; init; }
 
-        public string Label { get; init; } = string.Empty;
+        public string Label { get; init; } =
+            string.Empty;
     }
 }

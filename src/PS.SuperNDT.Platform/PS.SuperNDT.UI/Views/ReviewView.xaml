@@ -231,7 +231,6 @@
 
         <!-- ================================================== -->
         <!-- DARK COMBOBOX -->
-        <!-- CLOSED BOX + DROPDOWN -->
         <!-- ================================================== -->
 
         <Style x:Key="DarkComboBox"
@@ -269,8 +268,6 @@
 
                         <Grid>
 
-                            <!-- CLOSED COMBOBOX -->
-
                             <ToggleButton x:Name="ToggleButton"
                                           Focusable="False"
                                           ClickMode="Press"
@@ -292,8 +289,6 @@
 
                                             <Grid>
 
-                                                <!-- SELECTED VALUE -->
-
                                                 <ContentPresenter
                                                     Margin="9,0,30,0"
                                                     HorizontalAlignment="Left"
@@ -306,8 +301,6 @@
                                                                                       RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                                     TextElement.Foreground="White"
                                                     TextElement.FontSize="11"/>
-
-                                                <!-- ARROW -->
 
                                                 <TextBlock Text="▼"
                                                            Foreground="#B8C0CA"
@@ -326,8 +319,6 @@
                                 </ToggleButton.Template>
 
                             </ToggleButton>
-
-                            <!-- DROPDOWN -->
 
                             <Popup x:Name="PART_Popup"
                                    Placement="Bottom"
@@ -366,6 +357,39 @@
 
         </Style>
 
+        <!-- ================================================== -->
+        <!-- SEARCH BOX -->
+        <!-- ================================================== -->
+
+        <Style x:Key="ReviewSearchBox"
+               TargetType="TextBox">
+
+            <Setter Property="Height"
+                    Value="34"/>
+
+            <Setter Property="Background"
+                    Value="#171B20"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#4A5563"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="Padding"
+                    Value="9,0"/>
+
+            <Setter Property="FontSize"
+                    Value="11"/>
+
+            <Setter Property="VerticalContentAlignment"
+                    Value="Center"/>
+
+        </Style>
+
     </UserControl.Resources>
 
     <Grid Margin="12">
@@ -374,7 +398,7 @@
 
             <RowDefinition Height="60"/>
 
-            <RowDefinition Height="58"/>
+            <RowDefinition Height="94"/>
 
             <RowDefinition Height="*"/>
 
@@ -485,7 +509,7 @@
         </Border>
 
         <!-- ================================================== -->
-        <!-- FILTER / ZOOM BAR -->
+        <!-- FILTER / SEARCH / ZOOM BAR -->
         <!-- ================================================== -->
 
         <Border Grid.Row="1"
@@ -496,9 +520,19 @@
 
             <Grid>
 
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="38"/>
+
+                    <RowDefinition Height="38"/>
+
+                </Grid.RowDefinitions>
+
                 <Grid.ColumnDefinitions>
 
                     <ColumnDefinition Width="*"/>
+
+                    <ColumnDefinition Width="210"/>
 
                     <ColumnDefinition Width="150"/>
 
@@ -512,11 +546,57 @@
 
                 </Grid.ColumnDefinitions>
 
-                <!-- STATUS FILTER -->
+                <!-- SEARCH -->
 
-                <ComboBox Grid.Column="1"
+                <TextBox Grid.Row="0"
+                         Grid.Column="0"
+                         Margin="0,0,8,0"
+                         Style="{StaticResource ReviewSearchBox}"
+                         Text="{Binding SearchText,
+                                        UpdateSourceTrigger=PropertyChanged}"
+                         ToolTip="Search Job, Shot, Pipe, Weld, Operator, Detector..."/>
+
+                <!-- WORK ORDER -->
+
+                <ComboBox Grid.Row="0"
+                          Grid.Column="1"
                           Height="34"
-                          Margin="0,0,6,0"
+                          Margin="0,0,8,0"
+                          VerticalContentAlignment="Center"
+                          HorizontalContentAlignment="Left"
+                          Style="{StaticResource DarkComboBox}"
+                          ItemsSource="{Binding WorkOrderItems}"
+                          SelectedItem="{Binding SelectedWorkOrder,
+                                               Mode=TwoWay}"
+                          ItemContainerStyle="{StaticResource DarkComboBoxItemStyle}">
+
+                    <ComboBox.Resources>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}"
+                                         Color="#252B33"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
+                                         Color="#252B33"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
+                                         Color="White"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                         Color="#4A6A8A"/>
+
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                         Color="White"/>
+
+                    </ComboBox.Resources>
+
+                </ComboBox>
+
+                <!-- STATUS -->
+
+                <ComboBox Grid.Row="0"
+                          Grid.Column="2"
+                          Height="34"
+                          Margin="0,0,8,0"
                           VerticalContentAlignment="Center"
                           HorizontalContentAlignment="Left"
                           Style="{StaticResource DarkComboBox}"
@@ -546,24 +626,28 @@
 
                 </ComboBox>
 
-                <Button Grid.Column="2"
+                <Button Grid.Row="0"
+                        Grid.Column="3"
                         Content="REFRESH"
                         Command="{Binding RefreshCommand}"
                         Style="{StaticResource ActionButton}"/>
 
-                <Button Grid.Column="3"
+                <Button Grid.Row="0"
+                        Grid.Column="4"
                         Content="CLEAR"
                         Command="{Binding ClearFilterCommand}"
                         Style="{StaticResource ActionButton}"/>
 
-                <Button Grid.Column="4"
+                <Button Grid.Row="0"
+                        Grid.Column="5"
                         Content="OPEN"
                         Command="{Binding OpenImageCommand}"
                         Style="{StaticResource ActionButton}"/>
 
                 <!-- ZOOM -->
 
-                <StackPanel Grid.Column="5"
+                <StackPanel Grid.Row="0"
+                            Grid.Column="6"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
                             Margin="4,0,0,0">
@@ -574,7 +658,7 @@
                             Style="{StaticResource ActionButton}"/>
 
                     <TextBlock Text="{Binding ZoomLevel,
-                                      StringFormat={}{0:0.00}x}"
+                                              StringFormat={}{0:0.00}x}"
                                Foreground="White"
                                FontWeight="Bold"
                                Width="48"
@@ -592,6 +676,50 @@
                             Style="{StaticResource ActionButton}"/>
 
                 </StackPanel>
+
+                <!-- AI ADD-ON INFORMATION -->
+
+                <Border Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        Background="#20252C"
+                        BorderBrush="#46515E"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="9,0"
+                        Margin="0,2,8,0">
+
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+
+                        <TextBlock Text="AI INTEGRATED"
+                                   Foreground="#8FB8FF"
+                                   FontWeight="Bold"
+                                   FontSize="10"/>
+
+                        <TextBlock Text="  •  PAID ADD-ON"
+                                   Foreground="#FFD45A"
+                                   FontWeight="Bold"
+                                   FontSize="10"/>
+
+                        <TextBlock Text="  |  Automatic Defect Detection"
+                                   Foreground="#8F9AAA"
+                                   FontSize="10"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="3"
+                           Grid.ColumnSpan="4"
+                           Text="{Binding FilteredImages.Count,
+                                          StringFormat={}Showing {0} shot(s)}"
+                           Foreground="#7F8B99"
+                           FontSize="10"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Margin="0,2,8,0"/>
 
             </Grid>
 
@@ -652,7 +780,7 @@
 
                         <TextBlock Grid.Column="1"
                                    Text="{Binding FilteredImages.Count,
-                                          StringFormat={}Shots: {0}}"
+                                                  StringFormat={}Shots: {0}}"
                                    Foreground="#7F8B99"
                                    FontSize="10"
                                    VerticalAlignment="Center"/>
@@ -870,7 +998,7 @@
 
                         <RowDefinition Height="*"/>
 
-                        <RowDefinition Height="48"/>
+                        <RowDefinition Height="82"/>
 
                     </Grid.RowDefinitions>
 
@@ -1041,39 +1169,55 @@
 
                     </ScrollViewer>
 
-                    <!-- REVIEW ACTIONS -->
+                    <!-- REVIEW ACTIONS + EXPORT -->
 
                     <StackPanel Grid.Row="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center">
 
-                        <Button Content="ACCEPT"
-                                Width="82"
-                                Height="36"
-                                Command="{Binding ApproveCommand}"
-                                Background="#285B43"
-                                Foreground="White"
-                                BorderBrush="#4D956F"
-                                Margin="3"/>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
 
-                        <Button Content="REJECT"
-                                Width="82"
-                                Height="36"
-                                Command="{Binding RejectCommand}"
-                                Background="#703C42"
-                                Foreground="White"
-                                BorderBrush="#B56B73"
-                                Margin="3"/>
+                            <Button Content="ACCEPT"
+                                    Width="82"
+                                    Height="32"
+                                    Command="{Binding ApproveCommand}"
+                                    Background="#285B43"
+                                    Foreground="White"
+                                    BorderBrush="#4D956F"
+                                    Margin="3"/>
 
-                        <Button Content="PENDING"
-                                Width="82"
-                                Height="36"
-                                Command="{Binding PendingCommand}"
-                                Background="#62552B"
+                            <Button Content="REJECT"
+                                    Width="82"
+                                    Height="32"
+                                    Command="{Binding RejectCommand}"
+                                    Background="#703C42"
+                                    Foreground="White"
+                                    BorderBrush="#B56B73"
+                                    Margin="3"/>
+
+                            <Button Content="PENDING"
+                                    Width="82"
+                                    Height="32"
+                                    Command="{Binding PendingCommand}"
+                                    Background="#62552B"
+                                    Foreground="White"
+                                    BorderBrush="#A8954E"
+                                    Margin="3"/>
+
+                        </StackPanel>
+
+                        <Button Content="SAVE REVIEWED PNG"
+                                Width="262"
+                                Height="32"
+                                Margin="3,2,3,0"
+                                Command="{Binding SaveReviewedPngCommand}"
+                                Background="#28506F"
                                 Foreground="White"
-                                BorderBrush="#A8954E"
-                                Margin="3"/>
+                                BorderBrush="#5C8FB8"
+                                FontWeight="Bold"
+                                FontSize="10"
+                                ToolTip="Save a reviewed PNG copy without modifying the original image."/>
 
                     </StackPanel>
 
