@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -44,6 +45,14 @@ public partial class ReviewView : UserControl
 
     private Guid? _selectedDefectId;
 
+    /*
+     * Every time the selected image changes, this number is increased.
+     *
+     * A queued Dispatcher refresh from an older image is then ignored.
+     * This prevents an old defect rectangle from appearing on the new shot.
+     */
+    private long _defectOverlayVersion;
+
     public ReviewView()
     {
         InitializeComponent();
@@ -72,18 +81,6 @@ public partial class ReviewView : UserControl
         Focusable = true;
 
         SetupPanTransform();
-
-        ImagePanCanvas.MouseDown +=
-            ImagePanCanvas_MouseDown;
-
-        ImagePanCanvas.MouseMove +=
-            ImagePanCanvas_MouseMove;
-
-        ImagePanCanvas.MouseUp +=
-            ImagePanCanvas_MouseUp;
-
-        ImagePanCanvas.MouseLeave +=
-            ImagePanCanvas_MouseLeave;
 
         ImageViewport.MouseDown +=
             ImageViewport_MouseDown;
@@ -118,6 +115,13 @@ public partial class ReviewView : UserControl
                 ApplyZoomVisual();
                 UpdateScrollMode();
                 SyncDefectOverlay();
+
+                /*
+                 * Make absolutely sure an old temporary rectangle
+                 * cannot survive when ReviewView is loaded again.
+                 */
+                HideTemporaryDefectRectangle();
+
                 LoadSavedDefects();
                 UpdateRulers();
             }),
@@ -132,23 +136,16 @@ public partial class ReviewView : UserControl
         object sender,
         RoutedEventArgs e)
     {
+        /*
+         * Invalidate all already queued defect-overlay refreshes.
+         */
+        _defectOverlayVersion++;
+
         if (DataContext is INotifyPropertyChanged notifyObject)
         {
             notifyObject.PropertyChanged -=
                 ViewModel_PropertyChanged;
         }
-
-        ImagePanCanvas.MouseDown -=
-            ImagePanCanvas_MouseDown;
-
-        ImagePanCanvas.MouseMove -=
-            ImagePanCanvas_MouseMove;
-
-        ImagePanCanvas.MouseUp -=
-            ImagePanCanvas_MouseUp;
-
-        ImagePanCanvas.MouseLeave -=
-            ImagePanCanvas_MouseLeave;
 
         ImageViewport.MouseDown -=
             ImageViewport_MouseDown;
@@ -170,6 +167,7 @@ public partial class ReviewView : UserControl
 
         ClearPersistedDefectRectangles();
         ClearDynamicRulers();
+        HideTemporaryDefectRectangle();
 
         _selectedDefectId = null;
 
@@ -230,9 +228,56 @@ public partial class ReviewView : UserControl
         {
             _selectedDefectId = null;
 
+            /*
+             * New image = new overlay generation.
+             *
+             * Any old queued refresh will be rejected.
+             */
+            long currentOverlayVersion =
+                ++_defectOverlayVersion;
+
+            Guid? expectedImageId =
+                (DataContext as ReviewViewModel)
+                    ?.SelectedImage
+                    ?.Id;
+
+            /*
+             * Immediately remove anything belonging to the
+             * previous image.
+             */
+            ClearPersistedDefectRectangles();
+            HideTemporaryDefectRectangle();
+
             Dispatcher.BeginInvoke(
                 new Action(() =>
                 {
+                    if (currentOverlayVersion !=
+                        _defectOverlayVersion)
+                    {
+                        return;
+                    }
+
+                    if (DataContext is not ReviewViewModel viewModel)
+                    {
+                        return;
+                    }
+
+                    if (viewModel.SelectedImage == null)
+                    {
+                        return;
+                    }
+
+                    /*
+                     * The selected image must still be the same image
+                     * for which this refresh was scheduled.
+                     */
+                    if (expectedImageId.HasValue &&
+                        viewModel.SelectedImage.Id !=
+                        expectedImageId.Value)
+                    {
+                        return;
+                    }
+
                     ApplyZoomVisual();
 
                     double zoom =
@@ -250,7 +295,11 @@ public partial class ReviewView : UserControl
                     }
 
                     SyncDefectOverlay();
-                    RefreshSavedDefects();
+
+                    LoadSavedDefects(
+                        expectedImageId,
+                        currentOverlayVersion);
+
                     UpdateRulers();
                 }),
                 DispatcherPriority.Render);
@@ -848,13 +897,6 @@ public partial class ReviewView : UserControl
             if (modelWidth > 0 &&
                 modelHeight > 0)
             {
-                /*
-                 * Keep the overlay coordinate system in the same
-                 * rendered DIP coordinate system as the image.
-                 *
-                 * The database coordinates are converted to/from
-                 * source pixels by the methods below.
-                 */
                 imageWidth =
                     frameWidth;
 
@@ -1018,12 +1060,6 @@ public partial class ReviewView : UserControl
             return imagePoint;
         }
 
-        /*
-         * DefectModel X/Y are stored in SOURCE IMAGE PIXELS.
-         *
-         * Convert them back to WPF display/DIP coordinates before
-         * drawing the overlay.
-         */
         Point displayPoint =
             ImagePixelsToDisplayPoint(
                 imagePoint);
@@ -1064,9 +1100,6 @@ public partial class ReviewView : UserControl
                     0,
                     imageHeight));
 
-        /*
-         * Store coordinates in real source-image pixels.
-         */
         return DisplayPointToImagePixels(
             clamped);
     }
@@ -1364,33 +1397,6 @@ public partial class ReviewView : UserControl
         e.Handled = true;
     }
 
-    private void ImagePanCanvas_MouseDown(
-        object sender,
-        MouseButtonEventArgs e)
-    {
-        if (e.ChangedButton ==
-            MouseButton.Left)
-        {
-            if (Keyboard.Modifiers.HasFlag(
-                    ModifierKeys.Shift))
-            {
-                StartDefectDrawing(e);
-            }
-            else
-            {
-                StartPan(e);
-            }
-
-            return;
-        }
-
-        if (e.ChangedButton ==
-            MouseButton.Middle)
-        {
-            StartPan(e);
-        }
-    }
-
     private void ImageViewport_MouseDown(
         object sender,
         MouseButtonEventArgs e)
@@ -1418,23 +1424,6 @@ public partial class ReviewView : UserControl
         }
     }
 
-    private void ImagePanCanvas_MouseMove(
-        object sender,
-        MouseEventArgs e)
-    {
-        if (_isDrawingDefect)
-        {
-            UpdateDefectDrawing(e);
-
-            return;
-        }
-
-        if (_isPanning)
-        {
-            MovePan(e);
-        }
-    }
-
     private void ImageViewport_MouseMove(
         object sender,
         MouseEventArgs e)
@@ -1442,7 +1431,6 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             UpdateDefectDrawing(e);
-
             return;
         }
 
@@ -1450,20 +1438,6 @@ public partial class ReviewView : UserControl
         {
             MovePan(e);
         }
-    }
-
-    private void ImagePanCanvas_MouseUp(
-        object sender,
-        MouseButtonEventArgs e)
-    {
-        if (_isDrawingDefect)
-        {
-            FinishDefectDrawing(e);
-
-            return;
-        }
-
-        EndPan(e);
     }
 
     private void ImageViewport_MouseUp(
@@ -1473,22 +1447,10 @@ public partial class ReviewView : UserControl
         if (_isDrawingDefect)
         {
             FinishDefectDrawing(e);
-
             return;
         }
 
         EndPan(e);
-    }
-
-    private void ImagePanCanvas_MouseLeave(
-        object sender,
-        MouseEventArgs e)
-    {
-        if (_isPanning)
-        {
-            ImageViewport.Cursor =
-                Cursors.Hand;
-        }
     }
 
     private void ImageViewport_MouseLeave(
@@ -1615,7 +1577,14 @@ public partial class ReviewView : UserControl
             return;
         }
 
+        if (_isDrawingDefect)
+        {
+            e.Handled = true;
+            return;
+        }
+
         SyncDefectOverlay();
+        HideTemporaryDefectRectangle();
 
         Point imagePoint =
             GetMouseImagePoint(e);
@@ -1918,7 +1887,7 @@ public partial class ReviewView : UserControl
 
             _selectedDefectId = null;
 
-            RefreshSavedDefects();
+            LoadSavedDefects();
 
             return;
         }
@@ -1947,6 +1916,21 @@ public partial class ReviewView : UserControl
                 defectId);
 
         if (defect == null)
+        {
+            _selectedDefectId = null;
+
+            RefreshSavedDefects();
+
+            return;
+        }
+
+        /*
+         * Do not allow an old defect belonging to another image
+         * to be edited from the current image overlay.
+         */
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.SelectedImage == null ||
+            defect.ImageId != viewModel.SelectedImage.Id)
         {
             _selectedDefectId = null;
 
@@ -2039,7 +2023,7 @@ public partial class ReviewView : UserControl
             _selectedDefectId =
                 defect.Id;
 
-            RefreshSavedDefects();
+            LoadSavedDefects();
 
             Dispatcher.BeginInvoke(
                 new Action(() =>
@@ -2069,30 +2053,92 @@ public partial class ReviewView : UserControl
 
         DefectRectangle.Width = 0;
         DefectRectangle.Height = 0;
+
+        Canvas.SetLeft(
+            DefectRectangle,
+            0);
+
+        Canvas.SetTop(
+            DefectRectangle,
+            0);
     }
 
     // ============================================================
     // SAVED DEFECTS
     // ============================================================
 
-    private void LoadSavedDefects()
+    private void LoadSavedDefects(
+        Guid? expectedImageId = null,
+        long? expectedOverlayVersion = null)
     {
-        ClearPersistedDefectRectangles();
+        /*
+         * Ignore an old queued request.
+         */
+        if (expectedOverlayVersion.HasValue &&
+            expectedOverlayVersion.Value !=
+            _defectOverlayVersion)
+        {
+            return;
+        }
 
         if (DataContext is not ReviewViewModel viewModel ||
             viewModel.SelectedImage == null)
         {
+            ClearPersistedDefectRectangles();
+
             return;
         }
+
+        Guid currentImageId =
+            viewModel.SelectedImage.Id;
+
+        /*
+         * Ignore a request that was created for another image.
+         */
+        if (expectedImageId.HasValue &&
+            currentImageId != expectedImageId.Value)
+        {
+            return;
+        }
+
+        /*
+         * Always clear the old visual overlay before loading
+         * defects for the current image.
+         */
+        ClearPersistedDefectRectangles();
+
+        HideTemporaryDefectRectangle();
 
         SyncDefectOverlay();
 
         var defects =
             DefectService.Instance.GetByImage(
-                viewModel.SelectedImage.Id);
+                currentImageId);
+
+        /*
+         * Protect the visual layer from duplicate rendering of
+         * the same defect record.
+         */
+        HashSet<Guid> renderedDefectIds =
+            new HashSet<Guid>();
 
         foreach (DefectModel defect in defects)
         {
+            /*
+             * Extra safety: never draw a defect whose ImageId does
+             * not belong to the currently selected image.
+             */
+            if (defect.ImageId != currentImageId)
+            {
+                continue;
+            }
+
+            if (!renderedDefectIds.Add(
+                    defect.Id))
+            {
+                continue;
+            }
+
             AddPersistedDefectRectangle(
                 defect);
         }
@@ -2100,8 +2146,40 @@ public partial class ReviewView : UserControl
 
     private void RefreshSavedDefects()
     {
+        Guid? expectedImageId =
+            (DataContext as ReviewViewModel)
+                ?.SelectedImage
+                ?.Id;
+
+        long expectedOverlayVersion =
+            _defectOverlayVersion;
+
         Dispatcher.BeginInvoke(
-            new Action(LoadSavedDefects),
+            new Action(() =>
+            {
+                if (expectedOverlayVersion !=
+                    _defectOverlayVersion)
+                {
+                    return;
+                }
+
+                if (DataContext is not ReviewViewModel viewModel ||
+                    viewModel.SelectedImage == null)
+                {
+                    return;
+                }
+
+                if (expectedImageId.HasValue &&
+                    viewModel.SelectedImage.Id !=
+                    expectedImageId.Value)
+                {
+                    return;
+                }
+
+                LoadSavedDefects(
+                    expectedImageId,
+                    expectedOverlayVersion);
+            }),
             DispatcherPriority.Render);
     }
 
@@ -2133,6 +2211,21 @@ public partial class ReviewView : UserControl
     private void AddPersistedDefectRectangle(
         DefectModel defect)
     {
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.SelectedImage == null)
+        {
+            return;
+        }
+
+        /*
+         * Final safety check before drawing.
+         */
+        if (defect.ImageId !=
+            viewModel.SelectedImage.Id)
+        {
+            return;
+        }
+
         bool selected =
             _selectedDefectId.HasValue &&
             _selectedDefectId.Value ==
@@ -2245,14 +2338,6 @@ public partial class ReviewView : UserControl
 
         DefectOverlayCanvas.Children.Add(
             rectangle);
-
-        /*
-         * IMPORTANT:
-         *
-         * The old DEFECT | SEVERITY label has intentionally been
-         * removed. The full detail card below is now the only
-         * information panel displayed for a saved defect.
-         */
 
         Border detailCard =
             CreateDefectDetailCard(
@@ -2491,6 +2576,32 @@ public partial class ReviewView : UserControl
     private void SelectDefect(
         Guid defectId)
     {
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.SelectedImage == null)
+        {
+            return;
+        }
+
+        DefectModel? defect =
+            DefectService.Instance.GetById(
+                defectId);
+
+        if (defect == null ||
+            defect.ImageId !=
+            viewModel.SelectedImage.Id)
+        {
+            /*
+             * If a stale rectangle somehow receives a click,
+             * immediately clear it instead of selecting an old
+             * image's defect.
+             */
+            _selectedDefectId = null;
+
+            RefreshSavedDefects();
+
+            return;
+        }
+
         _selectedDefectId =
             defectId;
 
@@ -2511,6 +2622,16 @@ public partial class ReviewView : UserControl
             return;
         }
 
+        if (DataContext is not ReviewViewModel viewModel ||
+            viewModel.SelectedImage == null)
+        {
+            _selectedDefectId = null;
+
+            RefreshSavedDefects();
+
+            return;
+        }
+
         Guid defectId =
             _selectedDefectId.Value;
 
@@ -2519,6 +2640,21 @@ public partial class ReviewView : UserControl
                 defectId);
 
         if (defect == null)
+        {
+            _selectedDefectId = null;
+
+            RefreshSavedDefects();
+
+            return;
+        }
+
+        /*
+         * Never delete a defect belonging to another image.
+         *
+         * This is important for the old/stale overlay problem.
+         */
+        if (defect.ImageId !=
+            viewModel.SelectedImage.Id)
         {
             _selectedDefectId = null;
 
@@ -2548,7 +2684,13 @@ public partial class ReviewView : UserControl
 
             _selectedDefectId = null;
 
-            RefreshSavedDefects();
+            /*
+             * Force a clean redraw after deletion.
+             */
+            ClearPersistedDefectRectangles();
+            HideTemporaryDefectRectangle();
+
+            LoadSavedDefects();
 
             Dispatcher.BeginInvoke(
                 new Action(() =>

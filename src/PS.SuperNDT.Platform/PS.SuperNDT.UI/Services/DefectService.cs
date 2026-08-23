@@ -29,6 +29,18 @@ public sealed class DefectService
         double width,
         double height)
     {
+        ArgumentNullException.ThrowIfNull(image);
+
+        /*
+         * Review workflow uses one saved defect mark per shot/image.
+         *
+         * Remove any previous record for this image before creating
+         * the new one. This also prevents an old defect from coming
+         * back when the user changes shot, accepts another shot and
+         * later returns to this image.
+         */
+        ClearImage(image.Id);
+
         var defect = new DefectModel
         {
             ImageId =
@@ -82,24 +94,6 @@ public sealed class DefectService
             DefectType =
                 "UNCLASSIFIED",
 
-            ThicknessChecked =
-                false,
-
-            NominalThicknessMm =
-                0,
-
-            ActualThicknessMm =
-                0,
-
-            MinimumThicknessMm =
-                0,
-
-            ThicknessStatus =
-                "NOT CHECKED",
-
-            ThicknessRemark =
-                "",
-
             CreatedBy =
                 Environment.UserName,
 
@@ -134,10 +128,55 @@ public sealed class DefectService
               .Where(
                   defect =>
                       defect.ImageId == imageId)
-              .OrderBy(
+              .OrderByDescending(
                   defect =>
                       defect.CreatedOn)
+              .ThenByDescending(
+                  defect =>
+                      defect.Id)
               .ToList();
+
+        /*
+         * Self-heal old duplicate records created by the previous
+         * defect workflow.
+         *
+         * Only the latest saved defect for an image is valid in the
+         * current Review workflow.
+         */
+        if (defects.Count > 1)
+        {
+            var latest =
+                defects[0];
+
+            var obsolete =
+                defects
+                    .Skip(1)
+                    .ToList();
+
+            db.Defects.RemoveRange(
+                obsolete);
+
+            db.SaveChanges();
+
+            foreach (var oldDefect in obsolete)
+            {
+                var memoryDefect =
+                    Defects.FirstOrDefault(
+                        item =>
+                            item.Id ==
+                            oldDefect.Id);
+
+                if (memoryDefect != null)
+                {
+                    Defects.Remove(
+                        memoryDefect);
+                }
+            }
+
+            defects =
+                new[] { latest }
+                    .ToList();
+        }
 
         return new ObservableCollection<DefectModel>(
             defects);
@@ -193,7 +232,8 @@ public sealed class DefectService
         var existing =
             db.Defects.FirstOrDefault(
                 item =>
-                    item.Id == defect.Id);
+                    item.Id ==
+                    defect.Id);
 
         if (existing == null)
         {
@@ -242,28 +282,6 @@ public sealed class DefectService
         existing.Status =
             defect.Status;
 
-        // ========================================================
-        // THICKNESS CHECK
-        // ========================================================
-
-        existing.ThicknessChecked =
-            defect.ThicknessChecked;
-
-        existing.NominalThicknessMm =
-            defect.NominalThicknessMm;
-
-        existing.ActualThicknessMm =
-            defect.ActualThicknessMm;
-
-        existing.MinimumThicknessMm =
-            defect.MinimumThicknessMm;
-
-        existing.ThicknessStatus =
-            defect.ThicknessStatus;
-
-        existing.ThicknessRemark =
-            defect.ThicknessRemark;
-
         existing.UpdatedBy =
             Environment.UserName;
 
@@ -275,7 +293,8 @@ public sealed class DefectService
         var memoryDefect =
             Defects.FirstOrDefault(
                 item =>
-                    item.Id == defect.Id);
+                    item.Id ==
+                    defect.Id);
 
         if (memoryDefect == null)
         {
@@ -324,24 +343,6 @@ public sealed class DefectService
         memoryDefect.Status =
             existing.Status;
 
-        memoryDefect.ThicknessChecked =
-            existing.ThicknessChecked;
-
-        memoryDefect.NominalThicknessMm =
-            existing.NominalThicknessMm;
-
-        memoryDefect.ActualThicknessMm =
-            existing.ActualThicknessMm;
-
-        memoryDefect.MinimumThicknessMm =
-            existing.MinimumThicknessMm;
-
-        memoryDefect.ThicknessStatus =
-            existing.ThicknessStatus;
-
-        memoryDefect.ThicknessRemark =
-            existing.ThicknessRemark;
-
         memoryDefect.UpdatedBy =
             existing.UpdatedBy;
 
@@ -360,11 +361,13 @@ public sealed class DefectService
         var defect =
             db.Defects.FirstOrDefault(
                 item =>
-                    item.Id == defectId);
+                    item.Id ==
+                    defectId);
 
         if (defect != null)
         {
-            db.Defects.Remove(defect);
+            db.Defects.Remove(
+                defect);
 
             db.SaveChanges();
         }
@@ -372,11 +375,13 @@ public sealed class DefectService
         var memoryDefect =
             Defects.FirstOrDefault(
                 item =>
-                    item.Id == defectId);
+                    item.Id ==
+                    defectId);
 
         if (memoryDefect != null)
         {
-            Defects.Remove(memoryDefect);
+            Defects.Remove(
+                memoryDefect);
         }
     }
 
@@ -392,7 +397,8 @@ public sealed class DefectService
             db.Defects
               .Where(
                   defect =>
-                      defect.ImageId == imageId)
+                      defect.ImageId ==
+                      imageId)
               .ToList();
 
         if (defects.Count > 0)
@@ -407,12 +413,14 @@ public sealed class DefectService
             Defects
                 .Where(
                     defect =>
-                        defect.ImageId == imageId)
+                        defect.ImageId ==
+                        imageId)
                 .ToList();
 
         foreach (var defect in memoryDefects)
         {
-            Defects.Remove(defect);
+            Defects.Remove(
+                defect);
         }
     }
 
@@ -428,7 +436,8 @@ public sealed class DefectService
             db.Defects
               .Where(
                   defect =>
-                      defect.JobId == jobId)
+                      defect.JobId ==
+                      jobId)
               .ToList();
 
         if (defects.Count > 0)
@@ -443,12 +452,14 @@ public sealed class DefectService
             Defects
                 .Where(
                     defect =>
-                        defect.JobId == jobId)
+                        defect.JobId ==
+                        jobId)
                 .ToList();
 
         foreach (var defect in memoryDefects)
         {
-            Defects.Remove(defect);
+            Defects.Remove(
+                defect);
         }
     }
 
@@ -491,7 +502,8 @@ public sealed class DefectService
 
             foreach (var defect in defects)
             {
-                Defects.Add(defect);
+                Defects.Add(
+                    defect);
             }
         }
         catch
@@ -512,7 +524,8 @@ public sealed class DefectService
         }
 
         double imageCenter =
-            x + (width / 2.0);
+            x +
+            (width / 2.0);
 
         double ratio =
             imageCenter /
