@@ -31,16 +31,6 @@ public sealed class DefectService
     {
         ArgumentNullException.ThrowIfNull(image);
 
-        /*
-         * Review workflow uses one saved defect mark per shot/image.
-         *
-         * Remove any previous record for this image before creating
-         * the new one. This also prevents an old defect from coming
-         * back when the user changes shot, accepts another shot and
-         * later returns to this image.
-         */
-        ClearImage(image.Id);
-
         var defect = new DefectModel
         {
             ImageId =
@@ -128,55 +118,13 @@ public sealed class DefectService
               .Where(
                   defect =>
                       defect.ImageId == imageId)
-              .OrderByDescending(
+              .OrderBy(
                   defect =>
                       defect.CreatedOn)
-              .ThenByDescending(
+              .ThenBy(
                   defect =>
                       defect.Id)
               .ToList();
-
-        /*
-         * Self-heal old duplicate records created by the previous
-         * defect workflow.
-         *
-         * Only the latest saved defect for an image is valid in the
-         * current Review workflow.
-         */
-        if (defects.Count > 1)
-        {
-            var latest =
-                defects[0];
-
-            var obsolete =
-                defects
-                    .Skip(1)
-                    .ToList();
-
-            db.Defects.RemoveRange(
-                obsolete);
-
-            db.SaveChanges();
-
-            foreach (var oldDefect in obsolete)
-            {
-                var memoryDefect =
-                    Defects.FirstOrDefault(
-                        item =>
-                            item.Id ==
-                            oldDefect.Id);
-
-                if (memoryDefect != null)
-                {
-                    Defects.Remove(
-                        memoryDefect);
-                }
-            }
-
-            defects =
-                new[] { latest }
-                    .ToList();
-        }
 
         return new ObservableCollection<DefectModel>(
             defects);
@@ -201,6 +149,9 @@ public sealed class DefectService
               .ThenBy(
                   defect =>
                       defect.CreatedOn)
+              .ThenBy(
+                  defect =>
+                      defect.Id)
               .ToList();
 
         return new ObservableCollection<DefectModel>(
@@ -224,6 +175,8 @@ public sealed class DefectService
     public void UpdateDefect(
         DefectModel defect)
     {
+        ArgumentNullException.ThrowIfNull(defect);
+
         using var db =
             new SuperNDTDbContext();
 
@@ -298,6 +251,8 @@ public sealed class DefectService
 
         if (memoryDefect == null)
         {
+            Defects.Add(existing);
+
             return;
         }
 
@@ -498,6 +453,9 @@ public sealed class DefectService
                   .OrderBy(
                       defect =>
                           defect.CreatedOn)
+                  .ThenBy(
+                      defect =>
+                          defect.Id)
                   .ToList();
 
             foreach (var defect in defects)

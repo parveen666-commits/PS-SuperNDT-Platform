@@ -24,17 +24,8 @@ public sealed class ReviewedImageExportService
         BitmapSource source,
         IEnumerable<DefectModel>? defects = null)
     {
-        if (image == null)
-        {
-            throw new ArgumentNullException(
-                nameof(image));
-        }
-
-        if (source == null)
-        {
-            throw new ArgumentNullException(
-                nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(image);
+        ArgumentNullException.ThrowIfNull(source);
 
         if (string.IsNullOrWhiteSpace(
                 image.FilePath))
@@ -56,12 +47,12 @@ public sealed class ReviewedImageExportService
                 "The selected image has an invalid size.");
         }
 
-        string destinationPath =
+        string sourcePath =
             image.FilePath;
 
         string? directory =
             Path.GetDirectoryName(
-                destinationPath);
+                sourcePath);
 
         if (string.IsNullOrWhiteSpace(
                 directory))
@@ -76,16 +67,22 @@ public sealed class ReviewedImageExportService
         /*
          * IMPORTANT
          *
-         * DefectModel X/Y/Width/Height are stored in
-         * SOURCE IMAGE PIXELS.
+         * NEVER overwrite the original inspection image.
          *
-         * The export surface below is therefore created
-         * at exactly the same pixel dimensions.
+         * The original image must remain clean because ReviewView
+         * draws the live defect overlay on top of it.
          *
-         * No Review zoom, viewport size, frame size,
-         * DPI or WPF DIP coordinate is used for defect
-         * geometry.
+         * If the original PNG is overwritten with the reviewed
+         * annotation, opening Review again will show:
+         *
+         *     1. old burned-in defect
+         *     2. new live defect
+         *
+         * which creates the extra defect box seen in Review.
          */
+        string destinationPath =
+            BuildReviewedFilePath(
+                sourcePath);
 
         BitmapSource normalizedSource =
             NormalizeToPixelBitmap(
@@ -94,8 +91,9 @@ public sealed class ReviewedImageExportService
         DrawingVisual visual =
             new DrawingVisual();
 
-        using (DrawingContext drawing =
-               visual.RenderOpen())
+        using (
+            DrawingContext drawing =
+                visual.RenderOpen())
         {
             drawing.DrawImage(
                 normalizedSource,
@@ -107,7 +105,9 @@ public sealed class ReviewedImageExportService
 
             if (defects != null)
             {
-                foreach (DefectModel defect in defects)
+                foreach (
+                    DefectModel defect
+                    in defects)
                 {
                     DrawDefect(
                         drawing,
@@ -133,7 +133,7 @@ public sealed class ReviewedImageExportService
 
         string temporaryPath =
             destinationPath +
-            ".reviewing.tmp";
+            ".tmp";
 
         try
         {
@@ -144,12 +144,13 @@ public sealed class ReviewedImageExportService
                 BitmapFrame.Create(
                     renderedImage));
 
-            using (FileStream stream =
-                   new FileStream(
-                       temporaryPath,
-                       FileMode.Create,
-                       FileAccess.Write,
-                       FileShare.None))
+            using (
+                FileStream stream =
+                    new FileStream(
+                        temporaryPath,
+                        FileMode.Create,
+                        FileAccess.Write,
+                        FileShare.None))
             {
                 encoder.Save(stream);
             }
@@ -177,6 +178,24 @@ public sealed class ReviewedImageExportService
         }
 
         return destinationPath;
+    }
+
+    private static string BuildReviewedFilePath(
+        string sourcePath)
+    {
+        string directory =
+            Path.GetDirectoryName(
+                sourcePath)
+            ?? string.Empty;
+
+        string fileName =
+            Path.GetFileNameWithoutExtension(
+                sourcePath);
+
+        return Path.Combine(
+            directory,
+            fileName +
+            "_REVIEWED.png");
     }
 
     private static BitmapSource NormalizeToPixelBitmap(
@@ -241,17 +260,12 @@ public sealed class ReviewedImageExportService
         int imageHeight)
     {
         /*
-         * DIRECT SOURCE-PIXEL MAPPING
+         * DefectModel geometry is stored in SOURCE IMAGE PIXELS.
          *
-         * ReviewView stores:
+         * Export surface is also created at SOURCE IMAGE PIXELS.
          *
-         * X      = source pixel X
-         * Y      = source pixel Y
-         * Width  = source pixel width
-         * Height = source pixel height
-         *
-         * Therefore these values are intentionally
-         * NOT multiplied or divided here.
+         * Therefore no Review zoom, viewport size or DIP conversion
+         * is performed here.
          */
 
         double x =
@@ -484,10 +498,12 @@ public sealed class ReviewedImageExportService
             4);
 
         double textX =
-            cardLeft + padding;
+            cardLeft +
+            padding;
 
         double textY =
-            cardTop + padding;
+            cardTop +
+            padding;
 
         DrawInfoText(
             drawing,
@@ -636,13 +652,60 @@ public sealed class ReviewedImageExportService
             }
             catch
             {
-                File.Delete(
-                    destinationPath);
+                try
+                {
+                    File.Delete(
+                        destinationPath);
+                }
+                catch
+                {
+                    // If the old reviewed file is locked,
+                    // use a new unique file name below.
+                    string uniquePath =
+                        BuildUniqueReviewedPath(
+                            destinationPath);
+
+                    File.Move(
+                        temporaryPath,
+                        uniquePath);
+
+                    return;
+                }
             }
         }
 
         File.Move(
             temporaryPath,
             destinationPath);
+    }
+
+    private static string BuildUniqueReviewedPath(
+        string destinationPath)
+    {
+        string directory =
+            Path.GetDirectoryName(
+                destinationPath)
+            ?? string.Empty;
+
+        string fileName =
+            Path.GetFileNameWithoutExtension(
+                destinationPath);
+
+        int counter = 2;
+
+        while (true)
+        {
+            string candidate =
+                Path.Combine(
+                    directory,
+                    $"{fileName}_{counter}.png");
+
+            if (!File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            counter++;
+        }
     }
 }
