@@ -22,6 +22,10 @@ public sealed class DefectService
         LoadFromDatabase();
     }
 
+    // ============================================================
+    // ADD DEFECT
+    // ============================================================
+
     public DefectModel AddDefect(
         ImageRecordModel image,
         double x,
@@ -31,6 +35,15 @@ public sealed class DefectService
     {
         ArgumentNullException.ThrowIfNull(image);
 
+        /*
+         * IMPORTANT:
+         *
+         * Do NOT clear previous defects here.
+         *
+         * One shot can contain multiple defect boxes.
+         *
+         * Every drawing creates one independent defect record.
+         */
         var defect = new DefectModel
         {
             ImageId =
@@ -43,16 +56,16 @@ public sealed class DefectService
                 image.ShotNumber,
 
             X =
-                x,
+                Math.Max(0, x),
 
             Y =
-                y,
+                Math.Max(0, y),
 
             Width =
-                width,
+                Math.Max(0, width),
 
             Height =
-                height,
+                Math.Max(0, height),
 
             ShotStartPosition =
                 image.ShotStartPosition,
@@ -69,6 +82,11 @@ public sealed class DefectService
                     x,
                     width),
 
+            /*
+             * No defect measurement/details are entered.
+             *
+             * Keep these values only for model/database compatibility.
+             */
             LengthMm =
                 0,
 
@@ -79,10 +97,13 @@ public sealed class DefectService
                 "OPEN",
 
             Severity =
-                "UNCLASSIFIED",
+                string.Empty,
 
             DefectType =
-                "UNCLASSIFIED",
+                string.Empty,
+
+            Description =
+                string.Empty,
 
             CreatedBy =
                 Environment.UserName,
@@ -105,6 +126,10 @@ public sealed class DefectService
         return defect;
     }
 
+    // ============================================================
+    // GET BY IMAGE
+    // ============================================================
+
     public ObservableCollection<DefectModel> GetByImage(
         Guid imageId)
     {
@@ -126,9 +151,20 @@ public sealed class DefectService
                       defect.Id)
               .ToList();
 
+        /*
+         * IMPORTANT:
+         *
+         * Do NOT remove duplicates.
+         *
+         * Multiple defect boxes on the same shot are valid.
+         */
         return new ObservableCollection<DefectModel>(
             defects);
     }
+
+    // ============================================================
+    // GET BY JOB
+    // ============================================================
 
     public ObservableCollection<DefectModel> GetByJob(
         Guid jobId)
@@ -158,6 +194,10 @@ public sealed class DefectService
             defects);
     }
 
+    // ============================================================
+    // GET BY ID
+    // ============================================================
+
     public DefectModel? GetById(
         Guid defectId)
     {
@@ -172,6 +212,16 @@ public sealed class DefectService
                          defect.Id == defectId);
     }
 
+    // ============================================================
+    // UPDATE DEFECT
+    // ============================================================
+
+    /*
+     * Kept for compatibility with existing code.
+     *
+     * The new workflow does not open a detail editor,
+     * but other existing code may still call this method.
+     */
     public void UpdateDefect(
         DefectModel defect)
     {
@@ -193,12 +243,6 @@ public sealed class DefectService
             return;
         }
 
-        existing.DefectType =
-            defect.DefectType;
-
-        existing.Description =
-            defect.Description;
-
         existing.X =
             defect.X;
 
@@ -210,12 +254,6 @@ public sealed class DefectService
 
         existing.Height =
             defect.Height;
-
-        existing.LengthMm =
-            defect.LengthMm;
-
-        existing.WidthMm =
-            defect.WidthMm;
 
         existing.PipePosition =
             defect.PipePosition;
@@ -229,11 +267,27 @@ public sealed class DefectService
         existing.ShotEndPosition =
             defect.ShotEndPosition;
 
+        /*
+         * Keep these fields blank/neutral.
+         * No defect details are collected in the new workflow.
+         */
+        existing.DefectType =
+            string.Empty;
+
         existing.Severity =
-            defect.Severity;
+            string.Empty;
+
+        existing.Description =
+            string.Empty;
+
+        existing.LengthMm =
+            0;
+
+        existing.WidthMm =
+            0;
 
         existing.Status =
-            defect.Status;
+            "OPEN";
 
         existing.UpdatedBy =
             Environment.UserName;
@@ -251,16 +305,8 @@ public sealed class DefectService
 
         if (memoryDefect == null)
         {
-            Defects.Add(existing);
-
             return;
         }
-
-        memoryDefect.DefectType =
-            existing.DefectType;
-
-        memoryDefect.Description =
-            existing.Description;
 
         memoryDefect.X =
             existing.X;
@@ -274,12 +320,6 @@ public sealed class DefectService
         memoryDefect.Height =
             existing.Height;
 
-        memoryDefect.LengthMm =
-            existing.LengthMm;
-
-        memoryDefect.WidthMm =
-            existing.WidthMm;
-
         memoryDefect.PipePosition =
             existing.PipePosition;
 
@@ -292,8 +332,20 @@ public sealed class DefectService
         memoryDefect.ShotEndPosition =
             existing.ShotEndPosition;
 
+        memoryDefect.DefectType =
+            existing.DefectType;
+
         memoryDefect.Severity =
             existing.Severity;
+
+        memoryDefect.Description =
+            existing.Description;
+
+        memoryDefect.LengthMm =
+            existing.LengthMm;
+
+        memoryDefect.WidthMm =
+            existing.WidthMm;
 
         memoryDefect.Status =
             existing.Status;
@@ -304,6 +356,10 @@ public sealed class DefectService
         memoryDefect.UpdatedOn =
             existing.UpdatedOn;
     }
+
+    // ============================================================
+    // REMOVE ONE DEFECT
+    // ============================================================
 
     public void RemoveDefect(
         Guid defectId)
@@ -340,6 +396,18 @@ public sealed class DefectService
         }
     }
 
+    // ============================================================
+    // CLEAR IMAGE
+    // ============================================================
+
+    /*
+     * This method is intentionally kept.
+     *
+     * It is used only when the application explicitly wants
+     * to remove ALL defect boxes from a shot.
+     *
+     * AddDefect() NEVER calls this method.
+     */
     public void ClearImage(
         Guid imageId)
     {
@@ -378,6 +446,10 @@ public sealed class DefectService
                 defect);
         }
     }
+
+    // ============================================================
+    // CLEAR JOB
+    // ============================================================
 
     public void ClearJob(
         Guid jobId)
@@ -418,6 +490,10 @@ public sealed class DefectService
         }
     }
 
+    // ============================================================
+    // CLEAR ALL
+    // ============================================================
+
     public void ClearAll()
     {
         using var db =
@@ -438,6 +514,10 @@ public sealed class DefectService
 
         Defects.Clear();
     }
+
+    // ============================================================
+    // LOAD DATABASE
+    // ============================================================
 
     private void LoadFromDatabase()
     {
@@ -466,10 +546,16 @@ public sealed class DefectService
         }
         catch
         {
-            // Database initialization can occur
-            // later during application startup.
+            /*
+             * Database initialization can happen
+             * later during application startup.
+             */
         }
     }
+
+    // ============================================================
+    // PIPE POSITION
+    // ============================================================
 
     private static double CalculatePipePosition(
         ImageRecordModel image,

@@ -27,21 +27,20 @@ public sealed class ReviewedImageExportService
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(source);
 
-        if (string.IsNullOrWhiteSpace(
-                image.FilePath))
+        if (string.IsNullOrWhiteSpace(image.FilePath))
         {
             throw new InvalidOperationException(
                 "The selected image file path is empty.");
         }
 
-        int pixelWidth =
+        int sourcePixelWidth =
             source.PixelWidth;
 
-        int pixelHeight =
+        int sourcePixelHeight =
             source.PixelHeight;
 
-        if (pixelWidth <= 0 ||
-            pixelHeight <= 0)
+        if (sourcePixelWidth <= 0 ||
+            sourcePixelHeight <= 0)
         {
             throw new InvalidOperationException(
                 "The selected image has an invalid size.");
@@ -51,42 +50,59 @@ public sealed class ReviewedImageExportService
             image.FilePath;
 
         string? directory =
-            Path.GetDirectoryName(
-                sourcePath);
+            Path.GetDirectoryName(sourcePath);
 
-        if (string.IsNullOrWhiteSpace(
-                directory))
+        if (string.IsNullOrWhiteSpace(directory))
         {
             throw new InvalidOperationException(
                 "The selected image destination folder is invalid.");
         }
 
-        Directory.CreateDirectory(
-            directory);
+        Directory.CreateDirectory(directory);
 
         /*
          * IMPORTANT
          *
-         * NEVER overwrite the original inspection image.
+         * Never overwrite the original inspection image.
          *
-         * The original image must remain clean because ReviewView
-         * draws the live defect overlay on top of it.
+         * The reviewed image is always written as:
          *
-         * If the original PNG is overwritten with the reviewed
-         * annotation, opening Review again will show:
+         *     ORIGINAL_NAME_REVIEWED.png
          *
-         *     1. old burned-in defect
-         *     2. new live defect
-         *
-         * which creates the extra defect box seen in Review.
+         * The original image therefore remains clean.
          */
+
         string destinationPath =
-            BuildReviewedFilePath(
-                sourcePath);
+            BuildReviewedFilePath(sourcePath);
 
         BitmapSource normalizedSource =
-            NormalizeToPixelBitmap(
-                source);
+            NormalizeToPixelBitmap(source);
+
+        /*
+         * Defect coordinates are stored against the inspection
+         * image pixel coordinate system.
+         *
+         * The exported PNG can have a different pixel size from
+         * ImageRecordModel.ImageWidth / ImageHeight, therefore
+         * defect coordinates must be scaled to the actual export
+         * bitmap.
+         */
+
+        double modelWidth =
+            image.ImageWidth > 0
+                ? image.ImageWidth
+                : sourcePixelWidth;
+
+        double modelHeight =
+            image.ImageHeight > 0
+                ? image.ImageHeight
+                : sourcePixelHeight;
+
+        double scaleX =
+            sourcePixelWidth / modelWidth;
+
+        double scaleY =
+            sourcePixelHeight / modelHeight;
 
         DrawingVisual visual =
             new DrawingVisual();
@@ -100,28 +116,28 @@ public sealed class ReviewedImageExportService
                 new Rect(
                     0,
                     0,
-                    pixelWidth,
-                    pixelHeight));
+                    sourcePixelWidth,
+                    sourcePixelHeight));
 
             if (defects != null)
             {
-                foreach (
-                    DefectModel defect
-                    in defects)
+                foreach (DefectModel defect in defects)
                 {
                     DrawDefect(
                         drawing,
                         defect,
-                        pixelWidth,
-                        pixelHeight);
+                        sourcePixelWidth,
+                        sourcePixelHeight,
+                        scaleX,
+                        scaleY);
                 }
             }
         }
 
         RenderTargetBitmap renderedImage =
             new RenderTargetBitmap(
-                pixelWidth,
-                pixelHeight,
+                sourcePixelWidth,
+                sourcePixelHeight,
                 96,
                 96,
                 PixelFormats.Pbgra32);
@@ -132,8 +148,7 @@ public sealed class ReviewedImageExportService
         renderedImage.Freeze();
 
         string temporaryPath =
-            destinationPath +
-            ".tmp";
+            destinationPath + ".tmp";
 
         try
         {
@@ -163,11 +178,9 @@ public sealed class ReviewedImageExportService
         {
             try
             {
-                if (File.Exists(
-                        temporaryPath))
+                if (File.Exists(temporaryPath))
                 {
-                    File.Delete(
-                        temporaryPath);
+                    File.Delete(temporaryPath);
                 }
             }
             catch
@@ -184,18 +197,15 @@ public sealed class ReviewedImageExportService
         string sourcePath)
     {
         string directory =
-            Path.GetDirectoryName(
-                sourcePath)
+            Path.GetDirectoryName(sourcePath)
             ?? string.Empty;
 
         string fileName =
-            Path.GetFileNameWithoutExtension(
-                sourcePath);
+            Path.GetFileNameWithoutExtension(sourcePath);
 
         return Path.Combine(
             directory,
-            fileName +
-            "_REVIEWED.png");
+            fileName + "_REVIEWED.png");
     }
 
     private static BitmapSource NormalizeToPixelBitmap(
@@ -257,38 +267,59 @@ public sealed class ReviewedImageExportService
         DrawingContext drawing,
         DefectModel defect,
         int imageWidth,
-        int imageHeight)
+        int imageHeight,
+        double scaleX,
+        double scaleY)
     {
         /*
-         * DefectModel geometry is stored in SOURCE IMAGE PIXELS.
+         * ReviewView stores X/Y/Width/Height in the image model
+         * coordinate system.
          *
-         * Export surface is also created at SOURCE IMAGE PIXELS.
+         * Exported PNG uses its own actual pixel dimensions.
          *
-         * Therefore no Review zoom, viewport size or DIP conversion
-         * is performed here.
+         * Therefore:
+         *
+         *     exportX      = modelX      * scaleX
+         *     exportY      = modelY      * scaleY
+         *     exportWidth  = modelWidth  * scaleX
+         *     exportHeight = modelHeight * scaleY
+         *
+         * No Review zoom, pan or viewport/DIP coordinate is used.
          */
 
         double x =
+            defect.X * scaleX;
+
+        double y =
+            defect.Y * scaleY;
+
+        double width =
+            defect.Width * scaleX;
+
+        double height =
+            defect.Height * scaleY;
+
+        x =
             Math.Clamp(
-                defect.X,
+                x,
                 0,
                 imageWidth);
 
-        double y =
+        y =
             Math.Clamp(
-                defect.Y,
+                y,
                 0,
                 imageHeight);
 
-        double width =
+        width =
             Math.Max(
                 1,
-                defect.Width);
+                width);
 
-        double height =
+        height =
             Math.Max(
                 1,
-                defect.Height);
+                height);
 
         if (x + width >
             imageWidth)
@@ -403,8 +434,7 @@ public sealed class ReviewedImageExportService
             lineHeight +
             lineHeight;
 
-        if (!string.IsNullOrWhiteSpace(
-                remark))
+        if (!string.IsNullOrWhiteSpace(remark))
         {
             contentHeight +=
                 CalculateWrappedTextHeight(
@@ -546,8 +576,7 @@ public sealed class ReviewedImageExportService
             cardWidth -
             (padding * 2));
 
-        if (!string.IsNullOrWhiteSpace(
-                remark))
+        if (!string.IsNullOrWhiteSpace(remark))
         {
             DrawInfoText(
                 drawing,
@@ -638,8 +667,7 @@ public sealed class ReviewedImageExportService
         string temporaryPath,
         string destinationPath)
     {
-        if (File.Exists(
-                destinationPath))
+        if (File.Exists(destinationPath))
         {
             try
             {
@@ -659,8 +687,6 @@ public sealed class ReviewedImageExportService
                 }
                 catch
                 {
-                    // If the old reviewed file is locked,
-                    // use a new unique file name below.
                     string uniquePath =
                         BuildUniqueReviewedPath(
                             destinationPath);
@@ -683,8 +709,7 @@ public sealed class ReviewedImageExportService
         string destinationPath)
     {
         string directory =
-            Path.GetDirectoryName(
-                destinationPath)
+            Path.GetDirectoryName(destinationPath)
             ?? string.Empty;
 
         string fileName =
