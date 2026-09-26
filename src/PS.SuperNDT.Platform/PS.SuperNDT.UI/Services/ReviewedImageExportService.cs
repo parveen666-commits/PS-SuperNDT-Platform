@@ -1,178 +1,211 @@
-﻿using System;
+﻿using PS.SuperNDT.UI.Models;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using PS.SuperNDT.UI.Models;
 
 namespace PS.SuperNDT.UI.Services;
 
 public sealed class ReviewedImageExportService
 {
-    private readonly ImageFolderService _imageFolderService;
+    private const string ReviewedFolderName = "Reviewed";
 
-    public ReviewedImageExportService()
-    {
-        _imageFolderService =
-            new ImageFolderService();
-    }
+    private const double MinimumBoxSize = 8.0;
+
+    private const double TextPadding = 4.0;
+
+    private const double TextFontSize = 14.0;
+
+    private const double LabelGap = 3.0;
 
     public string ExportReviewedPng(
         ImageRecordModel image,
-        BitmapSource source,
-        IEnumerable<DefectModel>? defects = null)
+        BitmapSource displayImage,
+        IEnumerable defects)
     {
-        ArgumentNullException.ThrowIfNull(image);
-        ArgumentNullException.ThrowIfNull(source);
-
-        if (string.IsNullOrWhiteSpace(image.FilePath))
+        if (image == null)
         {
-            throw new InvalidOperationException(
-                "The selected image file path is empty.");
+            throw new ArgumentNullException(nameof(image));
         }
 
-        int sourcePixelWidth =
-            source.PixelWidth;
+        if (displayImage == null)
+        {
+            throw new ArgumentNullException(nameof(displayImage));
+        }
 
-        int sourcePixelHeight =
-            source.PixelHeight;
-
-        if (sourcePixelWidth <= 0 ||
-            sourcePixelHeight <= 0)
+        if (displayImage.PixelWidth <= 0 ||
+            displayImage.PixelHeight <= 0)
         {
             throw new InvalidOperationException(
-                "The selected image has an invalid size.");
+                "The image has an invalid size.");
         }
 
         string sourcePath =
-            image.FilePath;
+            image.FilePath ?? string.Empty;
 
-        string? directory =
-            Path.GetDirectoryName(sourcePath);
+        string sourceDirectory =
+            !string.IsNullOrWhiteSpace(sourcePath)
+                ? Path.GetDirectoryName(sourcePath) ?? string.Empty
+                : string.Empty;
 
-        if (string.IsNullOrWhiteSpace(directory))
+        if (string.IsNullOrWhiteSpace(sourceDirectory))
         {
-            throw new InvalidOperationException(
-                "The selected image destination folder is invalid.");
+            sourceDirectory =
+                Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.LocalApplicationData),
+                    "PS.SuperNDT",
+                    "Reviewed");
         }
 
-        Directory.CreateDirectory(directory);
+        string reviewedDirectory =
+            Path.Combine(
+                sourceDirectory,
+                ReviewedFolderName);
 
-        /*
-         * IMPORTANT
-         *
-         * Never overwrite the original inspection image.
-         *
-         * The reviewed image is always written as:
-         *
-         *     ORIGINAL_NAME_REVIEWED.png
-         *
-         * The original image therefore remains clean.
-         */
+        Directory.CreateDirectory(
+            reviewedDirectory);
 
-        string destinationPath =
-            BuildReviewedFilePath(sourcePath);
+        string sourceFileName =
+            !string.IsNullOrWhiteSpace(sourcePath)
+                ? Path.GetFileNameWithoutExtension(sourcePath)
+                : $"Shot_{image.ShotNumber}";
 
-        BitmapSource normalizedSource =
-            NormalizeToPixelBitmap(source);
+        if (string.IsNullOrWhiteSpace(sourceFileName))
+        {
+            sourceFileName =
+                $"Shot_{image.ShotNumber}";
+        }
 
-        /*
-         * Defect coordinates are stored against the inspection
-         * image pixel coordinate system.
-         *
-         * The exported PNG can have a different pixel size from
-         * ImageRecordModel.ImageWidth / ImageHeight, therefore
-         * defect coordinates must be scaled to the actual export
-         * bitmap.
-         */
+        string outputFileName =
+            $"{sourceFileName}_REVIEWED.png";
 
-        double modelWidth =
-            image.ImageWidth > 0
-                ? image.ImageWidth
-                : sourcePixelWidth;
+        string outputPath =
+            Path.Combine(
+                reviewedDirectory,
+                outputFileName);
 
-        double modelHeight =
-            image.ImageHeight > 0
-                ? image.ImageHeight
-                : sourcePixelHeight;
+        return ExportToPath(
+            displayImage,
+            defects,
+            outputPath);
+    }
 
-        double scaleX =
-            sourcePixelWidth / modelWidth;
+    private static string ExportToPath(
+        BitmapSource source,
+        IEnumerable defects,
+        string outputPath)
+    {
+        if (source == null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
 
-        double scaleY =
-            sourcePixelHeight / modelHeight;
+        if (string.IsNullOrWhiteSpace(outputPath))
+        {
+            throw new ArgumentException(
+                "Output path is empty.",
+                nameof(outputPath));
+        }
 
-        DrawingVisual visual =
+        string? directory =
+            Path.GetDirectoryName(outputPath);
+
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var defectList =
+            MaterializeDefects(defects);
+
+        int width =
+            source.PixelWidth;
+
+        int height =
+            source.PixelHeight;
+
+        var visual =
             new DrawingVisual();
 
-        using (
-            DrawingContext drawing =
-                visual.RenderOpen())
+        using (DrawingContext drawingContext =
+               visual.RenderOpen())
         {
-            drawing.DrawImage(
-                normalizedSource,
+            drawingContext.DrawImage(
+                source,
                 new Rect(
                     0,
                     0,
-                    sourcePixelWidth,
-                    sourcePixelHeight));
+                    width,
+                    height));
 
-            if (defects != null)
+            foreach (object defect in defectList)
             {
-                foreach (DefectModel defect in defects)
-                {
-                    DrawDefect(
-                        drawing,
-                        defect,
-                        sourcePixelWidth,
-                        sourcePixelHeight,
-                        scaleX,
-                        scaleY);
-                }
+                DrawDefect(
+                    drawingContext,
+                    defect,
+                    width,
+                    height);
             }
         }
 
-        RenderTargetBitmap renderedImage =
+        var renderedBitmap =
             new RenderTargetBitmap(
-                sourcePixelWidth,
-                sourcePixelHeight,
-                96,
-                96,
+                width,
+                height,
+                source.DpiX > 0
+                    ? source.DpiX
+                    : 96,
+                source.DpiY > 0
+                    ? source.DpiY
+                    : 96,
                 PixelFormats.Pbgra32);
 
-        renderedImage.Render(
+        renderedBitmap.Render(
             visual);
 
-        renderedImage.Freeze();
+        renderedBitmap.Freeze();
+
+        var encoder =
+            new PngBitmapEncoder();
+
+        encoder.Frames.Add(
+            BitmapFrame.Create(
+                renderedBitmap));
 
         string temporaryPath =
-            destinationPath + ".tmp";
+            outputPath +
+            "." +
+            Guid.NewGuid().ToString("N") +
+            ".tmp";
 
         try
         {
-            PngBitmapEncoder encoder =
-                new PngBitmapEncoder();
-
-            encoder.Frames.Add(
-                BitmapFrame.Create(
-                    renderedImage));
-
-            using (
-                FileStream stream =
-                    new FileStream(
-                        temporaryPath,
-                        FileMode.Create,
-                        FileAccess.Write,
-                        FileShare.None))
+            using (var stream =
+                   new FileStream(
+                       temporaryPath,
+                       FileMode.Create,
+                       FileAccess.Write,
+                       FileShare.None))
             {
                 encoder.Save(stream);
+                stream.Flush(true);
             }
 
-            ReplaceFile(
+            if (File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
+
+            File.Move(
                 temporaryPath,
-                destinationPath);
+                outputPath);
         }
         finally
         {
@@ -185,552 +218,993 @@ public sealed class ReviewedImageExportService
             }
             catch
             {
-                // Cleanup failure must not hide
-                // a successful export.
+                // Do not hide the original export exception.
             }
         }
 
-        return destinationPath;
+        return outputPath;
     }
 
-    private static string BuildReviewedFilePath(
-        string sourcePath)
+    private static List<object> MaterializeDefects(
+        IEnumerable defects)
     {
-        string directory =
-            Path.GetDirectoryName(sourcePath)
-            ?? string.Empty;
+        var result =
+            new List<object>();
 
-        string fileName =
-            Path.GetFileNameWithoutExtension(sourcePath);
+        if (defects == null)
+        {
+            return result;
+        }
 
-        return Path.Combine(
-            directory,
-            fileName + "_REVIEWED.png");
-    }
+        foreach (object? defect in defects)
+        {
+            if (defect != null)
+            {
+                result.Add(defect);
+            }
+        }
 
-    private static BitmapSource NormalizeToPixelBitmap(
-        BitmapSource source)
-    {
-        int width =
-            source.PixelWidth;
-
-        int height =
-            source.PixelHeight;
-
-        FormatConvertedBitmap converted =
-            new FormatConvertedBitmap(
-                source,
-                PixelFormats.Pbgra32,
-                null,
-                0);
-
-        converted.Freeze();
-
-        WriteableBitmap bitmap =
-            new WriteableBitmap(
-                width,
-                height,
-                96,
-                96,
-                PixelFormats.Pbgra32,
-                null);
-
-        int stride =
-            width * 4;
-
-        byte[] pixels =
-            new byte[
-                stride *
-                height];
-
-        converted.CopyPixels(
-            pixels,
-            stride,
-            0);
-
-        bitmap.WritePixels(
-            new Int32Rect(
-                0,
-                0,
-                width,
-                height),
-            pixels,
-            stride,
-            0);
-
-        bitmap.Freeze();
-
-        return bitmap;
+        return result;
     }
 
     private static void DrawDefect(
-        DrawingContext drawing,
-        DefectModel defect,
-        int imageWidth,
-        int imageHeight,
-        double scaleX,
-        double scaleY)
+        DrawingContext drawingContext,
+        object defect,
+        double imageWidth,
+        double imageHeight)
     {
-        /*
-         * ReviewView stores X/Y/Width/Height in the image model
-         * coordinate system.
-         *
-         * Exported PNG uses its own actual pixel dimensions.
-         *
-         * Therefore:
-         *
-         *     exportX      = modelX      * scaleX
-         *     exportY      = modelY      * scaleY
-         *     exportWidth  = modelWidth  * scaleX
-         *     exportHeight = modelHeight * scaleY
-         *
-         * No Review zoom, pan or viewport/DIP coordinate is used.
-         */
-
-        double x =
-            defect.X * scaleX;
-
-        double y =
-            defect.Y * scaleY;
-
-        double width =
-            defect.Width * scaleX;
-
-        double height =
-            defect.Height * scaleY;
-
-        x =
-            Math.Clamp(
-                x,
-                0,
-                imageWidth);
-
-        y =
-            Math.Clamp(
-                y,
-                0,
-                imageHeight);
-
-        width =
-            Math.Max(
-                1,
-                width);
-
-        height =
-            Math.Max(
-                1,
-                height);
-
-        if (x + width >
-            imageWidth)
-        {
-            width =
-                imageWidth - x;
-        }
-
-        if (y + height >
-            imageHeight)
-        {
-            height =
-                imageHeight - y;
-        }
-
-        if (width <= 0 ||
-            height <= 0)
+        if (defect == null)
         {
             return;
         }
 
-        Rect defectRect =
-            new Rect(
+        if (!TryGetRectangle(
+                defect,
+                imageWidth,
+                imageHeight,
+                out Rect rectangle))
+        {
+            return;
+        }
+
+        rectangle =
+            NormalizeRectangle(
+                rectangle,
+                imageWidth,
+                imageHeight);
+
+        if (rectangle.Width < MinimumBoxSize)
+        {
+            rectangle.Width =
+                Math.Min(
+                    MinimumBoxSize,
+                    imageWidth -
+                    rectangle.X);
+        }
+
+        if (rectangle.Height < MinimumBoxSize)
+        {
+            rectangle.Height =
+                Math.Min(
+                    MinimumBoxSize,
+                    imageHeight -
+                    rectangle.Y);
+        }
+
+        if (rectangle.Width <= 0 ||
+            rectangle.Height <= 0)
+        {
+            return;
+        }
+
+        DrawDefectBox(
+            drawingContext,
+            rectangle);
+
+        string label =
+            BuildDefectLabel(
+                defect);
+
+        if (!string.IsNullOrWhiteSpace(label))
+        {
+            DrawDefectLabel(
+                drawingContext,
+                rectangle,
+                label,
+                imageWidth,
+                imageHeight);
+        }
+    }
+
+    private static Rect NormalizeRectangle(
+        Rect rectangle,
+        double imageWidth,
+        double imageHeight)
+    {
+        double x =
+            Math.Max(
+                0,
+                Math.Min(
+                    rectangle.X,
+                    imageWidth));
+
+        double y =
+            Math.Max(
+                0,
+                Math.Min(
+                    rectangle.Y,
+                    imageHeight));
+
+        double right =
+            Math.Max(
                 x,
+                Math.Min(
+                    rectangle.Right,
+                    imageWidth));
+
+        double bottom =
+            Math.Max(
                 y,
-                width,
-                height);
+                Math.Min(
+                    rectangle.Bottom,
+                    imageHeight));
 
-        SolidColorBrush fill =
-            new SolidColorBrush(
-                Color.FromArgb(
-                    35,
-                    255,
-                    60,
-                    60));
+        return new Rect(
+            x,
+            y,
+            Math.Max(
+                0,
+                right - x),
+            Math.Max(
+                0,
+                bottom - y));
+    }
 
-        SolidColorBrush border =
-            new SolidColorBrush(
-                Color.FromRgb(
-                    255,
-                    60,
-                    60));
-
-        Pen pen =
+    private static void DrawDefectBox(
+        DrawingContext drawingContext,
+        Rect rectangle)
+    {
+        var pen =
             new Pen(
-                border,
-                2);
+                Brushes.Red,
+                3.0);
 
-        fill.Freeze();
-        border.Freeze();
         pen.Freeze();
 
-        drawing.DrawRectangle(
-            fill,
+        drawingContext.DrawRectangle(
+            null,
             pen,
-            defectRect);
+            rectangle);
 
-        DrawDefectDetailCard(
-            drawing,
-            defect,
-            defectRect,
-            imageWidth,
-            imageHeight);
-    }
+        double cornerSize =
+            Math.Min(
+                12.0,
+                Math.Min(
+                    rectangle.Width,
+                    rectangle.Height) /
+                3.0);
 
-    private static void DrawDefectDetailCard(
-        DrawingContext drawing,
-        DefectModel defect,
-        Rect defectRect,
-        int imageWidth,
-        int imageHeight)
-    {
-        string type =
-            string.IsNullOrWhiteSpace(
-                defect.DefectType)
-                ? "UNCLASSIFIED"
-                : defect.DefectType.Trim();
-
-        string severity =
-            string.IsNullOrWhiteSpace(
-                defect.Severity)
-                ? "UNCLASSIFIED"
-                : defect.Severity.Trim();
-
-        string position =
-            $"POS       {defect.PipePosition:0.0} mm";
-
-        string length =
-            $"LENGTH    {defect.LengthMm:0.0} mm";
-
-        string width =
-            $"WIDTH     {defect.WidthMm:0.0} mm";
-
-        string severityText =
-            $"SEVERITY  {severity}";
-
-        string? remark =
-            string.IsNullOrWhiteSpace(
-                defect.Description)
-                ? null
-                : $"REMARK    {defect.Description.Trim()}";
-
-        const double cardWidth = 255;
-        const double padding = 8;
-        const double fontSize = 10;
-        const double lineHeight = 13;
-
-        double contentHeight =
-            13 +
-            lineHeight +
-            lineHeight +
-            lineHeight +
-            lineHeight;
-
-        if (!string.IsNullOrWhiteSpace(remark))
+        if (cornerSize <= 0)
         {
-            contentHeight +=
-                CalculateWrappedTextHeight(
-                    remark,
-                    cardWidth -
-                    (padding * 2),
-                    fontSize);
+            return;
         }
 
-        double cardHeight =
-            contentHeight +
-            (padding * 2);
-
-        double center =
-            defectRect.Left +
-            (defectRect.Width / 2.0);
-
-        double cardLeft =
-            center -
-            (cardWidth / 2.0);
-
-        cardLeft =
-            Math.Clamp(
-                cardLeft,
-                5,
-                Math.Max(
-                    5,
-                    imageWidth -
-                    cardWidth -
-                    5));
-
-        double cardTop =
-            defectRect.Top -
-            cardHeight -
-            8;
-
-        if (cardTop < 5)
-        {
-            cardTop =
-                defectRect.Bottom +
-                8;
-        }
-
-        if (cardTop + cardHeight >
-            imageHeight - 5)
-        {
-            cardTop =
-                Math.Max(
-                    5,
-                    imageHeight -
-                    cardHeight -
-                    5);
-        }
-
-        Rect cardRect =
-            new Rect(
-                cardLeft,
-                cardTop,
-                cardWidth,
-                cardHeight);
-
-        SolidColorBrush background =
-            new SolidColorBrush(
-                Color.FromArgb(
-                    245,
-                    20,
-                    24,
-                    31));
-
-        SolidColorBrush borderBrush =
-            new SolidColorBrush(
-                Color.FromRgb(
-                    255,
-                    75,
-                    75));
-
-        Pen borderPen =
+        var cornerPen =
             new Pen(
-                borderBrush,
-                1);
+                Brushes.Red,
+                5.0);
 
-        background.Freeze();
-        borderBrush.Freeze();
-        borderPen.Freeze();
+        cornerPen.Freeze();
 
-        drawing.DrawRoundedRectangle(
-            background,
-            borderPen,
-            cardRect,
-            4,
-            4);
+        double left =
+            rectangle.Left;
 
-        double textX =
-            cardLeft +
-            padding;
+        double top =
+            rectangle.Top;
 
-        double textY =
-            cardTop +
-            padding;
+        double right =
+            rectangle.Right;
 
-        DrawInfoText(
-            drawing,
-            $"DEFECT  •  {type}",
-            textX,
-            ref textY,
-            cardWidth -
-            (padding * 2),
+        double bottom =
+            rectangle.Bottom;
+
+        DrawCorner(
+            drawingContext,
+            cornerPen,
+            left,
+            top,
+            cornerSize,
+            true,
             true);
 
-        DrawInfoText(
-            drawing,
-            position,
-            textX,
-            ref textY,
-            cardWidth -
-            (padding * 2));
+        DrawCorner(
+            drawingContext,
+            cornerPen,
+            right,
+            top,
+            cornerSize,
+            false,
+            true);
 
-        DrawInfoText(
-            drawing,
-            length,
-            textX,
-            ref textY,
-            cardWidth -
-            (padding * 2));
+        DrawCorner(
+            drawingContext,
+            cornerPen,
+            left,
+            bottom,
+            cornerSize,
+            true,
+            false);
 
-        DrawInfoText(
-            drawing,
-            width,
-            textX,
-            ref textY,
-            cardWidth -
-            (padding * 2));
-
-        DrawInfoText(
-            drawing,
-            severityText,
-            textX,
-            ref textY,
-            cardWidth -
-            (padding * 2));
-
-        if (!string.IsNullOrWhiteSpace(remark))
-        {
-            DrawInfoText(
-                drawing,
-                remark,
-                textX,
-                ref textY,
-                cardWidth -
-                (padding * 2));
-        }
+        DrawCorner(
+            drawingContext,
+            cornerPen,
+            right,
+            bottom,
+            cornerSize,
+            false,
+            false);
     }
 
-    private static void DrawInfoText(
-        DrawingContext drawing,
-        string text,
+    private static void DrawCorner(
+        DrawingContext drawingContext,
+        Pen pen,
         double x,
-        ref double y,
-        double maxWidth,
-        bool bold = false)
+        double y,
+        double size,
+        bool left,
+        bool top)
     {
-        Typeface typeface =
+        double horizontalDirection =
+            left ? 1 : -1;
+
+        double verticalDirection =
+            top ? 1 : -1;
+
+        drawingContext.DrawLine(
+            pen,
+            new Point(
+                x,
+                y),
+            new Point(
+                x +
+                horizontalDirection *
+                size,
+                y));
+
+        drawingContext.DrawLine(
+            pen,
+            new Point(
+                x,
+                y),
+            new Point(
+                x,
+                y +
+                verticalDirection *
+                size));
+    }
+
+    private static void DrawDefectLabel(
+        DrawingContext drawingContext,
+        Rect rectangle,
+        string label,
+        double imageWidth,
+        double imageHeight)
+    {
+        var typeface =
             new Typeface(
                 new FontFamily("Segoe UI"),
                 FontStyles.Normal,
-                bold
-                    ? FontWeights.Bold
-                    : FontWeights.Normal,
+                FontWeights.SemiBold,
                 FontStretches.Normal);
 
-        FormattedText formattedText =
+        var formattedText =
             new FormattedText(
-                text,
+                label,
                 CultureInfo.InvariantCulture,
                 FlowDirection.LeftToRight,
                 typeface,
-                10,
+                TextFontSize,
                 Brushes.White,
                 1.0);
 
         formattedText.MaxTextWidth =
-            maxWidth;
+            Math.Max(
+                80,
+                imageWidth -
+                TextPadding * 2);
 
-        formattedText.Trimming =
-            TextTrimming.CharacterEllipsis;
+        double labelWidth =
+            formattedText.Width +
+            TextPadding * 2;
 
-        drawing.DrawText(
+        double labelHeight =
+            formattedText.Height +
+            TextPadding * 2;
+
+        double labelX =
+            rectangle.Left;
+
+        double labelY =
+            rectangle.Top -
+            labelHeight -
+            LabelGap;
+
+        if (labelY < 0)
+        {
+            labelY =
+                rectangle.Bottom +
+                LabelGap;
+        }
+
+        if (labelY + labelHeight >
+            imageHeight)
+        {
+            labelY =
+                Math.Max(
+                    0,
+                    imageHeight -
+                    labelHeight);
+        }
+
+        if (labelX + labelWidth >
+            imageWidth)
+        {
+            labelX =
+                Math.Max(
+                    0,
+                    imageWidth -
+                    labelWidth);
+        }
+
+        var background =
+            new SolidColorBrush(
+                Color.FromArgb(
+                    220,
+                    120,
+                    0,
+                    0));
+
+        background.Freeze();
+
+        var border =
+            new Pen(
+                Brushes.Red,
+                1.5);
+
+        border.Freeze();
+
+        var labelRect =
+            new Rect(
+                labelX,
+                labelY,
+                Math.Min(
+                    labelWidth,
+                    imageWidth -
+                    labelX),
+                Math.Min(
+                    labelHeight,
+                    imageHeight -
+                    labelY));
+
+        drawingContext.DrawRectangle(
+            background,
+            border,
+            labelRect);
+
+        drawingContext.DrawText(
             formattedText,
             new Point(
-                x,
-                y));
-
-        y +=
-            Math.Max(
-                13,
-                formattedText.Height);
+                labelRect.Left +
+                TextPadding,
+                labelRect.Top +
+                TextPadding));
     }
 
-    private static double CalculateWrappedTextHeight(
-        string text,
-        double width,
-        double fontSize)
+    private static string BuildDefectLabel(
+        object defect)
     {
-        FormattedText formattedText =
-            new FormattedText(
-                text,
-                CultureInfo.InvariantCulture,
-                FlowDirection.LeftToRight,
-                new Typeface(
-                    new FontFamily("Segoe UI"),
-                    FontStyles.Normal,
-                    FontWeights.Normal,
-                    FontStretches.Normal),
-                fontSize,
-                Brushes.White,
-                1.0);
+        string defectType =
+            GetString(
+                defect,
+                "DefectType",
+                "Type",
+                "Defect");
 
-        formattedText.MaxTextWidth =
-            width;
+        string severity =
+            GetString(
+                defect,
+                "Severity");
 
-        formattedText.Trimming =
-            TextTrimming.CharacterEllipsis;
+        string position =
+            GetString(
+                defect,
+                "Position",
+                "PositionText");
 
-        return Math.Max(
-            13,
-            formattedText.Height);
-    }
+        string length =
+            GetString(
+                defect,
+                "Length",
+                "DefectLength");
 
-    private static void ReplaceFile(
-        string temporaryPath,
-        string destinationPath)
-    {
-        if (File.Exists(destinationPath))
+        string width =
+            GetString(
+                defect,
+                "Width",
+                "DefectWidth");
+
+        var parts =
+            new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(defectType))
         {
+            parts.Add(
+                defectType.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(severity))
+        {
+            parts.Add(
+                $"Severity: {severity.Trim()}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(position))
+        {
+            parts.Add(
+                $"Pos: {position.Trim()}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(length))
+        {
+            parts.Add(
+                $"L: {length.Trim()}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(width))
+        {
+            parts.Add(
+                $"W: {width.Trim()}");
+        }
+
+        return string.Join(
+            " | ",
+            parts);
+    }
+
+    private static string GetString(
+        object source,
+        params string[] propertyNames)
+    {
+        foreach (string propertyName in propertyNames)
+        {
+            PropertyInfo? property =
+                source.GetType()
+                    .GetProperty(
+                        propertyName,
+                        BindingFlags.Instance |
+                        BindingFlags.Public |
+                        BindingFlags.IgnoreCase);
+
+            if (property == null)
+            {
+                continue;
+            }
+
+            object? value;
+
             try
             {
-                File.Replace(
-                    temporaryPath,
-                    destinationPath,
-                    null);
-
-                return;
+                value =
+                    property.GetValue(source);
             }
             catch
             {
-                try
-                {
-                    File.Delete(
-                        destinationPath);
-                }
-                catch
-                {
-                    string uniquePath =
-                        BuildUniqueReviewedPath(
-                            destinationPath);
+                continue;
+            }
 
-                    File.Move(
-                        temporaryPath,
-                        uniquePath);
+            if (value == null)
+            {
+                continue;
+            }
 
-                    return;
-                }
+            string text =
+                Convert.ToString(
+                    value,
+                    CultureInfo.InvariantCulture)
+                ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                return text;
             }
         }
 
-        File.Move(
-            temporaryPath,
-            destinationPath);
+        return string.Empty;
     }
 
-    private static string BuildUniqueReviewedPath(
-        string destinationPath)
+    private static bool TryGetRectangle(
+        object defect,
+        double imageWidth,
+        double imageHeight,
+        out Rect rectangle)
     {
-        string directory =
-            Path.GetDirectoryName(destinationPath)
-            ?? string.Empty;
+        rectangle = Rect.Empty;
 
-        string fileName =
-            Path.GetFileNameWithoutExtension(
-                destinationPath);
-
-        int counter = 2;
-
-        while (true)
+        /*
+         * First try a Rect-like property.
+         */
+        string[] rectangleProperties =
         {
-            string candidate =
-                Path.Combine(
-                    directory,
-                    $"{fileName}_{counter}.png");
+            "Bounds",
+            "Rectangle",
+            "Rect"
+        };
 
-            if (!File.Exists(candidate))
+        foreach (string propertyName
+                 in rectangleProperties)
+        {
+            if (TryGetPropertyValue(
+                    defect,
+                    propertyName,
+                    out object? value) &&
+                value != null &&
+                TryConvertToRect(
+                    value,
+                    out rectangle))
             {
-                return candidate;
+                return true;
+            }
+        }
+
+        /*
+         * Try X/Y/Width/Height.
+         */
+        if (TryGetDouble(
+                defect,
+                out double x,
+                "X",
+                "Left",
+                "StartX"))
+        {
+            if (TryGetDouble(
+                    defect,
+                    out double y,
+                    "Y",
+                    "Top",
+                    "StartY"))
+            {
+                if (TryGetDouble(
+                        defect,
+                        out double width,
+                        "Width",
+                        "BoxWidth",
+                        "DefectWidth"))
+                {
+                    if (TryGetDouble(
+                            defect,
+                            out double height,
+                            "Height",
+                            "BoxHeight",
+                            "DefectHeight"))
+                    {
+                        rectangle =
+                            new Rect(
+                                x,
+                                y,
+                                width,
+                                height);
+
+                        return true;
+                    }
+                }
+            }
+        }
+
+        /*
+         * Try StartX/StartY/EndX/EndY.
+         */
+        if (TryGetDouble(
+                defect,
+                out double startX,
+                "StartX",
+                "X1"))
+        {
+            if (TryGetDouble(
+                    defect,
+                    out double startY,
+                    "StartY",
+                    "Y1"))
+            {
+                if (TryGetDouble(
+                        defect,
+                        out double endX,
+                        "EndX",
+                        "X2"))
+                {
+                    if (TryGetDouble(
+                            defect,
+                            out double endY,
+                            "EndY",
+                            "Y2"))
+                    {
+                        rectangle =
+                            new Rect(
+                                new Point(
+                                    startX,
+                                    startY),
+                                new Point(
+                                    endX,
+                                    endY));
+
+                        return true;
+                    }
+                }
+            }
+        }
+
+        /*
+         * Try Position + Size style properties.
+         */
+        if (TryGetPoint(
+                defect,
+                out Point position,
+                "Position",
+                "Location"))
+        {
+            if (TryGetSize(
+                    defect,
+                    out Size size,
+                    "Size"))
+            {
+                rectangle =
+                    new Rect(
+                        position,
+                        size);
+
+                return true;
+            }
+        }
+
+        /*
+         * Last fallback:
+         * if the defect exposes normalized coordinates,
+         * convert them to actual image pixels.
+         */
+        if (TryGetDouble(
+                defect,
+                out double normalizedX,
+                "NormalizedX",
+                "RelativeX"))
+        {
+            if (TryGetDouble(
+                    defect,
+                    out double normalizedY,
+                    "NormalizedY",
+                    "RelativeY"))
+            {
+                if (TryGetDouble(
+                        defect,
+                        out double normalizedWidth,
+                        "NormalizedWidth",
+                        "RelativeWidth"))
+                {
+                    if (TryGetDouble(
+                            defect,
+                            out double normalizedHeight,
+                            "NormalizedHeight",
+                            "RelativeHeight"))
+                    {
+                        rectangle =
+                            new Rect(
+                                normalizedX *
+                                imageWidth,
+                                normalizedY *
+                                imageHeight,
+                                normalizedWidth *
+                                imageWidth,
+                                normalizedHeight *
+                                imageHeight);
+
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryConvertToRect(
+        object value,
+        out Rect rectangle)
+    {
+        rectangle = Rect.Empty;
+
+        if (value is Rect rect)
+        {
+            rectangle = rect;
+            return true;
+        }
+
+        Type type =
+            value.GetType();
+
+        if (TryReadDouble(
+                value,
+                type,
+                "X",
+                out double x) &&
+            TryReadDouble(
+                value,
+                type,
+                "Y",
+                out double y) &&
+            TryReadDouble(
+                value,
+                type,
+                "Width",
+                out double width) &&
+            TryReadDouble(
+                value,
+                type,
+                "Height",
+                out double height))
+        {
+            rectangle =
+                new Rect(
+                    x,
+                    y,
+                    width,
+                    height);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetPoint(
+        object source,
+        out Point point,
+        params string[] propertyNames)
+    {
+        point = new Point();
+
+        foreach (string propertyName
+                 in propertyNames)
+        {
+            if (!TryGetPropertyValue(
+                    source,
+                    propertyName,
+                    out object? value) ||
+                value == null)
+            {
+                continue;
             }
 
-            counter++;
+            if (value is Point directPoint)
+            {
+                point = directPoint;
+                return true;
+            }
+
+            Type type =
+                value.GetType();
+
+            if (TryReadDouble(
+                    value,
+                    type,
+                    "X",
+                    out double x) &&
+                TryReadDouble(
+                    value,
+                    type,
+                    "Y",
+                    out double y))
+            {
+                point =
+                    new Point(
+                        x,
+                        y);
+
+                return true;
+            }
         }
+
+        return false;
+    }
+
+    private static bool TryGetSize(
+        object source,
+        out Size size,
+        params string[] propertyNames)
+    {
+        size = new Size();
+
+        foreach (string propertyName
+                 in propertyNames)
+        {
+            if (!TryGetPropertyValue(
+                    source,
+                    propertyName,
+                    out object? value) ||
+                value == null)
+            {
+                continue;
+            }
+
+            if (value is Size directSize)
+            {
+                size = directSize;
+                return true;
+            }
+
+            Type type =
+                value.GetType();
+
+            if (TryReadDouble(
+                    value,
+                    type,
+                    "Width",
+                    out double width) &&
+                TryReadDouble(
+                    value,
+                    type,
+                    "Height",
+                    out double height))
+            {
+                size =
+                    new Size(
+                        width,
+                        height);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryGetDouble(
+        object source,
+        out double value,
+        params string[] propertyNames)
+    {
+        value = 0;
+
+        foreach (string propertyName
+                 in propertyNames)
+        {
+            if (TryGetPropertyValue(
+                    source,
+                    propertyName,
+                    out object? propertyValue) &&
+                propertyValue != null &&
+                TryConvertDouble(
+                    propertyValue,
+                    out value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryReadDouble(
+        object source,
+        Type type,
+        string propertyName,
+        out double value)
+    {
+        value = 0;
+
+        PropertyInfo? property =
+            type.GetProperty(
+                propertyName,
+                BindingFlags.Instance |
+                BindingFlags.Public |
+                BindingFlags.IgnoreCase);
+
+        if (property == null)
+        {
+            return false;
+        }
+
+        object? propertyValue;
+
+        try
+        {
+            propertyValue =
+                property.GetValue(source);
+        }
+        catch
+        {
+            return false;
+        }
+
+        return propertyValue != null &&
+               TryConvertDouble(
+                   propertyValue,
+                   out value);
+    }
+
+    private static bool TryGetPropertyValue(
+        object source,
+        string propertyName,
+        out object? value)
+    {
+        value = null;
+
+        PropertyInfo? property =
+            source.GetType()
+                .GetProperty(
+                    propertyName,
+                    BindingFlags.Instance |
+                    BindingFlags.Public |
+                    BindingFlags.IgnoreCase);
+
+        if (property == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            value =
+                property.GetValue(source);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool TryConvertDouble(
+        object value,
+        out double result)
+    {
+        if (value is double doubleValue)
+        {
+            result = doubleValue;
+            return true;
+        }
+
+        if (value is float floatValue)
+        {
+            result = floatValue;
+            return true;
+        }
+
+        if (value is int intValue)
+        {
+            result = intValue;
+            return true;
+        }
+
+        if (value is long longValue)
+        {
+            result = longValue;
+            return true;
+        }
+
+        if (value is decimal decimalValue)
+        {
+            result =
+                (double)decimalValue;
+
+            return true;
+        }
+
+        return double.TryParse(
+            Convert.ToString(
+                value,
+                CultureInfo.InvariantCulture),
+            NumberStyles.Float |
+            NumberStyles.AllowThousands,
+            CultureInfo.InvariantCulture,
+            out result);
     }
 }

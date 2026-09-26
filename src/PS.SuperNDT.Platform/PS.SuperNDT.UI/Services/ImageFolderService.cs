@@ -18,6 +18,10 @@ public sealed class ImageFolderService
         Directory.CreateDirectory(_jobsRoot);
     }
 
+    // ============================================================
+    // JOB FOLDER
+    // ============================================================
+
     public string GetJobFolder(
         string jobNumber)
     {
@@ -33,6 +37,10 @@ public sealed class ImageFolderService
 
         return jobFolder;
     }
+
+    // ============================================================
+    // STATUS FOLDER
+    // ============================================================
 
     public string GetStatusFolder(
         string jobNumber,
@@ -54,15 +62,15 @@ public sealed class ImageFolderService
         return statusFolder;
     }
 
+    // ============================================================
+    // IMAGE PATH
+    // ============================================================
+
     public string GetImagePath(
         ImageRecordModel image,
         string status)
     {
-        if (image == null)
-        {
-            throw new ArgumentNullException(
-                nameof(image));
-        }
+        ArgumentNullException.ThrowIfNull(image);
 
         var jobNumber =
             string.IsNullOrWhiteSpace(
@@ -83,15 +91,15 @@ public sealed class ImageFolderService
             fileName);
     }
 
+    // ============================================================
+    // MOVE IMAGE
+    // ============================================================
+
     public string MoveImageToStatus(
         ImageRecordModel image,
         string status)
     {
-        if (image == null)
-        {
-            throw new ArgumentNullException(
-                nameof(image));
-        }
+        ArgumentNullException.ThrowIfNull(image);
 
         if (string.IsNullOrWhiteSpace(
                 image.FilePath))
@@ -114,6 +122,10 @@ public sealed class ImageFolderService
                 image.FilePath,
                 destination))
         {
+            CleanupOtherStatusCopies(
+                image,
+                destination);
+
             return destination;
         }
 
@@ -121,11 +133,29 @@ public sealed class ImageFolderService
             Path.GetDirectoryName(
                 destination)!);
 
+        /*
+         * Remove any old copy of the same image
+         * from PENDING / ACCEPT / REJECT / REPAIR.
+         *
+         * This guarantees that one image exists
+         * in only one status folder.
+         */
+        CleanupOtherStatusCopies(
+            image,
+            destination);
+
         if (File.Exists(destination))
         {
-            destination =
-                BuildUniqueDestinationPath(
-                    destination);
+            try
+            {
+                File.Delete(destination);
+            }
+            catch
+            {
+                destination =
+                    BuildUniqueDestinationPath(
+                        destination);
+            }
         }
 
         File.Move(
@@ -135,15 +165,15 @@ public sealed class ImageFolderService
         return destination;
     }
 
+    // ============================================================
+    // COPY IMAGE
+    // ============================================================
+
     public string CopyImageToStatus(
         ImageRecordModel image,
         string status)
     {
-        if (image == null)
-        {
-            throw new ArgumentNullException(
-                nameof(image));
-        }
+        ArgumentNullException.ThrowIfNull(image);
 
         if (string.IsNullOrWhiteSpace(
                 image.FilePath))
@@ -166,11 +196,36 @@ public sealed class ImageFolderService
             Path.GetDirectoryName(
                 destination)!);
 
+        /*
+         * IMPORTANT:
+         *
+         * Even when caller uses COPY instead of MOVE,
+         * remove all previous status copies first.
+         *
+         * Otherwise:
+         *
+         * PENDING
+         * ACCEPT
+         * REJECT
+         *
+         * can all contain the same image.
+         */
+        CleanupOtherStatusCopies(
+            image,
+            destination);
+
         if (File.Exists(destination))
         {
-            destination =
-                BuildUniqueDestinationPath(
-                    destination);
+            try
+            {
+                File.Delete(destination);
+            }
+            catch
+            {
+                destination =
+                    BuildUniqueDestinationPath(
+                        destination);
+            }
         }
 
         File.Copy(
@@ -180,6 +235,126 @@ public sealed class ImageFolderService
         return destination;
     }
 
+    // ============================================================
+    // CLEAN OLD STATUS COPIES
+    // ============================================================
+
+    private void CleanupOtherStatusCopies(
+        ImageRecordModel image,
+        string keepPath)
+    {
+        var jobNumber =
+            string.IsNullOrWhiteSpace(
+                image.JobNumber)
+                ? "UNKNOWN_JOB"
+                : image.JobNumber;
+
+        var jobFolder =
+            GetJobFolder(jobNumber);
+
+        string[] statusFolders =
+        {
+            "PENDING",
+            "ACCEPT",
+            "REJECT",
+            "REPAIR"
+        };
+
+        var expectedFileName =
+            BuildFileName(image);
+
+        foreach (var statusFolderName
+                 in statusFolders)
+        {
+            var folder =
+                Path.Combine(
+                    jobFolder,
+                    statusFolderName);
+
+            if (!Directory.Exists(folder))
+            {
+                continue;
+            }
+
+            var exactPath =
+                Path.Combine(
+                    folder,
+                    expectedFileName);
+
+            if (PathsEqual(
+                    exactPath,
+                    keepPath))
+            {
+                continue;
+            }
+
+            try
+            {
+                if (File.Exists(exactPath))
+                {
+                    File.Delete(exactPath);
+                }
+            }
+            catch
+            {
+                /*
+                 * Do not break status change because
+                 * an old copy is temporarily locked.
+                 */
+            }
+
+            /*
+             * Also remove any generated duplicate names
+             * such as:
+             *
+             * IMAGE_S001_ID_1.png
+             * IMAGE_S001_ID_2.png
+             *
+             * belonging to this same image.
+             */
+            try
+            {
+                var baseName =
+                    Path.GetFileNameWithoutExtension(
+                        expectedFileName);
+
+                var extension =
+                    Path.GetExtension(
+                        expectedFileName);
+
+                foreach (var file
+                         in Directory.GetFiles(
+                             folder,
+                             baseName + "_*" + extension))
+                {
+                    if (PathsEqual(
+                            file,
+                            keepPath))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch
+                    {
+                        // Ignore locked stale copies.
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore folder cleanup errors.
+            }
+        }
+    }
+
+    // ============================================================
+    // ROOT
+    // ============================================================
+
     public string GetRootFolder()
     {
         Directory.CreateDirectory(
@@ -188,18 +363,26 @@ public sealed class ImageFolderService
         return _jobsRoot;
     }
 
+    // ============================================================
+    // STATUS NORMALIZATION
+    // ============================================================
+
     private static string NormalizeStatusFolder(
         string status)
     {
         if (string.Equals(
                 status,
-                "ACCEPTED",
+                "PENDING",
                 StringComparison.OrdinalIgnoreCase))
         {
-            return "ACCEPT";
+            return "PENDING";
         }
 
         if (string.Equals(
+                status,
+                "ACCEPTED",
+                StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(
                 status,
                 "ACCEPT",
                 StringComparison.OrdinalIgnoreCase))
@@ -210,12 +393,8 @@ public sealed class ImageFolderService
         if (string.Equals(
                 status,
                 "REJECTED",
-                StringComparison.OrdinalIgnoreCase))
-        {
-            return "REJECT";
-        }
-
-        if (string.Equals(
+                StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(
                 status,
                 "REJECT",
                 StringComparison.OrdinalIgnoreCase))
@@ -231,8 +410,18 @@ public sealed class ImageFolderService
             return "REPAIR";
         }
 
-        return "REPAIR";
+        /*
+         * Unknown status should never silently become
+         * REPAIR.
+         *
+         * Keep it in PENDING.
+         */
+        return "PENDING";
     }
+
+    // ============================================================
+    // FILE NAME
+    // ============================================================
 
     private static string BuildFileName(
         ImageRecordModel image)
@@ -273,6 +462,10 @@ public sealed class ImageFolderService
             $"{baseName}_S{image.ShotNumber:000}_{image.Id:N}{extension}";
     }
 
+    // ============================================================
+    // UNIQUE DESTINATION
+    // ============================================================
+
     private static string BuildUniqueDestinationPath(
         string destination)
     {
@@ -301,10 +494,15 @@ public sealed class ImageFolderService
 
             counter++;
 
-        } while (File.Exists(candidate));
+        }
+        while (File.Exists(candidate));
 
         return candidate;
     }
+
+    // ============================================================
+    // PATH COMPARISON
+    // ============================================================
 
     private static bool PathsEqual(
         string first,
@@ -327,6 +525,10 @@ public sealed class ImageFolderService
             secondFullPath,
             StringComparison.OrdinalIgnoreCase);
     }
+
+    // ============================================================
+    // FOLDER NAME
+    // ============================================================
 
     private static string SanitizeFolderName(
         string value)
@@ -362,6 +564,10 @@ public sealed class ImageFolderService
             ? "UNKNOWN_JOB"
             : result;
     }
+
+    // ============================================================
+    // FILE NAME SANITIZATION
+    // ============================================================
 
     private static string SanitizeFileName(
         string value)

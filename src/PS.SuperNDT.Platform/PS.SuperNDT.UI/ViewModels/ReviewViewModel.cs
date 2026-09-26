@@ -1626,37 +1626,28 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             string oldFilePath =
                 _selectedImage.FilePath;
 
-            /*
-             * IMPORTANT:
-             *
-             * Before moving the image to ACCEPT / REJECT / REPAIR,
-             * render the current review image together with all saved
-             * defects.
-             *
-             * This means the image that gets moved to the status
-             * folder already contains the red defect mark and detail
-             * information.
-             */
+            // ----------------------------------------------------
+            // 1. Get all saved defects BEFORE moving the image.
+            // ----------------------------------------------------
 
-            if (!string.IsNullOrWhiteSpace(
-                    folderStatus) &&
-                !string.IsNullOrWhiteSpace(
-                    oldFilePath) &&
-                File.Exists(oldFilePath) &&
-                DisplayImage != null)
-            {
-                var defects =
-                    DefectService.Instance
-                        .GetByImage(
-                            _selectedImage.Id)
-                        .ToList();
+            var defects =
+                DefectService.Instance
+                    .GetByImage(
+                        _selectedImage.Id)
+                    .ToList();
 
-                _reviewedImageExportService
-                    .ExportReviewedPng(
-                        _selectedImage,
-                        DisplayImage,
-                        defects);
-            }
+            // ----------------------------------------------------
+            // 2. Move the ORIGINAL image to the new status folder.
+            //
+            // IMPORTANT:
+            // MoveImageToStatus() may return a unique filename
+            // when the destination already exists.
+            //
+            // We MUST use the returned path.
+            // ----------------------------------------------------
+
+            string movedFilePath =
+                oldFilePath;
 
             if (!string.IsNullOrWhiteSpace(
                     folderStatus) &&
@@ -1664,23 +1655,81 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                     oldFilePath) &&
                 File.Exists(oldFilePath))
             {
-                _imageFolderService.MoveImageToStatus(
-                    _selectedImage,
-                    folderStatus);
+                movedFilePath =
+                    _imageFolderService
+                        .MoveImageToStatus(
+                            _selectedImage,
+                            folderStatus);
 
-                string newFilePath =
-                    _imageFolderService.GetImagePath(
-                        _selectedImage,
-                        folderStatus);
-
-                if (!string.IsNullOrWhiteSpace(
-                        newFilePath) &&
-                    File.Exists(newFilePath))
+                if (string.IsNullOrWhiteSpace(
+                        movedFilePath))
                 {
-                    _selectedImage.FilePath =
-                        newFilePath;
+                    throw new InvalidOperationException(
+                        "The image could not be moved to the selected status folder.");
                 }
+
+                if (!File.Exists(
+                        movedFilePath))
+                {
+                    throw new FileNotFoundException(
+                        "The moved image was not found.",
+                        movedFilePath);
+                }
+
+                // VERY IMPORTANT:
+                // Use the actual returned destination.
+                _selectedImage.FilePath =
+                    movedFilePath;
             }
+
+            // ----------------------------------------------------
+            // 3. Render the reviewed image directly into the same
+            //    status folder.
+            //
+            // ReviewedImageExportService creates:
+            //
+            //     original_REVIEWED.png
+            //
+            // We immediately replace the clean status image with
+            // that rendered reviewed PNG.
+            //
+            // Final result:
+            //
+            //     ACCEPT / original.png
+            //
+            // NOT:
+            //
+            //     ACCEPT / Reviewed / original.png
+            //     ACCEPT / original_REVIEWED.png
+            // ----------------------------------------------------
+
+            if (!string.IsNullOrWhiteSpace(
+                    folderStatus) &&
+                !string.IsNullOrWhiteSpace(
+                    _selectedImage.FilePath) &&
+                File.Exists(
+                    _selectedImage.FilePath) &&
+                DisplayImage != null)
+            {
+                string exportedReviewedPath =
+                    _reviewedImageExportService
+                        .ExportReviewedPng(
+                            _selectedImage,
+                            DisplayImage,
+                            defects);
+
+                ReplaceStatusImageWithReviewedImage(
+                    _selectedImage.FilePath,
+                    exportedReviewedPath);
+
+                // Keep database pointing to the ONE final file.
+                _selectedImage.FilePath =
+                    movedFilePath;
+            }
+
+            // ----------------------------------------------------
+            // 4. Save review status and audit information.
+            // ----------------------------------------------------
 
             _selectedImage.ReviewStatus =
                 status;
@@ -1727,7 +1776,12 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             OnPropertyChanged(
                 nameof(RejectedImages));
 
+            // ----------------------------------------------------
+            // 5. Reload from the ACTUAL saved path.
+            // ----------------------------------------------------
+
             LoadDisplayImage();
+
             LoadReviewHistory();
 
             if (string.IsNullOrWhiteSpace(
@@ -1749,6 +1803,90 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
             ReviewMessage =
                 $"Review update failed: {ex.Message}";
         }
+    }
+
+    // ============================================================
+    // STATUS IMAGE REPLACEMENT
+    // ============================================================
+
+    private static void ReplaceStatusImageWithReviewedImage(
+        string finalImagePath,
+        string exportedReviewedPath)
+    {
+        if (string.IsNullOrWhiteSpace(
+                finalImagePath))
+        {
+            throw new InvalidOperationException(
+                "Final image path is empty.");
+        }
+
+        if (string.IsNullOrWhiteSpace(
+                exportedReviewedPath))
+        {
+            throw new InvalidOperationException(
+                "Reviewed image path is empty.");
+        }
+
+        if (!File.Exists(
+                exportedReviewedPath))
+        {
+            throw new FileNotFoundException(
+                "Reviewed image export was not created.",
+                exportedReviewedPath);
+        }
+
+        string? directory =
+            Path.GetDirectoryName(
+                finalImagePath);
+
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            throw new InvalidOperationException(
+                "Final image directory is invalid.");
+        }
+
+        Directory.CreateDirectory(
+            directory);
+
+        // If the paths are already the same, nothing to do.
+        if (PathsEqual(
+                finalImagePath,
+                exportedReviewedPath))
+        {
+            return;
+        }
+
+        // Remove the clean image.
+        if (File.Exists(
+                finalImagePath))
+        {
+            File.Delete(
+                finalImagePath);
+        }
+
+        // Move the reviewed image into the exact original
+        // status filename.
+        File.Move(
+            exportedReviewedPath,
+            finalImagePath);
+    }
+
+    private static bool PathsEqual(
+        string first,
+        string second)
+    {
+        string firstFullPath =
+            Path.GetFullPath(
+                first);
+
+        string secondFullPath =
+            Path.GetFullPath(
+                second);
+
+        return string.Equals(
+            firstFullPath,
+            secondFullPath,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     // ============================================================
