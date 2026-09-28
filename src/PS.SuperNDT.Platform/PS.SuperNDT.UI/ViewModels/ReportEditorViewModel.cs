@@ -503,7 +503,8 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
                 Report))
         {
             StatusMessage =
-                "Report validation failed.";
+                $"Report validation failed: " +
+                $"{_reportValidationService.LastValidationMessage}";
 
             return string.Empty;
         }
@@ -531,7 +532,8 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
                 Report))
         {
             StatusMessage =
-                "Report validation failed. PDF was not generated.";
+                $"Report validation failed: " +
+                $"{_reportValidationService.LastValidationMessage}";
 
             GeneratedReportPath =
                 string.Empty;
