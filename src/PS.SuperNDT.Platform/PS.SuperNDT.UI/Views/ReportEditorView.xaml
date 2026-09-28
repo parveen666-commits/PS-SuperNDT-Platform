@@ -505,20 +505,35 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="#9FA8B5"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="0,0,10,0"/>
 
                 <Button Grid.Column="1"
                         Content="GENERATE PREVIEW"
                         Command="{Binding GeneratePreviewCommand}"
                         Width="170"
                         Height="38"
+                        Margin="0,0,8,0"
                         Background="#315B3A"
                         Foreground="White"
                         BorderBrush="#4C8A59"
+                        FontWeight="Bold"
+                        Cursor="Hand"/>
+
+                <Button Grid.Column="2"
+                        Content="EXPORT PDF"
+                        Command="{Binding ExportReportCommand}"
+                        Width="130"
+                        Height="38"
+                        Background="#3A506B"
+                        Foreground="White"
+                        BorderBrush="#587A9E"
                         FontWeight="Bold"
                         Cursor="Hand"/>
 

@@ -14,10 +14,13 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
 {
     private readonly ReportGeneratorService _reportGeneratorService;
     private readonly ReportValidationService _reportValidationService;
+    private readonly ReportExportService _reportExportService;
     private readonly ImageService _imageService;
 
     private ReportDataModel _report;
     private string _statusMessage = string.Empty;
+    private string _generatedReportPath = string.Empty;
+
     private ImageRecordModel? _selectedInspectionImage;
     private ReportImageModel? _selectedReportImage;
 
@@ -30,6 +33,9 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
 
         _reportValidationService =
             new ReportValidationService();
+
+        _reportExportService =
+            new ReportExportService();
 
         _imageService =
             new ImageService();
@@ -63,6 +69,10 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             new RelayCommand(
                 ExecuteGeneratePreview);
 
+        ExportReportCommand =
+            new RelayCommand(
+                ExecuteExportReport);
+
         LoadReviewedImagesCommand =
             new RelayCommand(
                 ExecuteLoadReviewedImages);
@@ -80,6 +90,11 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
     }
 
     public RelayCommand GeneratePreviewCommand
+    {
+        get;
+    }
+
+    public RelayCommand ExportReportCommand
     {
         get;
     }
@@ -163,6 +178,21 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         private set
         {
             _statusMessage = value;
+
+            OnPropertyChanged();
+        }
+    }
+
+    public string GeneratedReportPath
+    {
+        get => _generatedReportPath;
+
+        private set
+        {
+            if (_generatedReportPath == value)
+                return;
+
+            _generatedReportPath = value;
 
             OnPropertyChanged();
         }
@@ -490,6 +520,55 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
     }
 
     // ============================================================
+    // REPORT EXPORT
+    // ============================================================
+
+    public string ExportReport()
+    {
+        LoadDefectFindings();
+
+        if (!_reportValidationService.Validate(
+                Report))
+        {
+            StatusMessage =
+                "Report validation failed. PDF was not generated.";
+
+            GeneratedReportPath =
+                string.Empty;
+
+            return string.Empty;
+        }
+
+        try
+        {
+            Report.GeneratedDate =
+                DateTime.Now;
+
+            string filePath =
+                _reportExportService.ExportReport(
+                    Report);
+
+            GeneratedReportPath =
+                filePath;
+
+            StatusMessage =
+                $"PDF report generated successfully: {filePath}";
+
+            return filePath;
+        }
+        catch (Exception ex)
+        {
+            GeneratedReportPath =
+                string.Empty;
+
+            StatusMessage =
+                $"PDF export failed: {ex.Message}";
+
+            return string.Empty;
+        }
+    }
+
+    // ============================================================
     // COMMANDS
     // ============================================================
 
@@ -497,6 +576,12 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
         object? parameter)
     {
         GeneratePreview();
+    }
+
+    private void ExecuteExportReport(
+        object? parameter)
+    {
+        ExportReport();
     }
 
     private void ExecuteLoadReviewedImages(
