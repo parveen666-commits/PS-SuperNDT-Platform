@@ -57,10 +57,6 @@ public partial class ReviewView : UserControl
         PreviewKeyDown += ReviewView_PreviewKeyDown;
     }
 
-    // ============================================================
-    // LOADED
-    // ============================================================
-
     private void ReviewView_Loaded(
         object sender,
         RoutedEventArgs e)
@@ -106,10 +102,6 @@ public partial class ReviewView : UserControl
             DispatcherPriority.Loaded);
     }
 
-    // ============================================================
-    // UNLOADED
-    // ============================================================
-
     private void ReviewView_Unloaded(
         object sender,
         RoutedEventArgs e)
@@ -147,10 +139,6 @@ public partial class ReviewView : UserControl
         Mouse.Capture(null);
     }
 
-    // ============================================================
-    // VIEW MODEL
-    // ============================================================
-
     private void ViewModel_PropertyChanged(
         object? sender,
         PropertyChangedEventArgs e)
@@ -167,8 +155,7 @@ public partial class ReviewView : UserControl
 
                     double zoom = GetZoom();
 
-                    if (Math.Abs(
-                            zoom - FitZoom) < 0.001)
+                    if (Math.Abs(zoom - FitZoom) < 0.001)
                     {
                         FitImageToFrame();
                     }
@@ -205,8 +192,7 @@ public partial class ReviewView : UserControl
 
                     double zoom = GetZoom();
 
-                    if (Math.Abs(
-                            zoom - FitZoom) < 0.001)
+                    if (Math.Abs(zoom - FitZoom) < 0.001)
                     {
                         FitImageToFrame();
                     }
@@ -224,14 +210,9 @@ public partial class ReviewView : UserControl
         }
     }
 
-    // ============================================================
-    // FIT IMAGE
-    // ============================================================
-
     private void FitImageToFrame()
     {
-        if (!IsLoaded ||
-            _isFittingFrame)
+        if (!IsLoaded || _isFittingFrame)
         {
             return;
         }
@@ -294,10 +275,6 @@ public partial class ReviewView : UserControl
         ScheduleRulerRefresh();
     }
 
-    // ============================================================
-    // ZOOM
-    // ============================================================
-
     private double GetZoom()
     {
         if (DataContext is ReviewViewModel viewModel)
@@ -356,8 +333,7 @@ public partial class ReviewView : UserControl
             return;
         }
 
-        if (zoom >
-            viewModel.ZoomLevel)
+        if (zoom > viewModel.ZoomLevel)
         {
             while (viewModel.ZoomLevel <
                    zoom - 0.001)
@@ -374,10 +350,6 @@ public partial class ReviewView : UserControl
             }
         }
     }
-
-    // ============================================================
-    // TRANSFORM
-    // ============================================================
 
     private void SetupPanTransform()
     {
@@ -444,10 +416,6 @@ public partial class ReviewView : UserControl
             transformGroup;
     }
 
-    // ============================================================
-    // SCROLL
-    // ============================================================
-
     private void UpdateScrollMode()
     {
         if (!IsLoaded ||
@@ -496,10 +464,6 @@ public partial class ReviewView : UserControl
 
         ScheduleRulerRefresh();
     }
-
-    // ============================================================
-    // RULER
-    // ============================================================
 
     private void ScheduleRulerRefresh()
     {
@@ -577,18 +541,14 @@ public partial class ReviewView : UserControl
             return;
         }
 
-        RulerCanvas.Width =
-            rulerWidth;
-
-        TopRulerCanvas.Width =
-            rulerWidth;
+        RulerCanvas.Width = rulerWidth;
+        TopRulerCanvas.Width = rulerWidth;
 
         double current =
             Math.Ceiling(
                 start / 10.0) * 10.0;
 
-        while (current <=
-               end + 0.001)
+        while (current <= end + 0.001)
         {
             double ratio =
                 (current - start) /
@@ -631,17 +591,14 @@ public partial class ReviewView : UserControl
                 X2 = x,
                 Y1 = 0,
                 Y2 = major ? 18 : 9,
-
                 Stroke =
                     new SolidColorBrush(
                         Color.FromRgb(
                             216,
                             222,
                             231)),
-
                 StrokeThickness =
                     major ? 1.4 : 1,
-
                 IsHitTestVisible = false,
                 Tag = RulerTickTag
             };
@@ -657,26 +614,19 @@ public partial class ReviewView : UserControl
             new TextBlock
             {
                 Text = $"{value:0}",
-
                 Foreground =
                     new SolidColorBrush(
                         Color.FromRgb(
                             227,
                             232,
                             238)),
-
                 FontSize = 9,
                 IsHitTestVisible = false,
                 Tag = RulerTickTag
             };
 
-        Canvas.SetLeft(
-            label,
-            x + 2);
-
-        Canvas.SetTop(
-            label,
-            18);
+        Canvas.SetLeft(label, x + 2);
+        Canvas.SetTop(label, 18);
 
         RulerCanvas.Children.Add(label);
     }
@@ -693,17 +643,14 @@ public partial class ReviewView : UserControl
                 X2 = x,
                 Y1 = 29,
                 Y2 = major ? 11 : 20,
-
                 Stroke =
                     new SolidColorBrush(
                         Color.FromRgb(
                             216,
                             222,
                             231)),
-
                 StrokeThickness =
                     major ? 1.4 : 1,
-
                 IsHitTestVisible = false,
                 Tag = RulerTickTag
             };
@@ -719,50 +666,39 @@ public partial class ReviewView : UserControl
             new TextBlock
             {
                 Text = $"{value:0}",
-
                 Foreground =
                     new SolidColorBrush(
                         Color.FromRgb(
                             227,
                             232,
                             238)),
-
                 FontSize = 9,
                 IsHitTestVisible = false,
                 Tag = RulerTickTag
             };
 
-        Canvas.SetLeft(
-            label,
-            x + 2);
-
-        Canvas.SetTop(
-            label,
-            1);
+        Canvas.SetLeft(label, x + 2);
+        Canvas.SetTop(label, 1);
 
         TopRulerCanvas.Children.Add(label);
     }
 
     private void ClearDynamicRulers()
     {
-        RemoveDynamicRulerChildren(
-            RulerCanvas);
-
-        RemoveDynamicRulerChildren(
-            TopRulerCanvas);
+        RemoveDynamicRulerChildren(RulerCanvas);
+        RemoveDynamicRulerChildren(TopRulerCanvas);
     }
 
     private static void RemoveDynamicRulerChildren(
         Canvas canvas)
     {
         for (
-            int i =
-                canvas.Children.Count - 1;
+            int i = canvas.Children.Count - 1;
             i >= 0;
             i--)
         {
             if (canvas.Children[i]
-                is FrameworkElement element &&
+                    is FrameworkElement element &&
                 string.Equals(
                     element.Tag as string,
                     RulerTickTag,
@@ -774,8 +710,26 @@ public partial class ReviewView : UserControl
     }
 
     // ============================================================
-    // IMAGE GEOMETRY
+    // IMAGE GEOMETRY - IMPORTANT FIX
     // ============================================================
+
+    private Image? GetActualImageElement()
+    {
+        if (ShotFrame?.Child is not Grid frameGrid)
+        {
+            return null;
+        }
+
+        foreach (UIElement child in frameGrid.Children)
+        {
+            if (child is Image image)
+            {
+                return image;
+            }
+        }
+
+        return null;
+    }
 
     private bool TryGetImageGeometry(
         out double imageWidth,
@@ -788,23 +742,44 @@ public partial class ReviewView : UserControl
         offsetX = 0;
         offsetY = 0;
 
+        Image? image =
+            GetActualImageElement();
+
+        if (image == null)
+        {
+            return false;
+        }
+
+        double width =
+            image.ActualWidth;
+
+        double height =
+            image.ActualHeight;
+
+        if (width <= 1 ||
+            height <= 1)
+        {
+            return false;
+        }
+
+        imageWidth = width;
+        imageHeight = height;
+
         double frameWidth =
             ShotFrame.ActualWidth;
 
         double frameHeight =
             ShotFrame.ActualHeight;
 
-        if (frameWidth <= 1 ||
-            frameHeight <= 1)
-        {
-            return false;
-        }
+        offsetX =
+            Math.Max(
+                0,
+                (frameWidth - imageWidth) / 2.0);
 
-        imageWidth =
-            frameWidth;
-
-        imageHeight =
-            frameHeight;
+        offsetY =
+            Math.Max(
+                0,
+                (frameHeight - imageHeight) / 2.0);
 
         return true;
     }
@@ -818,31 +793,28 @@ public partial class ReviewView : UserControl
             return;
         }
 
-        double width =
-            ShotFrame.ActualWidth;
-
-        double height =
-            ShotFrame.ActualHeight;
-
-        if (width <= 1 ||
-            height <= 1)
+        if (!TryGetImageGeometry(
+                out double imageWidth,
+                out double imageHeight,
+                out double offsetX,
+                out double offsetY))
         {
             return;
         }
 
         DefectOverlayCanvas.Width =
-            width;
+            imageWidth;
 
         DefectOverlayCanvas.Height =
-            height;
+            imageHeight;
 
         Canvas.SetLeft(
             DefectOverlayCanvas,
-            0);
+            offsetX);
 
         Canvas.SetTop(
             DefectOverlayCanvas,
-            0);
+            offsetY);
     }
 
     // ============================================================
@@ -852,27 +824,43 @@ public partial class ReviewView : UserControl
     private double GetImagePixelScaleX()
     {
         if (DataContext is not ReviewViewModel viewModel ||
-            viewModel.DisplayImage is not BitmapSource bitmap ||
-            bitmap.Width <= 0)
+            viewModel.DisplayImage is not BitmapSource bitmap)
+        {
+            return 1.0;
+        }
+
+        Image? image =
+            GetActualImageElement();
+
+        if (image == null ||
+            image.ActualWidth <= 0)
         {
             return 1.0;
         }
 
         return bitmap.PixelWidth /
-               bitmap.Width;
+               image.ActualWidth;
     }
 
     private double GetImagePixelScaleY()
     {
         if (DataContext is not ReviewViewModel viewModel ||
-            viewModel.DisplayImage is not BitmapSource bitmap ||
-            bitmap.Height <= 0)
+            viewModel.DisplayImage is not BitmapSource bitmap)
+        {
+            return 1.0;
+        }
+
+        Image? image =
+            GetActualImageElement();
+
+        if (image == null ||
+            image.ActualHeight <= 0)
         {
             return 1.0;
         }
 
         return bitmap.PixelHeight /
-               bitmap.Height;
+               image.ActualHeight;
     }
 
     private Point DisplayPointToImagePixels(
@@ -1763,13 +1751,6 @@ public partial class ReviewView : UserControl
 
             HideTemporaryDefectRectangle();
 
-            /*
-             * Only the red rectangle is drawn.
-             *
-             * No dialog.
-             * No detail card.
-             * No text.
-             */
             RefreshSavedDefects();
         }
         catch (Exception ex)
@@ -1800,6 +1781,25 @@ public partial class ReviewView : UserControl
 
     private void LoadSavedDefects()
     {
+        /*
+         * The XAML DefectRectangle is the temporary rectangle used
+         * while the user is drawing a new defect.
+         *
+         * Accept / Reject / Pending / zoom / image refresh can call
+         * LoadSavedDefects() again. If the temporary rectangle is
+         * not hidden first, it can remain on screen together with
+         * the real persisted defect rectangle and look like an
+         * extra defect box.
+         */
+        HideTemporaryDefectRectangle();
+
+        /*
+         * Remove every generated/persisted defect visual before
+         * rebuilding the overlay from the database.
+         *
+         * This also removes any old rectangle/text label left by
+         * an earlier version of the review code.
+         */
         ClearPersistedDefectRectangles();
 
         if (DataContext is not ReviewViewModel viewModel ||
@@ -1816,8 +1816,7 @@ public partial class ReviewView : UserControl
 
         foreach (DefectModel defect in defects)
         {
-            AddPersistedDefectRectangle(
-                defect);
+            AddPersistedDefectRectangle(defect);
         }
     }
 
@@ -1830,21 +1829,44 @@ public partial class ReviewView : UserControl
 
     private void ClearPersistedDefectRectangles()
     {
+        HideTemporaryDefectRectangle();
+
+        if (DefectOverlayCanvas == null)
+        {
+            return;
+        }
+
+        /*
+         * DefectOverlayCanvas contains only runtime defect visuals.
+         *
+         * DefectRectangle is the single XAML drawing rectangle used
+         * while the user is currently drawing a new defect.
+         *
+         * Everything else inside this canvas is a generated/persisted
+         * defect visual and must be removed before rebuilding the
+         * overlay from the database.
+         *
+         * This also removes any old TextBlock/label/rectangle that may
+         * have been created by an earlier version of the review code.
+         */
+
         for (
             int i =
                 DefectOverlayCanvas.Children.Count - 1;
             i >= 0;
             i--)
         {
-            if (DefectOverlayCanvas.Children[i]
-                is FrameworkElement element &&
-                element.Tag is string tag &&
-                tag.StartsWith(
-                    PersistedDefectTagPrefix,
-                    StringComparison.Ordinal))
+            UIElement child =
+                DefectOverlayCanvas.Children[i];
+
+            if (ReferenceEquals(
+                    child,
+                    DefectRectangle))
             {
-                DefectOverlayCanvas.Children.RemoveAt(i);
+                continue;
             }
+
+            DefectOverlayCanvas.Children.RemoveAt(i);
         }
     }
 
