@@ -427,9 +427,19 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (Images.Any(
+                x => x.FilePath == image.FilePath))
+        {
+            return;
+        }
+
         Images.Add(image);
 
-        Report.Images.Add(image);
+        if (!Report.Images.Any(
+                x => x.FilePath == image.FilePath))
+        {
+            Report.Images.Add(image);
+        }
 
         StatusMessage =
             "Image added successfully.";
@@ -438,6 +448,9 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
     public void LoadReviewedImages()
     {
         ReviewedImages.Clear();
+
+        Images.Clear();
+        Report.Images.Clear();
 
         var currentJob =
             CurrentJobService.Instance.CurrentJob;
@@ -479,6 +492,16 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             ReviewedImages.Add(image);
         }
 
+        /*
+         * Automatically include all reviewed images
+         * in the final PDF report.
+         */
+        foreach (var image in ReviewedImages)
+        {
+            AddReviewedImageToReport(
+                image);
+        }
+
         if (ReviewedImages.Count == 0)
         {
             StatusMessage =
@@ -491,12 +514,92 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             $"{ReviewedImages.Count} reviewed image(s) loaded automatically.";
     }
 
+    private void AddReviewedImageToReport(
+        ImageRecordModel source)
+    {
+        if (source == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(
+                source.FilePath))
+        {
+            return;
+        }
+
+        if (!System.IO.File.Exists(
+                source.FilePath))
+        {
+            return;
+        }
+
+        if (Report.Images.Any(
+                x => string.Equals(
+                    x.FilePath,
+                    source.FilePath,
+                    StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        var reportImage =
+            new ReportImageModel
+            {
+                Id =
+                    Guid.NewGuid(),
+
+                ReportId =
+                    Report.Id,
+
+                ImageName =
+                    source.FileName,
+
+                SequenceNumber =
+                    Report.Images.Count + 1,
+
+                FilePath =
+                    source.FilePath,
+
+                FileName =
+                    source.FileName,
+
+                ImageType =
+                    "RT IMAGE",
+
+                AddedOn =
+                    DateTime.Now,
+
+                AddedBy =
+                    Environment.UserName,
+
+                CapturedOn =
+                    source.CapturedOn,
+
+                CapturedBy =
+                    source.Operator,
+
+                Description =
+                    $"Frame {source.FrameNumber}",
+
+                Remarks =
+                    source.Remarks
+            };
+
+        Images.Add(
+            reportImage);
+
+        Report.Images.Add(
+            reportImage);
+    }
+
     // ============================================================
     // REPORT PREVIEW
     // ============================================================
 
     public string GeneratePreview()
     {
+        LoadReviewedImages();
         LoadDefectFindings();
 
         if (!_reportValidationService.Validate(
@@ -526,6 +629,12 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
 
     public string ExportReport()
     {
+        /*
+         * Reload both findings and reviewed images
+         * immediately before export so the PDF always
+         * uses the latest review state.
+         */
+        LoadReviewedImages();
         LoadDefectFindings();
 
         if (!_reportValidationService.Validate(
@@ -608,7 +717,10 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             SelectedInspectionImage;
 
         if (Images.Any(
-                x => x.FilePath == source.FilePath))
+                x => string.Equals(
+                    x.FilePath,
+                    source.FilePath,
+                    StringComparison.OrdinalIgnoreCase)))
         {
             StatusMessage =
                 "Image is already added to the report.";
@@ -704,6 +816,14 @@ public sealed class ReportEditorViewModel : INotifyPropertyChanged
             1;
 
         foreach (var image in Images)
+        {
+            image.SequenceNumber =
+                sequence++;
+        }
+
+        sequence = 1;
+
+        foreach (var image in Report.Images)
         {
             image.SequenceNumber =
                 sequence++;

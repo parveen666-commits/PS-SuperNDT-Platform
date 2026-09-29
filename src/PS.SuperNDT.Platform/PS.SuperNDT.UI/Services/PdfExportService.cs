@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using QuestPDF.Fluent;
@@ -105,29 +106,29 @@ public sealed class PdfExportService
             document.Page(page =>
             {
                 page.Size(PageSizes.A4);
-                page.Margin(40);
+                page.Margin(32);
 
                 page.Header()
                     .Column(header =>
                     {
                         header.Item()
                             .Text("PS SuperNDT Platform")
-                            .FontSize(20)
+                            .FontSize(17)
                             .Bold();
 
                         header.Item()
                             .Text("DIGITAL RADIOGRAPHY INSPECTION REPORT")
-                            .FontSize(12)
+                            .FontSize(10)
                             .Bold();
 
                         header.Item()
-                            .LineHorizontal(1);
+                            .LineHorizontal(0.7f);
                     });
 
                 page.Content()
                     .Column(column =>
                     {
-                        column.Spacing(10);
+                        column.Spacing(5);
 
                         AddSectionTitle(
                             column,
@@ -153,7 +154,7 @@ public sealed class PdfExportService
                             .Text(
                                 GetValue(
                                     report.ExposureParameters))
-                            .FontSize(9);
+                            .FontSize(8);
 
                         AddSectionTitle(
                             column,
@@ -163,7 +164,7 @@ public sealed class PdfExportService
                             .Text(
                                 GetValue(
                                     report.Result))
-                            .FontSize(10);
+                            .FontSize(9);
 
                         if (!string.IsNullOrWhiteSpace(
                                 report.Remarks))
@@ -174,7 +175,7 @@ public sealed class PdfExportService
 
                             column.Item()
                                 .Text(report.Remarks)
-                                .FontSize(9);
+                                .FontSize(8);
                         }
 
                         AddSectionTitle(
@@ -205,13 +206,13 @@ public sealed class PdfExportService
                             .Text(
                                 $"Approved : {(report.IsApproved ? "YES" : "NO")}\n" +
                                 $"Approved By : {GetValue(report.ApprovedBy)}")
-                            .FontSize(9);
+                            .FontSize(8);
 
                         column.Item()
                             .Text(
                                 $"Inspection Date : {report.InspectionDate:dd-MMM-yyyy HH:mm}\n" +
                                 $"Generated Date  : {report.GeneratedDate:dd-MMM-yyyy HH:mm}")
-                            .FontSize(9);
+                            .FontSize(8);
                     });
 
                 AddFooter(page);
@@ -223,7 +224,7 @@ public sealed class PdfExportService
     }
 
     private static void AddFooter(
-      PageDescriptor page)
+        PageDescriptor page)
     {
         page.Footer()
             .AlignCenter()
@@ -235,17 +236,21 @@ public sealed class PdfExportService
                 footer.Item()
                     .Text(
                         "PS SuperNDT Platform - Confidential Inspection Report")
-                    .FontSize(8);
+                    .FontSize(7);
 
                 footer.Item()
-                    .Text(
-                        text =>
-                        {
-                            text.Span("Page ");
-                            text.CurrentPageNumber();
-                            text.Span(" of ");
-                            text.TotalPages();
-                        });
+                    .Text(text =>
+                    {
+                        text.Span("Page ")
+                            .FontSize(7);
+
+                        text.CurrentPageNumber();
+
+                        text.Span(" of ")
+                            .FontSize(7);
+
+                        text.TotalPages();
+                    });
             });
     }
 
@@ -254,9 +259,9 @@ public sealed class PdfExportService
         string title)
     {
         column.Item()
-            .PaddingTop(4)
+            .PaddingTop(3)
             .Text(title)
-            .FontSize(11)
+            .FontSize(10)
             .Bold();
     }
 
@@ -269,9 +274,9 @@ public sealed class PdfExportService
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(120);
+                    columns.ConstantColumn(105);
                     columns.RelativeColumn();
-                    columns.ConstantColumn(120);
+                    columns.ConstantColumn(105);
                     columns.RelativeColumn();
                 });
 
@@ -315,9 +320,9 @@ public sealed class PdfExportService
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(120);
+                    columns.ConstantColumn(105);
                     columns.RelativeColumn();
-                    columns.ConstantColumn(120);
+                    columns.ConstantColumn(105);
                     columns.RelativeColumn();
                 });
 
@@ -346,29 +351,29 @@ public sealed class PdfExportService
     {
         table.Cell()
             .Border(0.5f)
-            .Padding(4)
+            .Padding(3)
             .Text(label1)
             .Bold()
-            .FontSize(8);
+            .FontSize(7);
 
         table.Cell()
             .Border(0.5f)
-            .Padding(4)
+            .Padding(3)
             .Text(GetValue(value1))
-            .FontSize(8);
+            .FontSize(7);
 
         table.Cell()
             .Border(0.5f)
-            .Padding(4)
+            .Padding(3)
             .Text(label2)
             .Bold()
-            .FontSize(8);
+            .FontSize(7);
 
         table.Cell()
             .Border(0.5f)
-            .Padding(4)
+            .Padding(3)
             .Text(GetValue(value2))
-            .FontSize(8);
+            .FontSize(7);
     }
 
     private static void AddFindingsTable(
@@ -380,7 +385,7 @@ public sealed class PdfExportService
         {
             column.Item()
                 .Text("No findings recorded.")
-                .FontSize(9);
+                .FontSize(8);
 
             return;
         }
@@ -390,7 +395,7 @@ public sealed class PdfExportService
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(32);
+                    columns.ConstantColumn(28);
                     columns.RelativeColumn(1.2f);
                     columns.RelativeColumn(1.2f);
                     columns.RelativeColumn(2);
@@ -412,33 +417,33 @@ public sealed class PdfExportService
                 {
                     table.Cell()
                         .Border(0.5f)
-                        .Padding(3)
+                        .Padding(2)
                         .Text(finding.FindingNumber.ToString())
-                        .FontSize(7);
+                        .FontSize(6);
 
                     table.Cell()
                         .Border(0.5f)
-                        .Padding(3)
+                        .Padding(2)
                         .Text(GetValue(finding.Location))
-                        .FontSize(7);
+                        .FontSize(6);
 
                     table.Cell()
                         .Border(0.5f)
-                        .Padding(3)
+                        .Padding(2)
                         .Text(GetValue(finding.FindingType))
-                        .FontSize(7);
+                        .FontSize(6);
 
                     table.Cell()
                         .Border(0.5f)
-                        .Padding(3)
+                        .Padding(2)
                         .Text(GetValue(finding.Description))
-                        .FontSize(7);
+                        .FontSize(6);
 
                     table.Cell()
                         .Border(0.5f)
-                        .Padding(3)
+                        .Padding(2)
                         .Text(GetValue(finding.Severity))
-                        .FontSize(7);
+                        .FontSize(6);
 
                     string evaluation =
                         string.IsNullOrWhiteSpace(
@@ -450,9 +455,9 @@ public sealed class PdfExportService
 
                     table.Cell()
                         .Border(0.5f)
-                        .Padding(3)
+                        .Padding(2)
                         .Text(evaluation)
-                        .FontSize(7);
+                        .FontSize(6);
                 }
             });
     }
@@ -480,58 +485,107 @@ public sealed class PdfExportService
     {
         table.Cell()
             .Border(0.5f)
-            .Padding(3)
+            .Padding(2)
             .Text(text)
             .Bold()
-            .FontSize(7);
+            .FontSize(6);
     }
 
     private static void AddImages(
         ColumnDescriptor column,
         ReportDataModel report)
     {
-        foreach (var image in report.Images.OrderBy(
-                     x => x.SequenceNumber))
+        List<ReportImageModel> validImages =
+            report.Images
+                .Where(image =>
+                    !string.IsNullOrWhiteSpace(
+                        GetExistingImagePath(image)))
+                .OrderBy(image => image.SequenceNumber)
+                .ToList();
+
+        if (validImages.Count == 0)
         {
-            string imagePath =
-                GetExistingImagePath(image);
-
             column.Item()
-                .Text(
-                    $"Image {image.SequenceNumber}: {GetValue(image.ImageName)}")
-                .Bold()
-                .FontSize(9);
+                .Text("No reviewed image files were found.")
+                .FontSize(8);
 
-            if (string.IsNullOrWhiteSpace(imagePath))
-            {
-                column.Item()
-                    .Text("Image file not found.")
-                    .FontSize(8);
-
-                continue;
-            }
-
-            column.Item()
-                .Image(imagePath)
-                .FitArea();
-
-            if (!string.IsNullOrWhiteSpace(
-                    image.Description))
-            {
-                column.Item()
-                    .Text(image.Description)
-                    .FontSize(8);
-            }
-
-            if (!string.IsNullOrWhiteSpace(
-                    image.Remarks))
-            {
-                column.Item()
-                    .Text(
-                        $"Remarks: {image.Remarks}")
-                    .FontSize(8);
-            }
+            return;
         }
+
+        column.Item()
+            .Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn();
+                    columns.RelativeColumn();
+                });
+
+                foreach (ReportImageModel image in validImages)
+                {
+                    string imagePath =
+                        GetExistingImagePath(image);
+
+                    table.Cell()
+                        .Border(0.5f)
+                        .Padding(3)
+                        .Column(cell =>
+                        {
+                            cell.Spacing(2);
+
+                            cell.Item()
+                                .Text(
+                                    $"SHOT {image.SequenceNumber}" +
+                                    (string.IsNullOrWhiteSpace(
+                                        image.ImageName)
+                                        ? string.Empty
+                                        : $" - {image.ImageName}"))
+                                .Bold()
+                                .FontSize(7);
+
+                            cell.Item()
+                                .Height(145)
+                                .Image(imagePath);
+
+                            string caption =
+                                BuildImageCaption(image);
+
+                            if (!string.IsNullOrWhiteSpace(
+                                    caption))
+                            {
+                                cell.Item()
+                                    .Text(caption)
+                                    .FontSize(6)
+                                    .LineHeight(1.0f);
+                            }
+                        });
+                }
+            });
+    }
+
+    private static string BuildImageCaption(
+        ReportImageModel image)
+    {
+        List<string> parts =
+            new();
+
+        if (!string.IsNullOrWhiteSpace(
+                image.Description))
+        {
+            parts.Add(
+                image.Description.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                image.Remarks))
+        {
+            parts.Add(
+                $"Remarks: {image.Remarks.Trim()}");
+        }
+
+        return string.Join(
+            " | ",
+            parts);
     }
 
     private static string GetExistingImagePath(
