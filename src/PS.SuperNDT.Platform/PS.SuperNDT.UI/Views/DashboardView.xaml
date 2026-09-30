@@ -29,139 +29,193 @@
 
             <UniformGrid Columns="4">
 
+                <!-- Current Work Order -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
-                        <TextBlock Text="Current Job"
+
+                        <TextBlock Text="Current Work Order"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="{Binding CurrentJob}"
                                    Foreground="#00E5FF"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- Customer -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
+
                         <TextBlock Text="Customer"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="{Binding Customer}"
                                    Foreground="#00E5FF"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- Total Images -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
+
                         <TextBlock Text="Total Images"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="{Binding TotalImages}"
                                    Foreground="Lime"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- Total Work Orders -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
-                        <TextBlock Text="Total Jobs"
+
+                        <TextBlock Text="Total Work Orders"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="{Binding TotalJobs}"
                                    Foreground="Orange"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- Open Work Orders -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
-                        <TextBlock Text="Open Jobs"
+
+                        <TextBlock Text="Open Work Orders"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="{Binding OpenJobs}"
                                    Foreground="Yellow"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- Closed Work Orders -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
-                        <TextBlock Text="Closed Jobs"
+
+                        <TextBlock Text="Closed Work Orders"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="{Binding ClosedJobs}"
                                    Foreground="#00E5FF"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- Detector Status -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
+
                         <TextBlock Text="Detector Status"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="READY"
                                    Foreground="Lime"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- PLC Status -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
+
                         <TextBlock Text="PLC Status"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="OFFLINE"
                                    Foreground="Orange"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
+                <!-- Software Version -->
                 <Border Margin="8"
                         Background="#252B33"
                         CornerRadius="8">
+
                     <StackPanel Margin="20">
+
                         <TextBlock Text="Software Version"
                                    Foreground="White"
                                    FontSize="18"/>
+
                         <TextBlock Text="v1.0.0"
                                    Foreground="#00E5FF"
                                    FontSize="28"
                                    FontWeight="Bold"
                                    Margin="0,15,0,0"/>
+
                     </StackPanel>
+
                 </Border>
 
             </UniformGrid>

@@ -81,6 +81,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
     }
 
+    public string CurrentWorkOrder =>
+        CurrentJobService.Instance.GetCurrentWorkOrderNumber();
+
     public string PipeId
     {
         get => _pipeId;
@@ -281,6 +284,13 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 UpdateCurrentJob();
             };
 
+        CurrentJobService.Instance.CurrentWorkOrderChanged +=
+            (_, _) =>
+            {
+                OnPropertyChanged(nameof(CurrentWorkOrder));
+                UpdateCurrentJob();
+            };
+
         ConnectCommand =
             new RelayCommand(
                 _ => ConnectDetector());
@@ -310,10 +320,23 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
     private void UpdateCurrentJob()
     {
+        var workOrder =
+            CurrentJobService.Instance.CurrentWorkOrder;
+
         var job =
             CurrentJobService.Instance.CurrentJob;
 
-        if (job != null)
+        if (workOrder != null)
+        {
+            CurrentJob =
+                workOrder.WorkOrderNumber;
+
+            AcquisitionStatus =
+                workOrder.IsClosed
+                    ? "Work Order is closed"
+                    : $"Work Order {workOrder.WorkOrderNumber} ready for RT";
+        }
+        else if (job != null)
         {
             CurrentJob =
                 job.JobNumber;
@@ -329,6 +352,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             AcquisitionStatus =
                 "Open a job before acquisition";
         }
+
+        OnPropertyChanged(nameof(CurrentWorkOrder));
 
         RebuildShotPlan();
     }

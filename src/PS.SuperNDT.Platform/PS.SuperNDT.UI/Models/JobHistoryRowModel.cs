@@ -1,3 +1,4 @@
+﻿
 ﻿using System;
 
 namespace PS.SuperNDT.UI.Models;
@@ -28,6 +29,26 @@ public sealed class JobHistoryRowModel
 
     public bool IsClosed { get; set; }
 
+    // ============================================================
+    // WORK ORDER MASTER STATUS
+    // ============================================================
+
+    public string WorkOrderStatus { get; set; } = "CREATED";
+
+    public string WorkOrderResult { get; set; } = "PENDING";
+
+    // ============================================================
+    // WORK ORDER COUNTERS
+    // ============================================================
+
+    public int TotalPipes { get; set; }
+
+    public int CompletedShots { get; set; }
+
+    // ============================================================
+    // IMAGE / SHOT COUNTERS
+    // ============================================================
+
     public int TotalShots { get; set; }
 
     public int AcceptedShots { get; set; }
@@ -38,12 +59,59 @@ public sealed class JobHistoryRowModel
 
     public int PendingShots { get; set; }
 
+    // ============================================================
+    // DISPLAY STATUS
+    // ============================================================
+
     public string OverallStatus
     {
         get
         {
+            if (!string.IsNullOrWhiteSpace(WorkOrderStatus))
+            {
+                var status =
+                    WorkOrderStatus.Trim()
+                                   .ToUpperInvariant();
+
+                switch (status)
+                {
+                    case "CLOSED":
+                        return "CLOSED";
+
+                    case "ACCEPTED":
+                        return "ACCEPTED";
+
+                    case "REJECTED":
+                        return "REJECTED";
+
+                    case "REPAIR":
+                        return "REPAIR";
+
+                    case "REVIEW_PENDING":
+                        return "PENDING";
+
+                    case "REVIEW_IN_PROGRESS":
+                        return "REVIEW";
+
+                    case "RT_IN_PROGRESS":
+                        return "RT";
+
+                    case "IN_PROGRESS":
+                        return "IN PROGRESS";
+
+                    case "CREATED":
+                        return "OPEN";
+                }
+            }
+
+            // ----------------------------------------------------
+            // Legacy/image fallback
+            // ----------------------------------------------------
+
             if (TotalShots == 0)
-                return IsClosed ? "CLOSED" : "OPEN";
+                return IsClosed
+                    ? "CLOSED"
+                    : "OPEN";
 
             if (RepairShots > 0)
                 return "REPAIR";
@@ -63,3 +131,4 @@ public sealed class JobHistoryRowModel
         }
     }
 }
+

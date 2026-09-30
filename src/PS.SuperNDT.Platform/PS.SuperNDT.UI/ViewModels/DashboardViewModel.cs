@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
@@ -10,7 +11,10 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
 {
     private readonly DispatcherTimer _timer;
 
-    private string _currentJob = "No Active Job";
+    private readonly WorkOrderService _workOrderService;
+    private readonly ImageService _imageService;
+
+    private string _currentJob = "No Active Work Order";
     private string _customer = "-";
     private int _totalImages;
     private int _totalJobs;
@@ -22,6 +26,9 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         get => _currentJob;
         set
         {
+            if (_currentJob == value)
+                return;
+
             _currentJob = value;
             OnPropertyChanged();
         }
@@ -32,6 +39,9 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         get => _customer;
         set
         {
+            if (_customer == value)
+                return;
+
             _customer = value;
             OnPropertyChanged();
         }
@@ -42,6 +52,9 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         get => _totalImages;
         set
         {
+            if (_totalImages == value)
+                return;
+
             _totalImages = value;
             OnPropertyChanged();
         }
@@ -52,6 +65,9 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         get => _totalJobs;
         set
         {
+            if (_totalJobs == value)
+                return;
+
             _totalJobs = value;
             OnPropertyChanged();
         }
@@ -62,6 +78,9 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         get => _openJobs;
         set
         {
+            if (_openJobs == value)
+                return;
+
             _openJobs = value;
             OnPropertyChanged();
         }
@@ -72,6 +91,9 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         get => _closedJobs;
         set
         {
+            if (_closedJobs == value)
+                return;
+
             _closedJobs = value;
             OnPropertyChanged();
         }
@@ -79,11 +101,14 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
 
     public DashboardViewModel()
     {
+        _workOrderService = new WorkOrderService();
+        _imageService = new ImageService();
+
         Refresh();
 
         _timer = new DispatcherTimer
         {
-            Interval = System.TimeSpan.FromSeconds(2)
+            Interval = TimeSpan.FromSeconds(2)
         };
 
         _timer.Tick += (_, _) => Refresh();
@@ -92,45 +117,61 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
 
     private void Refresh()
     {
-        var currentJobService =
-            CurrentJobService.Instance;
+        try
+        {
+            RefreshCurrentWorkOrder();
+            RefreshImageCount();
+            RefreshWorkOrderCounts();
+        }
+        catch
+        {
+            // Dashboard refresh must never stop the UI timer.
+        }
+    }
 
-        var currentWorkOrder =
-            currentJobService.CurrentWorkOrder;
+    private void RefreshCurrentWorkOrder()
+    {
+        var currentJobService = CurrentJobService.Instance;
 
-        var currentJob =
-            currentJobService.CurrentJob;
+        var currentWorkOrder = currentJobService.CurrentWorkOrder;
+        var currentJob = currentJobService.CurrentJob;
 
         CurrentJob =
             currentWorkOrder?.WorkOrderNumber ??
             currentJob?.JobNumber ??
-            "No Active Job";
+            "No Active Work Order";
 
         Customer =
             currentWorkOrder?.Customer ??
             currentJob?.Customer ??
             "-";
+    }
 
-        var imageService =
-            new ImageService();
+    private void RefreshImageCount()
+    {
+        TotalImages = _imageService.GetTotalImageCount();
+    }
 
-        TotalImages =
-            imageService.GetTotalImageCount();
+    private void RefreshWorkOrderCounts()
+    {
+        var workOrders = _workOrderService
+            .GetAll()
+            .ToList();
 
-        var jobService =
-            new JobService();
+        TotalJobs = workOrders.Count;
 
-        var jobs =
-            jobService.GetAll();
+        ClosedJobs = workOrders.Count(IsClosedWorkOrder);
 
-        TotalJobs =
-            jobs.Count;
+        OpenJobs = workOrders.Count(x => !IsClosedWorkOrder(x));
+    }
 
-        OpenJobs =
-            jobs.Count(x => !x.IsClosed);
-
-        ClosedJobs =
-            jobs.Count(x => x.IsClosed);
+    private static bool IsClosedWorkOrder(Models.WorkOrderModel workOrder)
+    {
+        return workOrder.IsClosed ||
+               string.Equals(
+                   workOrder.Status,
+                   "CLOSED",
+                   StringComparison.OrdinalIgnoreCase);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -69,7 +69,7 @@
         </Style>
 
         <!-- ================================================== -->
-        <!-- DARK COMBOBOX ITEM -->
+        <!-- COMBOBOX ITEM -->
         <!-- ================================================== -->
 
         <Style x:Key="DarkComboBoxItem"
@@ -122,8 +122,7 @@
         </Style>
 
         <!-- ================================================== -->
-        <!-- DARK COMBOBOX -->
-        <!-- CLOSED BOX + DROPDOWN -->
+        <!-- COMBOBOX -->
         <!-- ================================================== -->
 
         <Style TargetType="ComboBox">
@@ -166,10 +165,6 @@
 
                         <Grid>
 
-                            <!-- ================================== -->
-                            <!-- CLOSED BOX -->
-                            <!-- ================================== -->
-
                             <ToggleButton x:Name="ToggleButton"
                                           Focusable="False"
                                           ClickMode="Press"
@@ -191,8 +186,6 @@
 
                                             <Grid>
 
-                                                <!-- SELECTED VALUE -->
-
                                                 <ContentPresenter
                                                     Margin="9,0,32,0"
                                                     HorizontalAlignment="Left"
@@ -206,8 +199,6 @@
                                                     TextElement.Foreground="#FFFFFF"
                                                     TextElement.FontSize="12"
                                                     IsHitTestVisible="False"/>
-
-                                                <!-- ARROW -->
 
                                                 <TextBlock Text="▼"
                                                            Foreground="#B8C2CE"
@@ -226,10 +217,6 @@
                                 </ToggleButton.Template>
 
                             </ToggleButton>
-
-                            <!-- ================================== -->
-                            <!-- DROPDOWN -->
-                            <!-- ================================== -->
 
                             <Popup x:Name="PART_Popup"
                                    Placement="Bottom"
@@ -502,7 +489,7 @@
 
             <RowDefinition Height="*"/>
 
-            <RowDefinition Height="56"/>
+            <RowDefinition Height="104"/>
 
         </Grid.RowDefinitions>
 
@@ -519,7 +506,7 @@
                            FontWeight="Bold"
                            Foreground="#FFFFFF"/>
 
-                <TextBlock Text="Select a Job / Work Order to review its complete shot history"
+                <TextBlock Text="Select a Job / Work Order to manage RT and Review workflow"
                            Foreground="#9EAAB7"
                            FontSize="11"
                            Margin="0,4,0,0"/>
@@ -574,8 +561,6 @@
 
                 </Grid.ColumnDefinitions>
 
-                <!-- SEARCH -->
-
                 <StackPanel Grid.Column="0"
                             Margin="0,0,8,0">
 
@@ -585,8 +570,6 @@
                                             UpdateSourceTrigger=PropertyChanged}"/>
 
                 </StackPanel>
-
-                <!-- STATUS -->
 
                 <StackPanel Grid.Column="1"
                             Margin="0,0,8,0">
@@ -599,8 +582,6 @@
 
                 </StackPanel>
 
-                <!-- CUSTOMER -->
-
                 <StackPanel Grid.Column="2"
                             Margin="0,0,8,0">
 
@@ -611,8 +592,6 @@
                               Foreground="#FFFFFF"/>
 
                 </StackPanel>
-
-                <!-- OPERATOR -->
 
                 <StackPanel Grid.Column="3"
                             Margin="0,0,8,0">
@@ -625,14 +604,10 @@
 
                 </StackPanel>
 
-                <!-- REFRESH -->
-
                 <Button Grid.Column="4"
                         Content="REFRESH"
                         Command="{Binding RefreshCommand}"
                         VerticalAlignment="Bottom"/>
-
-                <!-- CLEAR -->
 
                 <Button Grid.Column="5"
                         Content="CLEAR FILTER"
@@ -720,7 +695,7 @@
 
                     <DataGridTextColumn Header="STATUS"
                                         Binding="{Binding OverallStatus}"
-                                        Width="95"/>
+                                        Width="110"/>
 
                     <DataGridCheckBoxColumn Header="CLOSED"
                                             Binding="{Binding IsClosed}"
@@ -733,32 +708,136 @@
         </Border>
 
         <!-- ================================================== -->
-        <!-- FOOTER -->
+        <!-- WORK ORDER CONTROL PANEL -->
         <!-- ================================================== -->
 
-        <Grid Grid.Row="3"
-              Margin="0,8,0,0">
+        <Border Grid.Row="3"
+                Background="#171C22"
+                BorderBrush="#46515E"
+                BorderThickness="1"
+                CornerRadius="4"
+                Margin="0,8,0,0"
+                Padding="10">
 
-            <TextBlock VerticalAlignment="Center"
-                       Text="Select a Job / Work Order from the table to continue"
-                       Foreground="#9EAAB7"
-                       FontSize="11"/>
+            <Grid>
 
-            <Button HorizontalAlignment="Right"
-                    Width="160"
-                    Height="38"
-                    Content="OPEN REVIEW"
-                    Command="{Binding OpenReviewCommand}"
-                    IsEnabled="{Binding HasSelectedJob}"
-                    Background="#2F6F9F"
-                    Foreground="#FFFFFF"
-                    BorderBrush="#75B9E6"
-                    FontSize="12"
-                    FontWeight="Bold"
-                    Margin="4,0,0,0"/>
+                <Grid.ColumnDefinitions>
 
-        </Grid>
+                    <ColumnDefinition Width="2.3*"/>
+
+                    <ColumnDefinition Width="1*"/>
+
+                    <ColumnDefinition Width="1*"/>
+
+                    <ColumnDefinition Width="1*"/>
+
+                    <ColumnDefinition Width="1*"/>
+
+                    <ColumnDefinition Width="1.25*"/>
+
+                </Grid.ColumnDefinitions>
+
+                <!-- SELECTED WORK ORDER -->
+
+                <StackPanel Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Margin="4,0,12,0">
+
+                    <TextBlock Text="SELECTED WORK ORDER"
+                               Foreground="#8E9AA8"
+                               FontSize="9"
+                               FontWeight="Bold"/>
+
+                    <TextBlock Text="{Binding SelectedJob.JobNumber,
+                                              TargetNullValue=NO WORK ORDER SELECTED}"
+                               Foreground="#FFFFFF"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Margin="0,2,0,0"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,4,0,0">
+
+                        <TextBlock Text="STATUS : "
+                                   Foreground="#8E9AA8"
+                                   FontSize="10"/>
+
+                        <TextBlock Text="{Binding SelectedJob.WorkOrderStatus,
+                                                  TargetNullValue=-}"
+                                   Foreground="#FFFFFF"
+                                   FontSize="10"
+                                   FontWeight="Bold"/>
+
+                        <TextBlock Text="     RESULT : "
+                                   Foreground="#8E9AA8"
+                                   FontSize="10"/>
+
+                        <TextBlock Text="{Binding SelectedJob.WorkOrderResult,
+                                                  TargetNullValue=-}"
+                                   Foreground="#FFFFFF"
+                                   FontSize="10"
+                                   FontWeight="Bold"/>
+
+                    </StackPanel>
+
+                </StackPanel>
+
+                <!-- START RT -->
+
+                <Button Grid.Column="1"
+                        Content="START RT"
+                        Command="{Binding StartRTCommand}"
+                        IsEnabled="{Binding CanStartRT}"
+                        VerticalAlignment="Center"
+                        Background="#315E45"
+                        BorderBrush="#65A77D"/>
+
+                <!-- START REVIEW -->
+
+                <Button Grid.Column="2"
+                        Content="START REVIEW"
+                        Command="{Binding StartReviewCommand}"
+                        IsEnabled="{Binding CanStartReview}"
+                        VerticalAlignment="Center"
+                        Background="#315A72"
+                        BorderBrush="#6FAACB"/>
+
+                <!-- CLOSE -->
+
+                <Button Grid.Column="3"
+                        Content="CLOSE"
+                        Command="{Binding CloseWorkOrderCommand}"
+                        IsEnabled="{Binding CanClose}"
+                        VerticalAlignment="Center"
+                        Background="#63453C"
+                        BorderBrush="#B78673"/>
+
+                <!-- REOPEN -->
+
+                <Button Grid.Column="4"
+                        Content="REOPEN"
+                        Command="{Binding ReopenWorkOrderCommand}"
+                        IsEnabled="{Binding CanReopen}"
+                        VerticalAlignment="Center"
+                        Background="#5B4A2F"
+                        BorderBrush="#B79A61"/>
+
+                <!-- OPEN REVIEW -->
+
+                <Button Grid.Column="5"
+                        Content="OPEN REVIEW"
+                        Command="{Binding OpenReviewCommand}"
+                        IsEnabled="{Binding HasSelectedJob}"
+                        VerticalAlignment="Center"
+                        Background="#2F6F9F"
+                        BorderBrush="#75B9E6"
+                        FontSize="12"/>
+
+            </Grid>
+
+        </Border>
 
     </Grid>
 
 </UserControl>
+

@@ -1,3 +1,4 @@
+﻿
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -14,6 +15,7 @@ namespace PS.SuperNDT.UI.ViewModels;
 
 public sealed class JobHistoryViewModel : INotifyPropertyChanged
 {
+    private readonly WorkOrderService _workOrderService;
     private readonly JobService _jobService;
     private readonly ImageService _imageService;
 
@@ -33,11 +35,14 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
         {
             "ALL",
             "OPEN",
-            "CLOSED",
+            "IN PROGRESS",
+            "RT",
+            "REVIEW",
             "PENDING",
             "ACCEPTED",
             "REJECTED",
-            "REPAIR"
+            "REPAIR",
+            "CLOSED"
         };
 
     public ObservableCollection<string> OperatorItems { get; } = new();
@@ -55,7 +60,6 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
             _searchText = value;
 
             OnPropertyChanged();
-
             ApplyFilter();
         }
     }
@@ -71,7 +75,6 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
             _selectedStatus = value;
 
             OnPropertyChanged();
-
             ApplyFilter();
         }
     }
@@ -87,7 +90,6 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
             _selectedOperator = value;
 
             OnPropertyChanged();
-
             ApplyFilter();
         }
     }
@@ -103,7 +105,6 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
             _selectedCustomer = value;
 
             OnPropertyChanged();
-
             ApplyFilter();
         }
     }
@@ -120,11 +121,31 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
 
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasSelectedJob));
+            OnPropertyChanged(nameof(CanStartRT));
+            OnPropertyChanged(nameof(CanStartReview));
+            OnPropertyChanged(nameof(CanClose));
+            OnPropertyChanged(nameof(CanReopen));
         }
     }
 
     public bool HasSelectedJob =>
         SelectedJob != null;
+
+    public bool CanStartRT =>
+        SelectedJob != null &&
+        !IsClosedSelected();
+
+    public bool CanStartReview =>
+        SelectedJob != null &&
+        !IsClosedSelected();
+
+    public bool CanClose =>
+        SelectedJob != null &&
+        !IsClosedSelected();
+
+    public bool CanReopen =>
+        SelectedJob != null &&
+        IsClosedSelected();
 
     public int TotalJobs =>
         FilteredJobs.Count;
@@ -135,8 +156,17 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
 
     public ICommand OpenReviewCommand { get; }
 
+    public ICommand StartRTCommand { get; }
+
+    public ICommand StartReviewCommand { get; }
+
+    public ICommand CloseWorkOrderCommand { get; }
+
+    public ICommand ReopenWorkOrderCommand { get; }
+
     public JobHistoryViewModel()
     {
+        _workOrderService = new WorkOrderService();
         _jobService = new JobService();
         _imageService = new ImageService();
 
@@ -152,6 +182,22 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
             new RelayCommand(
                 _ => OpenSelectedJob());
 
+        StartRTCommand =
+            new RelayCommand(
+                _ => StartSelectedRT());
+
+        StartReviewCommand =
+            new RelayCommand(
+                _ => StartSelectedReview());
+
+        CloseWorkOrderCommand =
+            new RelayCommand(
+                _ => CloseSelectedWorkOrder());
+
+        ReopenWorkOrderCommand =
+            new RelayCommand(
+                _ => ReopenSelectedWorkOrder());
+
         LoadJobs();
     }
 
@@ -159,8 +205,8 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
     {
         try
         {
-            var jobs =
-                _jobService
+            var workOrders =
+                _workOrderService
                     .GetAll()
                     .OrderByDescending(
                         x => x.CreatedOn)
@@ -168,30 +214,57 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
 
             Jobs.Clear();
 
-            foreach (var job in jobs)
+            foreach (var workOrder in workOrders)
             {
                 var row =
                     new JobHistoryRowModel
                     {
-                        JobId = job.Id,
-                        JobNumber = job.JobNumber,
-                        Customer = job.Customer,
-                        Project = job.Project,
-                        Component = job.Component,
-                        WeldNumber = job.WeldNumber,
-                        Operator = job.Operator,
-                        Procedure = job.Procedure,
-                        Material = job.Material,
-                        Remark = job.Remark,
-                        CreatedOn = job.CreatedOn,
-                        IsClosed = job.IsClosed
+                        JobId = workOrder.Id,
+                        JobNumber = workOrder.WorkOrderNumber,
+                        Customer = workOrder.Customer,
+                        Project = workOrder.Project,
+                        Component = workOrder.Component,
+                        Operator = workOrder.AssignedOperator,
+                        Procedure = workOrder.Procedure,
+                        Material = workOrder.Material,
+                        Remark = workOrder.Remark,
+                        CreatedOn = workOrder.CreatedOn,
+                        IsClosed = workOrder.IsClosed,
+
+                        WorkOrderStatus =
+                            workOrder.Status,
+
+                        WorkOrderResult =
+                            workOrder.Result,
+
+                        TotalPipes =
+                            workOrder.TotalPipes,
+
+                        CompletedShots =
+                            workOrder.CompletedShots
                     };
+
+                try
+                {
+                    var legacyJob =
+                        _jobService.Get(
+                            workOrder.Id);
+
+                    row.WeldNumber =
+                        legacyJob?.WeldNumber
+                        ?? string.Empty;
+                }
+                catch
+                {
+                    row.WeldNumber =
+                        string.Empty;
+                }
 
                 try
                 {
                     var images =
                         _imageService
-                            .GetByJob(job.Id);
+                            .GetByJob(workOrder.Id);
 
                     row.TotalShots =
                         images.Count;
@@ -243,15 +316,14 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
             }
 
             BuildFilterLists();
-
             ApplyFilter();
         }
         catch
         {
+            Jobs.Clear();
             FilteredJobs.Clear();
 
             BuildFilterLists();
-
             ApplyFilter();
         }
     }
@@ -265,7 +337,6 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
             SelectedCustomer;
 
         OperatorItems.Clear();
-
         OperatorItems.Add("ALL");
 
         foreach (
@@ -282,7 +353,6 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
         }
 
         CustomerItems.Clear();
-
         CustomerItems.Add("ALL");
 
         foreach (
@@ -356,7 +426,9 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
                         Contains(job.Operator, search) ||
                         Contains(job.Procedure, search) ||
                         Contains(job.Material, search) ||
-                        Contains(job.Remark, search))
+                        Contains(job.Remark, search) ||
+                        Contains(job.WorkOrderStatus, search) ||
+                        Contains(job.WorkOrderResult, search))
                 .ToList();
 
         FilteredJobs.Clear();
@@ -374,6 +446,18 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
         {
             SelectedJob = null;
         }
+
+        OnPropertyChanged(
+            nameof(CanStartRT));
+
+        OnPropertyChanged(
+            nameof(CanStartReview));
+
+        OnPropertyChanged(
+            nameof(CanClose));
+
+        OnPropertyChanged(
+            nameof(CanReopen));
     }
 
     private void ClearFilters()
@@ -400,43 +484,252 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
         ApplyFilter();
     }
 
-    private void OpenSelectedJob()
+    private void StartSelectedRT()
     {
         if (SelectedJob == null)
         {
-            MessageBox.Show(
-                "Please select a Job / Work Order first.",
-                "Job / Work Order",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
+            ShowSelectMessage();
             return;
         }
 
         try
         {
-            var job =
-                _jobService.Get(
+            var workOrder =
+                _workOrderService.Get(
                     SelectedJob.JobId);
 
-            if (job == null)
+            if (workOrder == null)
+            {
+                ShowNotFoundMessage();
+                return;
+            }
+
+            if (workOrder.IsClosed)
             {
                 MessageBox.Show(
-                    "Selected Job / Work Order could not be found.",
-                    "Job / Work Order",
+                    "This Work Order is closed. Reopen it before starting RT.",
+                    "Work Order",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    MessageBoxImage.Information);
 
                 return;
             }
 
-            /*
-             * IMPORTANT:
-             * Selected Job becomes the Current Job
-             * before ReviewView is created.
-             */
-            CurrentJobService.Instance.SetCurrentJob(
-                job);
+            _workOrderService.StartRT(
+                workOrder.Id);
+
+            CurrentJobService.Instance
+                .SetCurrentWorkOrder(workOrder);
+
+            MessageBox.Show(
+                $"RT started for Work Order:\n\n{workOrder.WorkOrderNumber}",
+                "RT Started",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            LoadJobs();
+            SelectRowById(workOrder.Id);
+        }
+        catch (Exception ex)
+        {
+            ShowError(
+                "Unable to start RT.",
+                ex);
+        }
+    }
+
+    private void StartSelectedReview()
+    {
+        if (SelectedJob == null)
+        {
+            ShowSelectMessage();
+            return;
+        }
+
+        try
+        {
+            var workOrder =
+                _workOrderService.Get(
+                    SelectedJob.JobId);
+
+            if (workOrder == null)
+            {
+                ShowNotFoundMessage();
+                return;
+            }
+
+            if (workOrder.IsClosed)
+            {
+                MessageBox.Show(
+                    "This Work Order is closed. Reopen it before starting Review.",
+                    "Work Order",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
+            _workOrderService.StartReview(
+                workOrder.Id);
+
+            CurrentJobService.Instance
+                .SetCurrentWorkOrder(workOrder);
+
+            MessageBox.Show(
+                $"Review started for Work Order:\n\n{workOrder.WorkOrderNumber}",
+                "Review Started",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            LoadJobs();
+            SelectRowById(workOrder.Id);
+        }
+        catch (Exception ex)
+        {
+            ShowError(
+                "Unable to start Review.",
+                ex);
+        }
+    }
+
+    private void CloseSelectedWorkOrder()
+    {
+        if (SelectedJob == null)
+        {
+            ShowSelectMessage();
+            return;
+        }
+
+        try
+        {
+            var workOrder =
+                _workOrderService.Get(
+                    SelectedJob.JobId);
+
+            if (workOrder == null)
+            {
+                ShowNotFoundMessage();
+                return;
+            }
+
+            if (workOrder.IsClosed)
+            {
+                MessageBox.Show(
+                    "This Work Order is already closed.",
+                    "Work Order",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
+            var result =
+                MessageBox.Show(
+                    $"Close Work Order?\n\n{workOrder.WorkOrderNumber}",
+                    "Close Work Order",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            _workOrderService.Close(
+                workOrder.Id);
+
+            if (CurrentJobService.Instance
+                .CurrentWorkOrder?.Id == workOrder.Id)
+            {
+                CurrentJobService.Instance.Clear();
+            }
+
+            LoadJobs();
+            SelectRowById(workOrder.Id);
+        }
+        catch (Exception ex)
+        {
+            ShowError(
+                "Unable to close Work Order.",
+                ex);
+        }
+    }
+
+    private void ReopenSelectedWorkOrder()
+    {
+        if (SelectedJob == null)
+        {
+            ShowSelectMessage();
+            return;
+        }
+
+        try
+        {
+            var workOrder =
+                _workOrderService.Get(
+                    SelectedJob.JobId);
+
+            if (workOrder == null)
+            {
+                ShowNotFoundMessage();
+                return;
+            }
+
+            if (!workOrder.IsClosed)
+            {
+                MessageBox.Show(
+                    "This Work Order is already open.",
+                    "Work Order",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
+            var result =
+                MessageBox.Show(
+                    $"Reopen Work Order?\n\n{workOrder.WorkOrderNumber}",
+                    "Reopen Work Order",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            _workOrderService.Reopen(
+                workOrder.Id);
+
+            LoadJobs();
+            SelectRowById(workOrder.Id);
+        }
+        catch (Exception ex)
+        {
+            ShowError(
+                "Unable to reopen Work Order.",
+                ex);
+        }
+    }
+
+    private void OpenSelectedJob()
+    {
+        if (SelectedJob == null)
+        {
+            ShowSelectMessage();
+            return;
+        }
+
+        try
+        {
+            var workOrder =
+                _workOrderService.Get(
+                    SelectedJob.JobId);
+
+            if (workOrder == null)
+            {
+                ShowNotFoundMessage();
+                return;
+            }
+
+            CurrentJobService.Instance
+                .SetCurrentWorkOrder(workOrder);
 
             var mainWindow =
                 Application.Current?.MainWindow;
@@ -452,11 +745,6 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
                 return;
             }
 
-            /*
-             * Create Review first.
-             * Then explicitly tell its ViewModel
-             * which Work Order was selected.
-             */
             var reviewView =
                 new ReviewView();
 
@@ -464,7 +752,7 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
                 is ReviewViewModel reviewViewModel)
             {
                 reviewViewModel.SelectedWorkOrder =
-                    job.JobNumber;
+                    workOrder.WorkOrderNumber;
             }
 
             if (mainWindow.DataContext
@@ -484,12 +772,55 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                $"Unable to open Review.\n\n{ex.Message}",
-                "Review Navigation Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            ShowError(
+                "Unable to open Review.",
+                ex);
         }
+    }
+
+    private void SelectRowById(Guid workOrderId)
+    {
+        var row =
+            FilteredJobs.FirstOrDefault(
+                x => x.JobId == workOrderId);
+
+        SelectedJob = row;
+    }
+
+    private bool IsClosedSelected()
+    {
+        return
+            SelectedJob != null &&
+            SelectedJob.IsClosed;
+    }
+
+    private static void ShowSelectMessage()
+    {
+        MessageBox.Show(
+            "Please select a Job / Work Order first.",
+            "Job / Work Order",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private static void ShowNotFoundMessage()
+    {
+        MessageBox.Show(
+            "Selected Work Order could not be found.",
+            "Work Order",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+    }
+
+    private static void ShowError(
+        string message,
+        Exception ex)
+    {
+        MessageBox.Show(
+            $"{message}\n\n{ex.Message}",
+            "Work Order Error",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
     }
 
     private static bool Contains(
@@ -515,3 +846,4 @@ public sealed class JobHistoryViewModel : INotifyPropertyChanged
                 propertyName));
     }
 }
+
