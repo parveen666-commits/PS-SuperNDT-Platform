@@ -92,23 +92,33 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
 
     private void Refresh()
     {
+        var currentJobService =
+            CurrentJobService.Instance;
+
+        var currentWorkOrder =
+            currentJobService.CurrentWorkOrder;
+
         var currentJob =
-            CurrentJobService.Instance.CurrentJob;
+            currentJobService.CurrentJob;
 
         CurrentJob =
+            currentWorkOrder?.WorkOrderNumber ??
             currentJob?.JobNumber ??
             "No Active Job";
 
         Customer =
+            currentWorkOrder?.Customer ??
             currentJob?.Customer ??
             "-";
 
-        var imageService = new ImageService();
+        var imageService =
+            new ImageService();
 
         TotalImages =
             imageService.GetTotalImageCount();
 
-        var jobService = new JobService();
+        var jobService =
+            new JobService();
 
         var jobs =
             jobService.GetAll();
