@@ -34,16 +34,54 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
     private string _reviewMessage = "Ready";
 
-    // ============================================================
-    // IMAGE FILTER
-    // ============================================================
-
     private double _brightness;
     private double _contrast;
     private double _gamma = 1.0;
 
     private double _snr;
     private string _snrText = "SNR: --";
+
+    // RTR FILTERS
+    private string _weldNumberFilter = string.Empty;
+    private string _jointNumberFilter = string.Empty;
+    private string _weldTypeFilter = string.Empty;
+    private string _weldingProcessFilter = string.Empty;
+    private string _iqiTypeFilter = string.Empty;
+    private string _iqiSensitivityFilter = string.Empty;
+    private string _filterFilter = string.Empty;
+    private string _grainFilter = string.Empty;
+    private string _defectTypeFilter = string.Empty;
+    private string _acceptanceCodeFilter = string.Empty;
+    private string _resultFilter = string.Empty;
+
+    private string _snrMinFilter = string.Empty;
+    private string _snrMaxFilter = string.Empty;
+    private string _densityMinFilter = string.Empty;
+    private string _densityMaxFilter = string.Empty;
+    private string _contrastMinFilter = string.Empty;
+    private string _contrastMaxFilter = string.Empty;
+    private string _bsrMinFilter = string.Empty;
+    private string _bsrMaxFilter = string.Empty;
+    private string _kvMinFilter = string.Empty;
+    private string _kvMaxFilter = string.Empty;
+    private string _maMinFilter = string.Empty;
+    private string _maMaxFilter = string.Empty;
+    private string _exposureMinFilter = string.Empty;
+    private string _exposureMaxFilter = string.Empty;
+    private string _sfdMinFilter = string.Empty;
+    private string _sfdMaxFilter = string.Empty;
+    private string _oddMinFilter = string.Empty;
+    private string _oddMaxFilter = string.Empty;
+    private string _unsharpnessMinFilter = string.Empty;
+    private string _unsharpnessMaxFilter = string.Empty;
+    private string _materialThicknessMinFilter = string.Empty;
+    private string _materialThicknessMaxFilter = string.Empty;
+    private string _fromDateFilter = string.Empty;
+    private string _toDateFilter = string.Empty;
+
+    private bool _reviewedOnlyFilter;
+    private bool _acceptedOnlyFilter;
+    private bool _rejectedOnlyFilter;
 
     public ObservableCollection<ImageRecordModel> Images { get; } =
         new();
@@ -100,6 +138,12 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     public RelayCommand ResetImageFilterCommand { get; }
 
     public RelayCommand ApplyImageFilterCommand { get; }
+
+    public RelayCommand DeleteShotCommand { get; }
+
+    public RelayCommand ApplyRtrFilterCommand { get; }
+
+    public RelayCommand ClearRtrFilterCommand { get; }
 
     // ============================================================
     // BASIC REVIEW FILTERS
@@ -286,6 +330,466 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     }
 
     // ============================================================
+    // RTR FILTER PROPERTIES
+    // ============================================================
+
+    public string WeldNumberFilter
+    {
+        get => _weldNumberFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_weldNumberFilter == value) return;
+            _weldNumberFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string JointNumberFilter
+    {
+        get => _jointNumberFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_jointNumberFilter == value) return;
+            _jointNumberFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string WeldTypeFilter
+    {
+        get => _weldTypeFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_weldTypeFilter == value) return;
+            _weldTypeFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string WeldingProcessFilter
+    {
+        get => _weldingProcessFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_weldingProcessFilter == value) return;
+            _weldingProcessFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string IqiTypeFilter
+    {
+        get => _iqiTypeFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_iqiTypeFilter == value) return;
+            _iqiTypeFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string IqiSensitivityFilter
+    {
+        get => _iqiSensitivityFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_iqiSensitivityFilter == value) return;
+            _iqiSensitivityFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string FilterFilter
+    {
+        get => _filterFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_filterFilter == value) return;
+            _filterFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string GrainFilter
+    {
+        get => _grainFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_grainFilter == value) return;
+            _grainFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string DefectTypeFilter
+    {
+        get => _defectTypeFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_defectTypeFilter == value) return;
+            _defectTypeFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string AcceptanceCodeFilter
+    {
+        get => _acceptanceCodeFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_acceptanceCodeFilter == value) return;
+            _acceptanceCodeFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ResultFilter
+    {
+        get => _resultFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_resultFilter == value) return;
+            _resultFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string SnrMinFilter
+    {
+        get => _snrMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_snrMinFilter == value) return;
+            _snrMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string SnrMaxFilter
+    {
+        get => _snrMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_snrMaxFilter == value) return;
+            _snrMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string DensityMinFilter
+    {
+        get => _densityMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_densityMinFilter == value) return;
+            _densityMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string DensityMaxFilter
+    {
+        get => _densityMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_densityMaxFilter == value) return;
+            _densityMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ContrastMinFilter
+    {
+        get => _contrastMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_contrastMinFilter == value) return;
+            _contrastMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ContrastMaxFilter
+    {
+        get => _contrastMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_contrastMaxFilter == value) return;
+            _contrastMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string BsrMinFilter
+    {
+        get => _bsrMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_bsrMinFilter == value) return;
+            _bsrMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string BsrMaxFilter
+    {
+        get => _bsrMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_bsrMaxFilter == value) return;
+            _bsrMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string KvMinFilter
+    {
+        get => _kvMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_kvMinFilter == value) return;
+            _kvMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string KvMaxFilter
+    {
+        get => _kvMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_kvMaxFilter == value) return;
+            _kvMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string MaMinFilter
+    {
+        get => _maMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_maMinFilter == value) return;
+            _maMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string MaMaxFilter
+    {
+        get => _maMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_maMaxFilter == value) return;
+            _maMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ExposureMinFilter
+    {
+        get => _exposureMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_exposureMinFilter == value) return;
+            _exposureMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ExposureMaxFilter
+    {
+        get => _exposureMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_exposureMaxFilter == value) return;
+            _exposureMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string SfdMinFilter
+    {
+        get => _sfdMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_sfdMinFilter == value) return;
+            _sfdMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string SfdMaxFilter
+    {
+        get => _sfdMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_sfdMaxFilter == value) return;
+            _sfdMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string OddMinFilter
+    {
+        get => _oddMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_oddMinFilter == value) return;
+            _oddMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string OddMaxFilter
+    {
+        get => _oddMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_oddMaxFilter == value) return;
+            _oddMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string UnsharpnessMinFilter
+    {
+        get => _unsharpnessMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_unsharpnessMinFilter == value) return;
+            _unsharpnessMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string UnsharpnessMaxFilter
+    {
+        get => _unsharpnessMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_unsharpnessMaxFilter == value) return;
+            _unsharpnessMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string MaterialThicknessMinFilter
+    {
+        get => _materialThicknessMinFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_materialThicknessMinFilter == value) return;
+            _materialThicknessMinFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string MaterialThicknessMaxFilter
+    {
+        get => _materialThicknessMaxFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_materialThicknessMaxFilter == value) return;
+            _materialThicknessMaxFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string FromDateFilter
+    {
+        get => _fromDateFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_fromDateFilter == value) return;
+            _fromDateFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string ToDateFilter
+    {
+        get => _toDateFilter;
+        set
+        {
+            value ??= string.Empty;
+            if (_toDateFilter == value) return;
+            _toDateFilter = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool ReviewedOnlyFilter
+    {
+        get => _reviewedOnlyFilter;
+        set
+        {
+            if (_reviewedOnlyFilter == value) return;
+            _reviewedOnlyFilter = value;
+            OnPropertyChanged();
+            ApplyFilter();
+        }
+    }
+
+    public bool AcceptedOnlyFilter
+    {
+        get => _acceptedOnlyFilter;
+        set
+        {
+            if (_acceptedOnlyFilter == value) return;
+            _acceptedOnlyFilter = value;
+            OnPropertyChanged();
+            ApplyFilter();
+        }
+    }
+
+    public bool RejectedOnlyFilter
+    {
+        get => _rejectedOnlyFilter;
+        set
+        {
+            if (_rejectedOnlyFilter == value) return;
+            _rejectedOnlyFilter = value;
+            OnPropertyChanged();
+            ApplyFilter();
+        }
+    }
+
+    // ============================================================
     // SELECTED IMAGE
     // ============================================================
 
@@ -342,6 +846,64 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             OnPropertyChanged();
         }
+    }
+
+    private void ClearRtrFilters()
+    {
+        _weldNumberFilter = string.Empty;
+        _jointNumberFilter = string.Empty;
+        _weldTypeFilter = string.Empty;
+        _weldingProcessFilter = string.Empty;
+        _iqiTypeFilter = string.Empty;
+        _iqiSensitivityFilter = string.Empty;
+        _filterFilter = string.Empty;
+        _grainFilter = string.Empty;
+        _defectTypeFilter = string.Empty;
+        _acceptanceCodeFilter = string.Empty;
+        _resultFilter = string.Empty;
+        _snrMinFilter = string.Empty; _snrMaxFilter = string.Empty;
+        _densityMinFilter = string.Empty; _densityMaxFilter = string.Empty;
+        _contrastMinFilter = string.Empty; _contrastMaxFilter = string.Empty;
+        _bsrMinFilter = string.Empty; _bsrMaxFilter = string.Empty;
+        _kvMinFilter = string.Empty; _kvMaxFilter = string.Empty;
+        _maMinFilter = string.Empty; _maMaxFilter = string.Empty;
+        _exposureMinFilter = string.Empty; _exposureMaxFilter = string.Empty;
+        _sfdMinFilter = string.Empty; _sfdMaxFilter = string.Empty;
+        _oddMinFilter = string.Empty; _oddMaxFilter = string.Empty;
+        _unsharpnessMinFilter = string.Empty; _unsharpnessMaxFilter = string.Empty;
+        _materialThicknessMinFilter = string.Empty; _materialThicknessMaxFilter = string.Empty;
+        _fromDateFilter = string.Empty; _toDateFilter = string.Empty;
+        _reviewedOnlyFilter = false; _acceptedOnlyFilter = false; _rejectedOnlyFilter = false;
+
+        foreach (string name in new[]
+        {
+            nameof(WeldNumberFilter), nameof(JointNumberFilter), nameof(WeldTypeFilter),
+            nameof(WeldingProcessFilter), nameof(IqiTypeFilter), nameof(IqiSensitivityFilter),
+            nameof(FilterFilter), nameof(GrainFilter), nameof(DefectTypeFilter), nameof(AcceptanceCodeFilter),
+            nameof(ResultFilter), nameof(SnrMinFilter), nameof(SnrMaxFilter), nameof(DensityMinFilter),
+            nameof(DensityMaxFilter), nameof(ContrastMinFilter), nameof(ContrastMaxFilter), nameof(BsrMinFilter),
+            nameof(BsrMaxFilter), nameof(KvMinFilter), nameof(KvMaxFilter), nameof(MaMinFilter), nameof(MaMaxFilter),
+            nameof(ExposureMinFilter), nameof(ExposureMaxFilter), nameof(SfdMinFilter), nameof(SfdMaxFilter),
+            nameof(OddMinFilter), nameof(OddMaxFilter), nameof(UnsharpnessMinFilter), nameof(UnsharpnessMaxFilter),
+            nameof(MaterialThicknessMinFilter), nameof(MaterialThicknessMaxFilter), nameof(FromDateFilter), nameof(ToDateFilter),
+            nameof(ReviewedOnlyFilter), nameof(AcceptedOnlyFilter), nameof(RejectedOnlyFilter)
+        }) OnPropertyChanged(name);
+
+        ApplyFilter();
+    }
+
+    private static bool RangeMatch(double value, string minText, string maxText)
+    {
+        if (double.TryParse(minText, out double min) && value < min) return false;
+        if (double.TryParse(maxText, out double max) && value > max) return false;
+        return true;
+    }
+
+    private static bool DateMatch(DateTime value, string fromText, string toText)
+    {
+        if (DateTime.TryParse(fromText, out DateTime from) && value.Date < from.Date) return false;
+        if (DateTime.TryParse(toText, out DateTime to) && value.Date > to.Date) return false;
+        return true;
     }
 
     // ============================================================
@@ -506,6 +1068,18 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         ApplyImageFilterCommand =
             new RelayCommand(
                 _ => ApplyImageFilter());
+
+        DeleteShotCommand =
+            new RelayCommand(
+                _ => DeleteSelectedShot());
+
+        ApplyRtrFilterCommand =
+            new RelayCommand(
+                _ => ApplyFilter());
+
+        ClearRtrFilterCommand =
+            new RelayCommand(
+                _ => ClearRtrFilters());
 
         CurrentJobService.Instance.CurrentJobChanged +=
             CurrentJobService_CurrentJobChanged;
@@ -818,6 +1392,9 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         string workOrder =
             SelectedWorkOrder.Trim();
 
+        Guid? previousSelectedId =
+            _selectedImage?.Id;
+
         var filtered =
             Images
                 .Where(
@@ -850,6 +1427,45 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                                 return false;
                             }
                         }
+
+                        if (!Contains(image.WeldNumber, WeldNumberFilter) ||
+                            !Contains(image.JointNumber, JointNumberFilter) ||
+                            !Contains(image.WeldType, WeldTypeFilter) ||
+                            !Contains(image.WeldingProcess, WeldingProcessFilter) ||
+                            !Contains(image.IQIType, IqiTypeFilter) ||
+                            !Contains(image.IQISensitivity, IqiSensitivityFilter) ||
+                            !Contains(image.Filter, FilterFilter) ||
+                            !Contains(image.Grain, GrainFilter))
+                        {
+                            return false;
+                        }
+
+                        if (ReviewedOnlyFilter && !image.ReviewedOn.HasValue) return false;
+                        if (AcceptedOnlyFilter && !string.Equals(image.ReviewStatus, "ACCEPTED", StringComparison.OrdinalIgnoreCase)) return false;
+                        if (RejectedOnlyFilter && !string.Equals(image.ReviewStatus, "REJECTED", StringComparison.OrdinalIgnoreCase)) return false;
+
+                        if (!RangeMatch(image.SNR, SnrMinFilter, SnrMaxFilter) ||
+                            !RangeMatch(image.Density, DensityMinFilter, DensityMaxFilter) ||
+                            !RangeMatch(image.Contrast, ContrastMinFilter, ContrastMaxFilter) ||
+                            !RangeMatch(image.BasicSpatialResolution, BsrMinFilter, BsrMaxFilter) ||
+                            !RangeMatch(image.KV, KvMinFilter, KvMaxFilter) ||
+                            !RangeMatch(image.MA, MaMinFilter, MaMaxFilter) ||
+                            !RangeMatch(image.ExposureTime, ExposureMinFilter, ExposureMaxFilter) ||
+                            !RangeMatch(image.SFD, SfdMinFilter, SfdMaxFilter) ||
+                            !RangeMatch(image.ODD, OddMinFilter, OddMaxFilter) ||
+                            !RangeMatch(image.GeometricUnsharpness, UnsharpnessMinFilter, UnsharpnessMaxFilter) ||
+                            !RangeMatch(image.MaterialThickness, MaterialThicknessMinFilter, MaterialThicknessMaxFilter))
+                        {
+                            return false;
+                        }
+
+                        if (!DateMatch(image.CapturedOn, FromDateFilter, ToDateFilter))
+                        {
+                            return false;
+                        }
+
+                        // DefectType / AcceptanceCode / Result are retained as filter inputs.
+                        // They will become active when defect-review records expose those fields.
 
                         if (string.IsNullOrWhiteSpace(
                                 search))
@@ -931,26 +1547,29 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
         OnPropertyChanged(
             nameof(RejectedImages));
 
-        if (_selectedImage != null &&
-            !FilteredImages.Any(
-                image =>
-                    image.Id ==
-                    _selectedImage.Id))
+        /*
+         * IMPORTANT:
+         * Never automatically move the user to Shot 1
+         * just because the current shot was updated.
+         */
+        if (previousSelectedId.HasValue)
         {
-            _selectedImage = null;
+            var sameImage =
+                FilteredImages.FirstOrDefault(
+                    image =>
+                        image.Id ==
+                        previousSelectedId.Value);
 
-            OnPropertyChanged(
-                nameof(SelectedImage));
-
-            LoadDisplayImage();
-
-            ImageViewerService.Instance.Clear();
-
-            RulerTicks.Clear();
-            ReviewHistory.Clear();
-
-            SNR = 0;
-            SNRText = "SNR: --";
+            if (sameImage != null)
+            {
+                if (!ReferenceEquals(
+                        _selectedImage,
+                        sameImage))
+                {
+                    SelectedImage =
+                        sameImage;
+                }
+            }
         }
 
         if (_selectedImage == null &&
@@ -1605,6 +2224,16 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
         try
         {
+            /*
+             * Keep the exact shot ID before doing anything.
+             * We will reselect this same shot at the end.
+             */
+            Guid selectedImageId =
+                _selectedImage.Id;
+
+            int selectedShotNumber =
+                _selectedImage.ShotNumber;
+
             string previousStatus =
                 _selectedImage.ReviewStatus;
 
@@ -1627,23 +2256,20 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 _selectedImage.FilePath;
 
             // ----------------------------------------------------
-            // 1. Get all saved defects BEFORE moving the image.
+            // 1. Get defects before moving the clean image.
             // ----------------------------------------------------
 
             var defects =
                 DefectService.Instance
                     .GetByImage(
-                        _selectedImage.Id)
+                        selectedImageId)
                     .ToList();
 
             // ----------------------------------------------------
-            // 2. Move the ORIGINAL image to the new status folder.
+            // 2. Move CLEAN ORIGINAL image to status folder.
             //
             // IMPORTANT:
-            // MoveImageToStatus() may return a unique filename
-            // when the destination already exists.
-            //
-            // We MUST use the returned path.
+            // We do NOT replace this image with reviewed PNG.
             // ----------------------------------------------------
 
             string movedFilePath =
@@ -1676,59 +2302,43 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                         movedFilePath);
                 }
 
-                // VERY IMPORTANT:
-                // Use the actual returned destination.
                 _selectedImage.FilePath =
                     movedFilePath;
             }
 
             // ----------------------------------------------------
-            // 3. Render the reviewed image directly into the same
-            //    status folder.
+            // 3. Export MARKED image separately.
             //
-            // ReviewedImageExportService creates:
+            // Clean image remains untouched.
             //
-            //     original_REVIEWED.png
+            // Example:
             //
-            // We immediately replace the clean status image with
-            // that rendered reviewed PNG.
+            // ACCEPT\
+            //     IMG_S001_xxx.png
             //
-            // Final result:
+            //     Reviewed\
+            //         IMG_S001_xxx_REVIEWED.png
             //
-            //     ACCEPT / original.png
-            //
-            // NOT:
-            //
-            //     ACCEPT / Reviewed / original.png
-            //     ACCEPT / original_REVIEWED.png
             // ----------------------------------------------------
 
+            string? reviewedPath = null;
+
             if (!string.IsNullOrWhiteSpace(
-                    folderStatus) &&
-                !string.IsNullOrWhiteSpace(
                     _selectedImage.FilePath) &&
                 File.Exists(
                     _selectedImage.FilePath) &&
                 DisplayImage != null)
             {
-                string exportedReviewedPath =
+                reviewedPath =
                     _reviewedImageExportService
                         .ExportReviewedPng(
                             _selectedImage,
                             DisplayImage,
                             defects);
-
-                ReplaceStatusImageWithReviewedImage(
-                    _selectedImage.FilePath,
-                    exportedReviewedPath);
-
-                // Keep database pointing to the ONE final file.
-                _selectedImage.FilePath =
-                    movedFilePath;
             }
 
             // ----------------------------------------------------
-            // 4. Save review status and audit information.
+            // 4. Save review status.
             // ----------------------------------------------------
 
             _selectedImage.ReviewStatus =
@@ -1742,6 +2352,10 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
 
             _imageService.Save(
                 _selectedImage);
+
+            // ----------------------------------------------------
+            // 5. Audit.
+            // ----------------------------------------------------
 
             try
             {
@@ -1757,12 +2371,22 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                     $"New Status: {status} | " +
                     $"Folder: {folderStatus} | " +
                     $"Reviewer: {reviewer} | " +
-                    $"Reviewed On: {reviewTime:yyyy-MM-dd HH:mm:ss}");
+                    $"Reviewed On: {reviewTime:yyyy-MM-dd HH:mm:ss}" +
+                    (string.IsNullOrWhiteSpace(reviewedPath)
+                        ? string.Empty
+                        : $" | Reviewed PNG: {reviewedPath}"));
             }
             catch
             {
-                // Audit failure must not prevent review status from being saved.
+                // Audit failure must not prevent review status save.
             }
+
+            // ----------------------------------------------------
+            // 6. Update the existing object only.
+            //
+            // DO NOT call ApplyFilter() here.
+            // That was causing the selected shot to jump.
+            // ----------------------------------------------------
 
             OnPropertyChanged(
                 nameof(SelectedImage));
@@ -1777,26 +2401,58 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
                 nameof(RejectedImages));
 
             // ----------------------------------------------------
-            // 5. Reload from the ACTUAL saved path.
+            // 7. Reload CLEAN image from its new status path.
             // ----------------------------------------------------
 
             LoadDisplayImage();
 
             LoadReviewHistory();
 
+            UpdateNavigationState();
+
+            UpdateRuler();
+
+            ImageViewerService.Instance.OpenImage(
+                _selectedImage);
+
             if (string.IsNullOrWhiteSpace(
                     folderStatus))
             {
                 ReviewMessage =
-                    $"Shot {_selectedImage.ShotNumber} marked {status}.";
+                    $"Shot {selectedShotNumber} marked {status}.";
+            }
+            else if (!string.IsNullOrWhiteSpace(
+                         reviewedPath))
+            {
+                ReviewMessage =
+                    $"Shot {selectedShotNumber} marked {status}. " +
+                    $"Clean image moved to {folderStatus}; " +
+                    $"marked copy saved in Reviewed.";
             }
             else
             {
                 ReviewMessage =
-                    $"Shot {_selectedImage.ShotNumber} marked {status} and moved to {folderStatus}.";
+                    $"Shot {selectedShotNumber} marked {status} " +
+                    $"and moved to {folderStatus}.";
             }
 
-            ApplyFilter();
+            /*
+             * Keep the exact same shot selected.
+             */
+            var sameShot =
+                Images.FirstOrDefault(
+                    image =>
+                        image.Id ==
+                        selectedImageId);
+
+            if (sameShot != null &&
+                !ReferenceEquals(
+                    _selectedImage,
+                    sameShot))
+            {
+                SelectedImage =
+                    sameShot;
+            }
         }
         catch (Exception ex)
         {
@@ -1806,87 +2462,259 @@ public sealed class ReviewViewModel : INotifyPropertyChanged
     }
 
     // ============================================================
-    // STATUS IMAGE REPLACEMENT
+    // DELETE SHOT
     // ============================================================
 
-    private static void ReplaceStatusImageWithReviewedImage(
-        string finalImagePath,
-        string exportedReviewedPath)
+    private void DeleteSelectedShot()
     {
-        if (string.IsNullOrWhiteSpace(
-                finalImagePath))
+        if (_selectedImage == null)
         {
-            throw new InvalidOperationException(
-                "Final image path is empty.");
+            ReviewMessage =
+                "Select a shot first.";
+
+            return;
         }
 
-        if (string.IsNullOrWhiteSpace(
-                exportedReviewedPath))
-        {
-            throw new InvalidOperationException(
-                "Reviewed image path is empty.");
-        }
+        ImageRecordModel imageToDelete =
+            _selectedImage;
 
-        if (!File.Exists(
-                exportedReviewedPath))
-        {
-            throw new FileNotFoundException(
-                "Reviewed image export was not created.",
-                exportedReviewedPath);
-        }
+        Guid imageId =
+            imageToDelete.Id;
 
-        string? directory =
-            Path.GetDirectoryName(
-                finalImagePath);
+        int shotNumber =
+            imageToDelete.ShotNumber;
 
-        if (string.IsNullOrWhiteSpace(directory))
-        {
-            throw new InvalidOperationException(
-                "Final image directory is invalid.");
-        }
+        string jobNumber =
+            imageToDelete.JobNumber ?? string.Empty;
 
-        Directory.CreateDirectory(
-            directory);
+        var result =
+            MessageBox.Show(
+                $"Delete Shot {shotNumber} permanently?\n\n" +
+                $"Work Order: {jobNumber}\n" +
+                $"Shot: {shotNumber}\n\n" +
+                "This will remove the shot from Review, " +
+                "its saved defects, and its reviewed PNG.",
+                "Delete Shot",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
 
-        // If the paths are already the same, nothing to do.
-        if (PathsEqual(
-                finalImagePath,
-                exportedReviewedPath))
+        if (result != MessageBoxResult.Yes)
         {
             return;
         }
 
-        // Remove the clean image.
-        if (File.Exists(
-                finalImagePath))
+        try
         {
-            File.Delete(
-                finalImagePath);
-        }
+            // ----------------------------------------------------
+            // 1. Remove all defect records for this image.
+            // ----------------------------------------------------
 
-        // Move the reviewed image into the exact original
-        // status filename.
-        File.Move(
-            exportedReviewedPath,
-            finalImagePath);
+            DefectService.Instance.ClearImage(
+                imageId);
+
+            // ----------------------------------------------------
+            // 2. Delete the clean image file.
+            // ----------------------------------------------------
+
+            DeleteImageFile(
+                imageToDelete.FilePath);
+
+            // ----------------------------------------------------
+            // 3. Delete all REVIEWED copies belonging to this image.
+            // ----------------------------------------------------
+
+            DeleteReviewedFiles(
+                imageId);
+
+            // ----------------------------------------------------
+            // 4. Delete database image record.
+            // ----------------------------------------------------
+
+            _imageService.Delete(
+                imageId);
+
+            // ----------------------------------------------------
+            // 5. Remove from in-memory collections.
+            // ----------------------------------------------------
+
+            var imageFromImages =
+                Images.FirstOrDefault(
+                    image =>
+                        image.Id ==
+                        imageId);
+
+            if (imageFromImages != null)
+            {
+                Images.Remove(
+                    imageFromImages);
+            }
+
+            var imageFromFiltered =
+                FilteredImages.FirstOrDefault(
+                    image =>
+                        image.Id ==
+                        imageId);
+
+            if (imageFromFiltered != null)
+            {
+                FilteredImages.Remove(
+                    imageFromFiltered);
+            }
+
+            // ----------------------------------------------------
+            // 6. Clear current viewer state.
+            // ----------------------------------------------------
+
+            _selectedImage = null;
+
+            DisplayImage = null;
+
+            ImageViewerService.Instance.Clear();
+
+            RulerTicks.Clear();
+            ReviewHistory.Clear();
+
+            SNR = 0;
+            SNRText = "SNR: --";
+
+            OnPropertyChanged(
+                nameof(SelectedImage));
+
+            OnPropertyChanged(
+                nameof(TotalImages));
+
+            OnPropertyChanged(
+                nameof(PendingImages));
+
+            OnPropertyChanged(
+                nameof(AcceptedImages));
+
+            OnPropertyChanged(
+                nameof(RejectedImages));
+
+            // ----------------------------------------------------
+            // 7. Select another shot only AFTER deletion.
+            //
+            // This is intentional. Delete is the only operation
+            // where automatic selection of another shot is allowed.
+            // ----------------------------------------------------
+
+            if (FilteredImages.Count > 0)
+            {
+                SelectedImage =
+                    FilteredImages[0];
+            }
+            else if (Images.Count > 0)
+            {
+                var nextImage =
+                    Images
+                        .OrderBy(
+                            image => image.CapturedOn)
+                        .ThenBy(
+                            image => image.JobNumber)
+                        .ThenBy(
+                            image => image.ShotNumber)
+                        .FirstOrDefault();
+
+                if (nextImage != null)
+                {
+                    SelectedImage =
+                        nextImage;
+                }
+            }
+
+            UpdateNavigationState();
+            UpdateRuler();
+
+            ReviewMessage =
+                $"Shot {shotNumber} deleted successfully.";
+        }
+        catch (Exception ex)
+        {
+            ReviewMessage =
+                $"Shot delete failed: {ex.Message}";
+        }
     }
 
-    private static bool PathsEqual(
-        string first,
-        string second)
+    private static void DeleteImageFile(
+        string? filePath)
     {
-        string firstFullPath =
-            Path.GetFullPath(
-                first);
+        if (string.IsNullOrWhiteSpace(
+                filePath))
+        {
+            return;
+        }
 
-        string secondFullPath =
-            Path.GetFullPath(
-                second);
+        try
+        {
+            if (File.Exists(
+                    filePath))
+            {
+                File.Delete(
+                    filePath);
+            }
+        }
+        catch
+        {
+            // Continue with database cleanup.
+        }
+    }
 
-        return string.Equals(
-            firstFullPath,
-            secondFullPath,
-            StringComparison.OrdinalIgnoreCase);
+    private static void DeleteReviewedFiles(
+        Guid imageId)
+    {
+        try
+        {
+            string jobsRoot =
+                Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Jobs");
+
+            if (!Directory.Exists(
+                    jobsRoot))
+            {
+                return;
+            }
+
+            string idText =
+                imageId.ToString("N");
+
+            var reviewedFiles =
+                Directory.GetFiles(
+                    jobsRoot,
+                    "*_REVIEWED.png",
+                    SearchOption.AllDirectories)
+                .Where(
+                    file =>
+                        Path.GetFileName(
+                            file)
+                        .Contains(
+                            idText,
+                            StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            foreach (string reviewedFile
+                     in reviewedFiles)
+            {
+                try
+                {
+                    if (File.Exists(
+                            reviewedFile))
+                    {
+                        File.Delete(
+                            reviewedFile);
+                    }
+                }
+                catch
+                {
+                    // Continue deleting remaining files.
+                }
+            }
+        }
+        catch
+        {
+            // Reviewed-file cleanup must not stop DB deletion.
+        }
     }
 
     // ============================================================

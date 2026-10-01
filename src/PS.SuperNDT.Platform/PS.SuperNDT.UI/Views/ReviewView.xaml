@@ -977,6 +977,23 @@
 
                     </ScrollViewer>
 
+                    <Border HorizontalAlignment="Left"
+                            VerticalAlignment="Bottom"
+                            Margin="12,0,0,12"
+                            Background="#151A20"
+                            BorderBrush="#46515E"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="8,4"
+                            IsHitTestVisible="False">
+
+                        <TextBlock Text="SHIFT + DRAG  •  MARK DEFECT"
+                                   Foreground="#C5CDD8"
+                                   FontSize="9"
+                                   FontWeight="SemiBold"/>
+
+                    </Border>
+
                 </Grid>
 
             </Border>
@@ -1158,12 +1175,22 @@
                                        Style="{StaticResource InfoLabel}"
                                        VerticalAlignment="Center"/>
 
-                            <TextBlock Grid.Row="9"
-                                       Grid.Column="1"
-                                       Text="{Binding SelectedImage.ReviewStatus}"
-                                       Foreground="White"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"/>
+                            <Border Grid.Row="9"
+                                    Grid.Column="1"
+                                    Background="#20252C"
+                                    BorderBrush="#566170"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    Padding="7,2"
+                                    HorizontalAlignment="Left">
+
+                                <TextBlock Text="{Binding SelectedImage.ReviewStatus}"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           FontSize="10"
+                                           VerticalAlignment="Center"/>
+
+                            </Border>
 
                         </Grid>
 
@@ -1177,6 +1204,26 @@
 
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center">
+
+                            <Button Content="◀ PREVIOUS"
+                                    Width="96"
+                                    Height="30"
+                                    Command="{Binding PreviousImageCommand}"
+                                    Style="{StaticResource ActionButton}"
+                                    ToolTip="Previous shot"/>
+
+                            <Button Content="NEXT ▶"
+                                    Width="96"
+                                    Height="30"
+                                    Command="{Binding NextImageCommand}"
+                                    Style="{StaticResource ActionButton}"
+                                    ToolTip="Next shot"/>
+
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,2,0,0">
 
                             <Button Content="ACCEPT"
                                     Width="82"
@@ -1218,6 +1265,17 @@
                                 FontWeight="Bold"
                                 FontSize="10"
                                 ToolTip="Save a reviewed PNG copy without modifying the original image."/>
+
+                        <Button Content="DELETE SHOT"
+                                Width="262"
+                                Height="28"
+                                Margin="3,3,3,0"
+                                Command="{Binding DeleteShotCommand}"
+                                Background="#3A2A2D"
+                                Foreground="#FFB8BE"
+                                BorderBrush="#70444A"
+                                FontSize="9"
+                                ToolTip="Permanently delete the selected shot and its review data."/>
 
                     </StackPanel>
 

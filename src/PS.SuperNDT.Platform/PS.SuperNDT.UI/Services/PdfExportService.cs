@@ -12,18 +12,18 @@ namespace PS.SuperNDT.UI.Services;
 public sealed class PdfExportService
 {
     public string Export(
-        string reportContent,
-        string reportNumber)
+    string reportContent,
+    string reportNumber)
     {
         if (string.IsNullOrWhiteSpace(reportContent))
         {
             throw new ArgumentException(
-                "Report content cannot be empty.",
-                nameof(reportContent));
+            "Report content cannot be empty.",
+            nameof(reportContent));
         }
 
-        QuestPDF.Settings.License =
-            LicenseType.Community;
+    QuestPDF.Settings.License =
+        LicenseType.Community;
 
         string filePath =
             CreateReportFilePath(reportNumber);
@@ -150,21 +150,17 @@ public sealed class PdfExportService
                             column,
                             "EXPOSURE PARAMETERS");
 
-                        column.Item()
-                            .Text(
-                                GetValue(
-                                    report.ExposureParameters))
-                            .FontSize(8);
+                        AddExposureTable(
+                            column,
+                            report);
 
                         AddSectionTitle(
                             column,
                             "INSPECTION RESULT");
 
-                        column.Item()
-                            .Text(
-                                GetValue(
-                                    report.Result))
-                            .FontSize(9);
+                        AddResultBox(
+                            column,
+                            report.Result);
 
                         if (!string.IsNullOrWhiteSpace(
                                 report.Remarks))
@@ -191,7 +187,7 @@ public sealed class PdfExportService
                         {
                             AddSectionTitle(
                                 column,
-                                "REVIEWED INSPECTION IMAGES");
+                                "INSPECTION IMAGES");
 
                             AddImages(
                                 column,
@@ -342,6 +338,122 @@ public sealed class PdfExportService
             });
     }
 
+    private static void AddExposureTable(
+        ColumnDescriptor column,
+        ReportDataModel report)
+    {
+        if (string.IsNullOrWhiteSpace(
+                report.ExposureParameters))
+        {
+            column.Item()
+                .Text("No exposure parameters recorded.")
+                .FontSize(8);
+
+            return;
+        }
+
+        List<(string Label, string Value)> parameters =
+            ParseExposureParameters(
+                report.ExposureParameters);
+
+        if (parameters.Count == 0)
+        {
+            column.Item()
+                .Text(GetValue(report.ExposureParameters))
+                .FontSize(8);
+
+            return;
+        }
+
+        column.Item()
+            .Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.ConstantColumn(130);
+                    columns.RelativeColumn();
+                    columns.ConstantColumn(130);
+                    columns.RelativeColumn();
+                });
+
+                for (int index = 0;
+                     index < parameters.Count;
+                     index += 2)
+                {
+                    var first = parameters[index];
+
+                    AddTableRow(
+                        table,
+                        first.Label,
+                        first.Value,
+                        index + 1 < parameters.Count
+                            ? parameters[index + 1].Label
+                            : string.Empty,
+                        index + 1 < parameters.Count
+                            ? parameters[index + 1].Value
+                            : string.Empty);
+                }
+            });
+    }
+
+    private static List<(string Label, string Value)>
+        ParseExposureParameters(
+            string exposureParameters)
+    {
+        var result =
+            new List<(string Label, string Value)>();
+
+        string[] lines =
+            exposureParameters
+                .Split(
+                    new[] { '\r', '\n' },
+                    StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string line in lines)
+        {
+            int separator =
+                line.IndexOf(':');
+
+            if (separator <= 0)
+            {
+                continue;
+            }
+
+            string label =
+                line[..separator].Trim();
+
+            string value =
+                line[(separator + 1)..].Trim();
+
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                continue;
+            }
+
+            result.Add(
+                (label, value));
+        }
+
+        return result;
+    }
+
+    private static void AddResultBox(
+        ColumnDescriptor column,
+        string? result)
+    {
+        string value =
+            string.IsNullOrWhiteSpace(result)
+                ? "PENDING"
+                : result.Trim().ToUpperInvariant();
+
+        column.Item()
+            .Border(0.8f)
+            .Padding(6)
+            .Text(value)
+            .Bold()
+            .FontSize(11);
+    }
+
     private static void AddTableRow(
         TableDescriptor table,
         string label1,
@@ -352,7 +464,7 @@ public sealed class PdfExportService
         table.Cell()
             .Border(0.5f)
             .Padding(3)
-            .Text(label1)
+            .Text(GetValue(label1))
             .Bold()
             .FontSize(7);
 
@@ -365,7 +477,7 @@ public sealed class PdfExportService
         table.Cell()
             .Border(0.5f)
             .Padding(3)
-            .Text(label2)
+            .Text(GetValue(label2))
             .Bold()
             .FontSize(7);
 
@@ -506,7 +618,7 @@ public sealed class PdfExportService
         if (validImages.Count == 0)
         {
             column.Item()
-                .Text("No reviewed image files were found.")
+                .Text("No image files were found.")
                 .FontSize(8);
 
             return;
@@ -566,8 +678,8 @@ public sealed class PdfExportService
     private static string BuildImageCaption(
         ReportImageModel image)
     {
-        List<string> parts =
-            new();
+        var parts =
+            new List<string>();
 
         if (!string.IsNullOrWhiteSpace(
                 image.Description))
@@ -657,4 +769,6 @@ public sealed class PdfExportService
 
         return value;
     }
+
+
 }

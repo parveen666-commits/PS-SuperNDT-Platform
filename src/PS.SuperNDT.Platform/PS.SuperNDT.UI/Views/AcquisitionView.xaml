@@ -49,7 +49,7 @@
                                    Foreground="#B0BEC5"
                                    FontSize="11"/>
 
-                        <TextBlock Text="{Binding CurrentWorkOrder}"
+                        <TextBlock Text="{Binding CurrentWorkOrder, Mode=OneWay}"
                                    Foreground="#00E5FF"
                                    FontSize="13"
                                    FontWeight="Bold"/>
@@ -86,15 +86,9 @@
 
             <Grid.ColumnDefinitions>
 
-                <!-- SMALLER INFORMATION AREA -->
-
                 <ColumnDefinition Width="245"/>
 
-                <!-- LARGE RT VIEW -->
-
                 <ColumnDefinition Width="*"/>
-
-                <!-- SMALLER STATUS AREA -->
 
                 <ColumnDefinition Width="245"/>
 
@@ -124,7 +118,7 @@
                         <TextBox Height="30"
                                  FontSize="12"
                                  IsReadOnly="True"
-                                 Text="{Binding CurrentWorkOrder}"/>
+                                 Text="{Binding CurrentWorkOrder, Mode=OneWay}"/>
 
                         <TextBlock Text="Current Job"
                                    Foreground="#B0BEC5"
@@ -134,7 +128,7 @@
                         <TextBox Height="30"
                                  FontSize="12"
                                  IsReadOnly="True"
-                                 Text="{Binding CurrentJob}"/>
+                                 Text="{Binding CurrentJob, Mode=OneWay}"/>
 
                         <TextBlock Text="Pipe ID"
                                    Foreground="#B0BEC5"
@@ -341,7 +335,7 @@
                                            Foreground="#B0BEC5"
                                            FontSize="10"/>
 
-                                <TextBlock Text="{Binding CurrentWorkOrder}"
+                                <TextBlock Text="{Binding CurrentWorkOrder, Mode=OneWay}"
                                            Foreground="#00E5FF"
                                            FontSize="14"
                                            FontWeight="Bold"/>
@@ -503,3 +497,4 @@
     </Grid>
 
 </UserControl>
+

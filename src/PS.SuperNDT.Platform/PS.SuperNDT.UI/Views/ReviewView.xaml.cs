@@ -1782,23 +1782,13 @@ public partial class ReviewView : UserControl
     private void LoadSavedDefects()
     {
         /*
-         * The XAML DefectRectangle is the temporary rectangle used
-         * while the user is drawing a new defect.
-         *
-         * Accept / Reject / Pending / zoom / image refresh can call
-         * LoadSavedDefects() again. If the temporary rectangle is
-         * not hidden first, it can remain on screen together with
-         * the real persisted defect rectangle and look like an
-         * extra defect box.
+         * Temporary XAML rectangle is only used while drawing.
+         * Always hide it before loading persisted defects.
          */
         HideTemporaryDefectRectangle();
 
         /*
-         * Remove every generated/persisted defect visual before
-         * rebuilding the overlay from the database.
-         *
-         * This also removes any old rectangle/text label left by
-         * an earlier version of the review code.
+         * Remove all runtime defect visuals before rebuilding.
          */
         ClearPersistedDefectRectangles();
 
@@ -1810,6 +1800,35 @@ public partial class ReviewView : UserControl
 
         SyncDefectOverlay();
 
+        /*
+         * IMPORTANT FIX:
+         *
+         * Accept / Reject / Pending creates a reviewed PNG in which
+         * the defect rectangle is permanently drawn into the image.
+         *
+         * The defect record is still stored in DefectService.
+         *
+         * If we draw that database defect again here, the same defect
+         * appears twice:
+         *
+         * 1. Once inside the PNG.
+         * 2. Once as a runtime overlay.
+         *
+         * ReviewedOn is set when the review status is saved.
+         *
+         * Therefore an already-reviewed image must NOT receive
+         * another runtime defect overlay.
+         */
+        if (viewModel.SelectedImage.ReviewedOn.HasValue)
+        {
+            _selectedDefectId = null;
+            return;
+        }
+
+        /*
+         * For a normal acquisition / unreviewed image, load the
+         * persisted defects as interactive runtime overlays.
+         */
         var defects =
             DefectService.Instance.GetByImage(
                 viewModel.SelectedImage.Id);
@@ -1837,19 +1856,14 @@ public partial class ReviewView : UserControl
         }
 
         /*
-         * DefectOverlayCanvas contains only runtime defect visuals.
+         * DefectOverlayCanvas contains:
          *
-         * DefectRectangle is the single XAML drawing rectangle used
-         * while the user is currently drawing a new defect.
+         * - DefectRectangle = temporary drawing rectangle
+         * - everything else = generated persisted defect visuals
          *
-         * Everything else inside this canvas is a generated/persisted
-         * defect visual and must be removed before rebuilding the
-         * overlay from the database.
-         *
-         * This also removes any old TextBlock/label/rectangle that may
-         * have been created by an earlier version of the review code.
+         * Remove all generated visuals while preserving the
+         * temporary XAML rectangle.
          */
-
         for (
             int i =
                 DefectOverlayCanvas.Children.Count - 1;

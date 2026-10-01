@@ -212,7 +212,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
             if (value >= ShotSize)
             {
-                value = Math.Max(0, ShotSize - 1);
+                value = Math.Max(
+                    0,
+                    ShotSize - 1);
             }
 
             if (Math.Abs(_overlap - value) < 0.001)
@@ -230,7 +232,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
     public double EffectiveStep =>
         _shotPlan?.StepLengthMm ??
-        Math.Max(1, ShotSize - Overlap);
+        Math.Max(
+            1,
+            ShotSize - Overlap);
 
     public int TotalShots =>
         _shotPlan?.TotalShots ??
@@ -287,7 +291,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         CurrentJobService.Instance.CurrentWorkOrderChanged +=
             (_, _) =>
             {
-                OnPropertyChanged(nameof(CurrentWorkOrder));
+                OnPropertyChanged(
+                    nameof(CurrentWorkOrder));
+
                 UpdateCurrentJob();
             };
 
@@ -353,7 +359,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 "Open a job before acquisition";
         }
 
-        OnPropertyChanged(nameof(CurrentWorkOrder));
+        OnPropertyChanged(
+            nameof(CurrentWorkOrder));
 
         RebuildShotPlan();
     }
@@ -388,7 +395,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             CurrentJobService.Instance.CurrentJob;
 
         Guid jobId =
-            job?.Id ?? Guid.Empty;
+            job?.Id ??
+            Guid.Empty;
 
         if (PipeLength <= 0 ||
             ShotSize <= 0 ||
@@ -414,8 +422,15 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 PipeLengthMm = PipeLength,
                 ShotLengthMm = ShotSize,
                 OverlapMm = Overlap,
+
                 RulerEnabled = true,
-                PipeIdOverlayEnabled = true,
+
+                /*
+                 * Pipe ID must NOT be burned
+                 * into the RT image.
+                 */
+                PipeIdOverlayEnabled = false,
+
                 AcquisitionMode = "Manual",
                 Direction = "LeftToRight",
                 Status = "Ready"
@@ -443,23 +458,49 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             shots.Add(
                 new ShotPlanItemModel
                 {
-                    ShotPlanId = _shotPlan.Id,
-                    JobId = jobId,
-                    PipeId = PipeId,
-                    ShotNumber = shotNumber,
-                    StartPositionMm = start,
-                    EndPositionMm = end,
-                    NominalShotLengthMm = ShotSize,
-                    ActualCoverageMm = end - start,
-                    OverlapMm = Overlap,
-                    RulerStartMm = start,
-                    RulerEndMm = end,
-                    AcquisitionMode = "Manual",
-                    Status = "Pending"
+                    ShotPlanId =
+                        _shotPlan.Id,
+
+                    JobId =
+                        jobId,
+
+                    PipeId =
+                        PipeId,
+
+                    ShotNumber =
+                        shotNumber,
+
+                    StartPositionMm =
+                        start,
+
+                    EndPositionMm =
+                        end,
+
+                    NominalShotLengthMm =
+                        ShotSize,
+
+                    ActualCoverageMm =
+                        end - start,
+
+                    OverlapMm =
+                        Overlap,
+
+                    RulerStartMm =
+                        start,
+
+                    RulerEndMm =
+                        end,
+
+                    AcquisitionMode =
+                        "Manual",
+
+                    Status =
+                        "Pending"
                 });
         }
 
-        _shotPlan.SetShots(shots);
+        _shotPlan.SetShots(
+            shots);
 
         if (previousShot > 1 &&
             previousShot <= totalShots)
@@ -476,14 +517,29 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
     private void OnShotPlanChanged()
     {
-        OnPropertyChanged(nameof(ShotPlan));
-        OnPropertyChanged(nameof(HasShotPlan));
-        OnPropertyChanged(nameof(TotalShots));
-        OnPropertyChanged(nameof(CurrentShotNumber));
-        OnPropertyChanged(nameof(CurrentShotStart));
-        OnPropertyChanged(nameof(CurrentShotEnd));
-        OnPropertyChanged(nameof(EffectiveStep));
-        OnPropertyChanged(nameof(ShotPosition));
+        OnPropertyChanged(
+            nameof(ShotPlan));
+
+        OnPropertyChanged(
+            nameof(HasShotPlan));
+
+        OnPropertyChanged(
+            nameof(TotalShots));
+
+        OnPropertyChanged(
+            nameof(CurrentShotNumber));
+
+        OnPropertyChanged(
+            nameof(CurrentShotStart));
+
+        OnPropertyChanged(
+            nameof(CurrentShotEnd));
+
+        OnPropertyChanged(
+            nameof(EffectiveStep));
+
+        OnPropertyChanged(
+            nameof(ShotPosition));
     }
 
     private void MoveToNextShot()
@@ -529,6 +585,11 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         AcquisitionStatus =
             "Connecting to detector...";
 
+        /*
+         * Virtual detector for current development.
+         * Real LAN / Fiber detector drivers will replace
+         * this connection layer later.
+         */
         ConnectionStatus =
             "Connected";
 
@@ -632,9 +693,19 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 filePath,
                 FrameNumber);
 
+            /*
+             * Important:
+             *
+             * The saved RT image must remain clean.
+             * Only the bottom measurement ruler is added.
+             *
+             * No Pipe ID.
+             * No Shot number.
+             * No Frame number.
+             * No operator text.
+             */
             AddPermanentShotOverlay(
                 filePath,
-                PipeId,
                 shot);
 
             string shotRemarks =
@@ -649,26 +720,47 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             _capturedImage =
                 new ImageRecordModel
                 {
-                    JobId = job.Id,
-                    JobNumber = job.JobNumber,
-                    PipeId = PipeId,
-                    Operator = job.Operator,
+                    JobId =
+                        job.Id,
 
-                    FrameNumber = FrameNumber,
+                    JobNumber =
+                        job.JobNumber,
 
-                    FileName = fileName,
-                    FilePath = filePath,
+                    PipeId =
+                        PipeId,
+
+                    Operator =
+                        job.Operator,
+
+                    FrameNumber =
+                        FrameNumber,
+
+                    FileName =
+                        fileName,
+
+                    FilePath =
+                        filePath,
 
                     DetectorName =
                         "Virtual Detector",
 
-                    KV = KV,
-                    MA = MA,
-                    ExposureTime = ExposureTime,
+                    KV =
+                        KV,
 
-                    ImageWidth = 1024,
-                    ImageHeight = 768,
-                    BitDepth = 8,
+                    MA =
+                        MA,
+
+                    ExposureTime =
+                        ExposureTime,
+
+                    ImageWidth =
+                        1024,
+
+                    ImageHeight =
+                        768,
+
+                    BitDepth =
+                        8,
 
                     ShotNumber =
                         shot.ShotNumber,
@@ -699,7 +791,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 };
 
             CapturedImageSource =
-                CreateImageSource(filePath);
+                CreateImageSource(
+                    filePath);
 
             AcquisitionStatus =
                 $"Pipe {PipeId} | " +
@@ -717,6 +810,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
             FrameNumber--;
 
             _capturedImage = null;
+
             CapturedImageSource = null;
 
             AcquisitionStatus =
@@ -761,7 +855,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
     private static void AddPermanentShotOverlay(
         string filePath,
-        string pipeId,
         ShotPlanItemModel shot)
     {
         const int width = 1024;
@@ -792,6 +885,9 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         using (DrawingContext dc =
                visual.RenderOpen())
         {
+            /*
+             * Original radiography image.
+             */
             dc.DrawImage(
                 sourceFrame,
                 new Rect(
@@ -800,15 +896,23 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                     width,
                     height));
 
-            var topBackground =
-                new SolidColorBrush(
-                    Color.FromArgb(
-                        205,
-                        0,
-                        0,
-                        0));
-
-            topBackground.Freeze();
+            /*
+             * =====================================================
+             * CLEAN RT IMAGE
+             * =====================================================
+             *
+             * The RT image must NOT contain:
+             *
+             * - Pipe ID
+             * - Work Order
+             * - Shot number
+             * - Frame number
+             * - Operator name
+             * - Position text
+             * - Any other acquisition text
+             *
+             * Only the measurement ruler is permanently stored.
+             */
 
             var rulerBackground =
                 new SolidColorBrush(
@@ -822,9 +926,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
             var whiteBrush =
                 Brushes.White;
-
-            var cyanBrush =
-                Brushes.Cyan;
 
             var yellowBrush =
                 Brushes.Yellow;
@@ -850,58 +951,33 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
             majorTickPen.Freeze();
 
-            /*
-             * TOP INFORMATION
-             */
+            double rulerLeft =
+                35;
 
-            dc.DrawRoundedRectangle(
-                topBackground,
-                null,
-                new Rect(
-                    20,
-                    18,
-                    500,
-                    68),
-                6,
-                6);
+            double rulerRight =
+                width - 35;
 
-            DrawText(
-                dc,
-                $"PIPE ID: {pipeId}",
-                35,
-                25,
-                22,
-                cyanBrush);
+            double rulerY =
+                height - 35;
 
-            DrawText(
-                dc,
-                $"SHOT {shot.ShotNumber} | " +
-                $"{shot.StartPositionMm:0} - " +
-                $"{shot.EndPositionMm:0} mm",
-                35,
-                53,
-                16,
-                whiteBrush);
+            double rulerTop =
+                height - 82;
 
             /*
-             * FULL FRAME RULER
+             * Bottom ruler background.
              */
-
-            const double rulerLeft = 32;
-            const double rulerRight = 992;
-            const double rulerY = 700;
-
-            dc.DrawRoundedRectangle(
+            dc.DrawRectangle(
                 rulerBackground,
                 null,
                 new Rect(
-                    12,
-                    638,
-                    1000,
-                    116),
-                5,
-                5);
+                    0,
+                    rulerTop,
+                    width,
+                    height - rulerTop));
 
+            /*
+             * Main ruler line.
+             */
             dc.DrawLine(
                 rulerPen,
                 new Point(
@@ -918,23 +994,35 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 shot.RulerEndMm;
 
             double span =
-                rulerEnd - rulerStart;
+                rulerEnd -
+                rulerStart;
 
             if (span <= 0)
             {
-                span = 1;
+                span =
+                    Math.Max(
+                        1,
+                        shot.ActualCoverageMm);
             }
 
             int firstTick =
                 (int)Math.Ceiling(
-                    rulerStart / 10.0) * 10;
+                    rulerStart / 10.0) *
+                10;
 
-            for (double position = firstTick;
-                 position <= rulerEnd + 0.001;
+            /*
+             * 10 mm minor ticks.
+             * 50 mm major ticks.
+             */
+            for (double position =
+                     firstTick;
+                 position <=
+                     rulerEnd + 0.001;
                  position += 10)
             {
                 double ratio =
-                    (position - rulerStart) /
+                    (position -
+                     rulerStart) /
                     span;
 
                 ratio =
@@ -945,7 +1033,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
 
                 double x =
                     rulerLeft +
-                    ((rulerRight - rulerLeft) *
+                    ((rulerRight -
+                      rulerLeft) *
                      ratio);
 
                 bool isMajor =
@@ -967,8 +1056,13 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                         rulerY),
                     new Point(
                         x,
-                        rulerY - tickHeight));
+                        rulerY -
+                        tickHeight));
 
+                /*
+                 * Only ruler measurement numbers.
+                 * These are not acquisition information.
+                 */
                 if (isMajor)
                 {
                     DrawTextCentered(
@@ -980,17 +1074,6 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                         yellowBrush);
                 }
             }
-
-            /*
-             * IMPORTANT:
-             *
-             * PIPE POSITION title and the
-             * rulerStart/rulerEnd text have
-             * intentionally been removed.
-             *
-             * The ruler itself remains.
-             * The 50 mm labels remain.
-             */
         }
 
         var rendered =
@@ -1020,7 +1103,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 FileAccess.Write,
                 FileShare.None);
 
-        encoder.Save(output);
+        encoder.Save(
+            output);
     }
 
     private static void DrawText(
@@ -1293,7 +1377,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                  dy++)
             {
                 int y =
-                    centerY + dy;
+                    centerY +
+                    dy;
 
                 if (y < materialTop ||
                     y >= materialBottom)
@@ -1302,7 +1387,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 }
 
                 double distance =
-                    Math.Abs(dy);
+                    Math.Abs(
+                        dy);
 
                 byte weldIntensity =
                     (byte)Math.Clamp(
@@ -1367,7 +1453,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
          * CIRCUMFERENTIAL / HORIZONTAL WELD
          */
 
-        const int circumferentialCenterX = 735;
+        const int circumferentialCenterX =
+            735;
 
         for (int y = materialTop;
              y < materialBottom;
@@ -1387,7 +1474,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                  dx++)
             {
                 int x =
-                    centerX + dx;
+                    centerX +
+                    dx;
 
                 if (x < 25 ||
                     x >= width - 25)
@@ -1396,7 +1484,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 }
 
                 double distance =
-                    Math.Abs(dx);
+                    Math.Abs(
+                        dx);
 
                 byte weldIntensity =
                     (byte)Math.Clamp(
@@ -1564,7 +1653,8 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 FileAccess.Write,
                 FileShare.None);
 
-        encoder.Save(stream);
+        encoder.Save(
+            stream);
     }
 
     private static void DrawDefect(
@@ -1578,22 +1668,30 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         int minX =
             Math.Max(
                 0,
-                (int)(centerX - radius - 1));
+                (int)(centerX -
+                      radius -
+                      1));
 
         int maxX =
             Math.Min(
                 1023,
-                (int)(centerX + radius + 1));
+                (int)(centerX +
+                      radius +
+                      1));
 
         int minY =
             Math.Max(
                 0,
-                (int)(centerY - radius - 1));
+                (int)(centerY -
+                      radius -
+                      1));
 
         int maxY =
             Math.Min(
                 767,
-                (int)(centerY + radius + 1));
+                (int)(centerY +
+                      radius +
+                      1));
 
         for (int y = minY;
              y <= maxY;
@@ -1604,10 +1702,12 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                  x++)
             {
                 double dx =
-                    x - centerX;
+                    x -
+                    centerX;
 
                 double dy =
-                    y - centerY;
+                    y -
+                    centerY;
 
                 double distance =
                     Math.Sqrt(
@@ -1729,6 +1829,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
                 $"Image {_capturedImage.FileName} saved";
 
             _capturedImage = null;
+
             CapturedImageSource = null;
 
             OnPropertyChanged(
@@ -1769,6 +1870,7 @@ public sealed class AcquisitionViewModel : INotifyPropertyChanged
         }
 
         _capturedImage = null;
+
         CapturedImageSource = null;
 
         if (FrameNumber > 0)
